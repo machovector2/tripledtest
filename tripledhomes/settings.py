@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,6 +123,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise Configuration for Static Files
+# WhiteNoise comes with a storage backend that automatically compresses your files
+# and creates unique names for each version so they can safely be cached forever
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# WhiteNoise settings
+WHITENOISE_USE_FINDERS = True  # Use Django's finders for development
+WHITENOISE_AUTOREFRESH = True  # Automatically refresh static files in development
+WHITENOISE_MANIFEST_STRICT = False  # Don't raise errors if a file is missing from manifest
 
 # Media Files Configuration - LOCAL STORAGE
 MEDIA_URL = '/media/'

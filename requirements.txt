@@ -1,0 +1,34 @@
+# Django Framework
+Django==5.2.4
+
+# Image Processing (Required for ImageField)
+Pillow==10.4.0
+
+# Static File Serving for Production
+whitenoise==6.7.0
+
+# Database (SQLite is included with Python, but PostgreSQL for production)
+# Uncomment if using PostgreSQL:
+# psycopg2-binary==2.9.9
+
+# Environment Variables (for sensitive settings)
+python-decouple==3.8
+
+# Gunicorn (Production WSGI Server)
+gunicorn==21.2.0
+
+# Production Server (Alternative to Gunicorn)
+# uwsgi==2.0.23
+
+# Security Headers
+django-cors-headers==4.3.1
+
+# Email Backend (if using SendGrid, Mailgun, etc.)
+# django-sendgrid-v5==5.4.1
+
+# Additional Utilities
+# django-extensions==3.2.3  # Useful development tools
+
+# For production deployment
+# python-dotenv==1.0.0  # Alternative to python-decouple
+
