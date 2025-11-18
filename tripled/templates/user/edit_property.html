@@ -1,0 +1,181 @@
+{% extends "user/base.html" %}
+{% block title %}
+  Edit Property
+{% endblock title %}
+{% block body %}
+    <!-- settings -->
+    <div class="content-page">
+        <div class="content">
+
+            <!-- Start Content-->
+            <div class="container-fluid">
+
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/user/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card p-0">
+                            <div class="card-body p-0">
+                                <div class="profile-content">
+
+                                    <ul class="nav nav-underline nav-justified gap-0">
+                                       
+                                        <li class="nav-item"><a class="nav-link active" 
+                                               aria-controls="home" aria-selected="true"
+                                                >EDIT PROPERTY</a></li>
+                                        
+                                    </ul>
+                                    
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    <div class="m-0 p-4">
+                                        <!-- settings -->
+                                        <div id="edit-property" class="tab-pane active">
+                                            <div class="user-profile-content">
+                                                <form method="post" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    <div class="row row-cols-sm-2 row-cols-1">
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="name">Property Name</label>
+                                                            <input type="text" placeholder="Enter property name" name="name" id="name"
+                                                                class="form-control" value="{{ property.name }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="location">State/Location</label>
+                                                            <select name="location" id="location" class="form-control" required>
+                                                                {% for state_code, state_name in states %}
+                                                                    <option value="{{ state_code }}" {% if property.location == state_code %}selected{% endif %}>
+                                                                        {{ state_name }}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3 col-12">
+                                                            <label class="form-label" for="address">Address</label>
+                                                            <input type="text" placeholder="Enter property address" name="address" id="address"
+                                                                class="form-control" value="{{ property.address }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3 col-12">
+                                                            <label class="form-label" for="description">Description</label>
+                                                            <textarea name="description" id="description" rows="5" 
+                                                                class="form-control" placeholder="Enter property description" required>{{ property.description }}</textarea>
+                                                        </div>
+                                                        
+                                                        <!-- {% if property.image %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="image">Property Image</label>
+                                                            <input type="file" name="image" id="image" 
+                                                                class="form-control">
+                                                            <div class="mt-2">
+                                                                <img src="{{ property.image.url }}" alt="Current Property Image" class="img-thumbnail" style="height: 100px;">
+                                                                <div class="form-check mt-1">
+                                                                    <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image">
+                                                                    <label class="form-check-label" for="remove_image">
+                                                                        Remove current image
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="image">Property Image</label>
+                                                            <input type="file" name="image" id="image" 
+                                                                class="form-control">
+                                                        </div>
+                                                        {% endif %} -->
+                                                        
+                                                        <!-- <div class="mb-3">
+                                                            <label class="form-label" for="status">Status</label>
+                                                            <select name="status" id="status" class="form-control">
+                                                                <option value="available" {% if property.status == 'available' %}selected{% endif %}>Available</option>
+                                                                <option value="sold" {% if property.status == 'sold' %}selected{% endif %}>Sold</option>
+                                                                <option value="reserved" {% if property.status == 'reserved' %}selected{% endif %}>Reserved</option>
+                                                            </select>
+                                                        </div> -->
+                                                    </div>
+                                                    
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-12 d-flex gap-2">
+                                                            <button class="btn btn-primary" type="submit">
+                                                                <i class="ri-save-line me-1 fs-16 lh-1"></i> Update Property
+                                                            </button>
+                                                            <a href="{% url 'property_detail' property_id=property.id %}" class="btn btn-secondary">
+                                                                <i class="ri-eye-line me-1 fs-16 lh-1"></i> View Details
+                                                            </a>
+                                                            <a href="{% url 'property_list' %}" class="btn btn-light">
+                                                                <i class="ri-arrow-left-line me-1 fs-16 lh-1"></i> Back to List
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+            </div>
+            <!-- end row -->
+
+        </div>
+        <!-- container -->
+
+    </div>
+{% endblock body %}
+
+{% block extra_scripts %}
+<script>
+    // Script to handle image removal checkbox logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('image');
+        const removeImageCheck = document.getElementById('remove_image');
+        
+        if (imageInput && removeImageCheck) {
+            // Disable removal checkbox if a new file is selected
+            imageInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    removeImageCheck.checked = false;
+                    removeImageCheck.disabled = true;
+                } else {
+                    removeImageCheck.disabled = false;
+                }
+            });
+            
+            // Disable file input if removal is checked
+            removeImageCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    imageInput.value = '';
+                    imageInput.disabled = true;
+                } else {
+                    imageInput.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock extra_scripts %}

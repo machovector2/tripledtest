@@ -1,0 +1,254 @@
+{% extends "user/base.html" %}
+{% block title %}
+  Edit Realtor
+{% endblock title %}
+{% block body %}
+    <!-- settings -->
+    <div class="content-page">
+        <div class="content">
+
+            <!-- Start Content-->
+            <div class="container-fluid">
+
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/user/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card p-0">
+                            <div class="card-body p-0">
+                                <div class="profile-content">
+
+                                    <ul class="nav nav-underline nav-justified gap-0">
+                                       
+                                        <li class="nav-item"><a class="nav-link active" 
+                                               aria-controls="home" aria-selected="true"
+                                                >EDIT REALTOR</a></li>
+                                        
+                                    </ul>
+                                    
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    <div class="m-0 p-4">
+                                        <!-- settings -->
+                                        <div id="edit-profile" class="tab-pane active">
+                                            <div class="user-profile-content">
+                                                <form method="post" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    <div class="row row-cols-sm-2 row-cols-1">
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="sponsorcode">Sponsors/Referral Code</label>
+                                                            <input type="text" name="sponsorcode" id="sponsorcode"
+                                                                class="form-control" value="{{ realtor.sponsor_code }}" readonly>
+                                                            <small class="text-muted">Sponsor code cannot be changed</small>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="image">Profile Image</label>
+                                                            <input type="file" name="image" id="image" 
+                                                                class="form-control">
+                                                            {% if realtor.image %}
+                                                                <div class="mt-2">
+                                                                    <img src="{{ realtor.image.url }}" alt="Current Profile Image" class="img-thumbnail" style="height: 100px;">
+                                                                    <div class="form-check mt-1">
+                                                                        <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image">
+                                                                        <label class="form-check-label" for="remove_image">
+                                                                            Remove current image
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="firstname">First Name</label>
+                                                            <input type="text" placeholder="Enter first name" name="firstname" id="firstname"
+                                                                class="form-control" value="{{ realtor.first_name }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="lastname">Last Name</label>
+                                                            <input type="text" placeholder="Enter last name" name="lastname" id="lastname"
+                                                                class="form-control" value="{{ realtor.last_name }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="email">Email</label>
+                                                            <input type="email" placeholder="Enter realtor email" name="email" id="email"
+                                                                class="form-control" value="{{ realtor.email }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="phone">Phone Number</label>
+                                                            <input type="text" placeholder="Enter realtor phone number" name="phone" id="phone"
+                                                                class="form-control" value="{{ realtor.phone }}" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="accnumber">Account Number</label>
+                                                            <input type="text" placeholder="Enter realtors account number" name="accnumber" id="accnumber"
+                                                                class="form-control" value="{{ realtor.account_number }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="accnumber">Account Name</label>
+                                                            <input type="text" placeholder="Enter realtors account name" name="accname" id="accname"
+                                                                class="form-control" value="{{ realtor.account_name }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="bankname">Bank Name </label>
+                                                            <input type="text" placeholder="Enter realtors bank name" name="bankname" id="bankname"
+                                                                class="form-control" value="{{ realtor.bank_name }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="address">Address</label>
+                                                            <input type="text" placeholder="Enter realtors address" name="address" id="address"
+                                                                class="form-control" value="{{ realtor.address }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="country">Country</label>
+                                                            <input type="text" placeholder="Enter realtors country" name="country" id="country"
+                                                                class="form-control" value="{{ realtor.country }}">
+                                                        </div>
+                                                        
+                                                        {% if realtor.referral_code %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="referral_code">Referral Code</label>
+                                                            <div class="input-group">
+                                                                <input type="text" id="referral_code" class="form-control" 
+                                                                    value="{{ realtor.referral_code }}" readonly>
+                                                                <button class="btn btn-secondary" type="button" onclick="copyToClipboard('referral_code')">
+                                                                    <i class="ri-file-copy-line"></i> Copy
+                                                                </button>
+                                                            </div>
+                                                            <small class="text-muted">This is the unique referral code for this realtor</small>
+                                                        </div>
+                                                        {% endif %}
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="status">Status</label>
+                                                            <select name="status" id="status" class="form-control">
+                                                                <option value="active" {% if realtor.status == 'active' %}selected{% endif %}>Active</option>
+                                                                <option value="inactive" {% if realtor.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                                                <option value="pending" {% if realtor.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-12 d-flex gap-2">
+                                                            <button class="btn btn-primary" type="submit">
+                                                                <i class="ri-save-line me-1 fs-16 lh-1"></i> Update Realtor
+                                                            </button>
+                                                            <a href="{% url 'realtor_detail' id=realtor.id %}" class="btn btn-secondary">
+                                                                <i class="ri-eye-line me-1 fs-16 lh-1"></i> View Profile
+                                                            </a>
+                                                            <a href="{% url 'realtors_page' %}" class="btn btn-light">
+                                                                <i class="ri-arrow-left-line me-1 fs-16 lh-1"></i> Back to List
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+            </div>
+            <!-- end row -->
+
+        </div>
+        <!-- container -->
+
+    </div>
+{% endblock body %}
+
+{% block extra_scripts %}
+<script>
+    // Script to handle image removal checkbox logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('image');
+        const removeImageCheck = document.getElementById('remove_image');
+        
+        if (imageInput && removeImageCheck) {
+            // Disable removal checkbox if a new file is selected
+            imageInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    removeImageCheck.checked = false;
+                    removeImageCheck.disabled = true;
+                } else {
+                    removeImageCheck.disabled = false;
+                }
+            });
+            
+            // Disable file input if removal is checked
+            removeImageCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    imageInput.value = '';
+                    imageInput.disabled = true;
+                } else {
+                    imageInput.disabled = false;
+                }
+            });
+        }
+    });
+
+    // Function to copy text to clipboard
+    function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        element.select();
+        document.execCommand('copy');
+        
+        // Show temporary tooltip or notification
+        const tooltip = document.createElement('div');
+        tooltip.textContent = 'Copied!';
+        tooltip.style.position = 'absolute';
+        tooltip.style.backgroundColor = '#28a745';
+        tooltip.style.color = 'white';
+        tooltip.style.padding = '5px 10px';
+        tooltip.style.borderRadius = '3px';
+        tooltip.style.zIndex = '1000';
+        tooltip.style.opacity = '0.9';
+        
+        // Position near the copy button
+        const rect = element.getBoundingClientRect();
+        tooltip.style.top = `${rect.top - 30}px`;
+        tooltip.style.left = `${rect.left + rect.width / 2}px`;
+        tooltip.style.transform = 'translateX(-50%)';
+        
+        document.body.appendChild(tooltip);
+        
+        // Remove tooltip after a delay
+        setTimeout(() => {
+            document.body.removeChild(tooltip);
+        }, 2000);
+    }
+</script>
+{% endblock extra_scripts %}

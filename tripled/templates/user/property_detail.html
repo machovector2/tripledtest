@@ -1,0 +1,176 @@
+
+
+{% extends "user/base.html" %}
+{% block title %}
+  Property Details
+{% endblock title %}
+{% block body %}
+    <!-- settings -->
+    <div class="content-page">
+        <div class="content">
+
+            <!-- Start Content-->
+            <div class="container-fluid">
+
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/user/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card p-0">
+                            <div class="card-body p-0">
+                                <div class="profile-content">
+
+                                    <ul class="nav nav-underline nav-justified gap-0">
+                                       
+                                        <li class="nav-item"><a class="nav-link active" 
+                                               aria-controls="home" aria-selected="true"
+                                                >PROPERTY DETAILS</a></li>
+                                        
+                                    </ul>
+                                    
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    <div class="m-0 p-4">
+                                        <!-- Property details -->
+                                        <div id="property-details" class="tab-pane active">
+                                            <div class="user-profile-content">
+                                                
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <h4 class="text-primary mb-3">{{ property.name }}</h4>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <div class="mb-4">
+                                                                    <h5 class="text-muted">Description</h5>
+                                                                    <p>{{ property.description }}</p>
+                                                                </div>
+                                                                
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <h5 class="text-muted">Address</h5>
+                                                                            <p>{{ property.address }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <h5 class="text-muted">State</h5>
+                                                                            <p>{{ property.location }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <h5 class="text-muted">Registration Date</h5>
+                                                                            <p>{{ property.created_at|date:"F d, Y" }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Property Sales -->
+                                                    <div class="col-md-12">
+                                                        <h4 class="text-primary mb-3">Property Sales</h4>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-bordered table-striped mb-0">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Ref No.</th>
+                                                                                <th>Client</th>
+                                                                                <th>Amount</th>
+                                                                                <th>Payment Status</th>
+                                                                                <th>Date</th>
+                                                                                <th>Action</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for sale in sales %}
+                                                                            <tr>
+                                                                                <td>{{ sale.reference_number }}</td>
+                                                                                <td>{{ sale.client_name }}</td>
+                                                                                <td>₦{{ sale.selling_price }}</td>
+                                                                                <td>
+                                                                                    {% if sale.amount_paid == sale.selling_price %}
+                                                                                        <span class="badge bg-success">Fully Paid</span>
+                                                                                    {% elif sale.amount_paid > 0 %}
+                                                                                        <span class="badge bg-warning">Partially Paid</span>
+                                                                                    {% else %}
+                                                                                        <span class="badge bg-danger">Not Paid</span>
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                                <td>{{ sale.created_at|date:"M d, Y" }}</td>
+                                                                                <td>
+                                                                                    <a href="{% url 'property_sale_detail' id=sale.id %}" class="btn btn-primary btn-sm">
+                                                                                        <i class="ri-eye-line"></i> View
+                                                                                    </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                            {% empty %}
+                                                                            <tr>
+                                                                                <td colspan="6" class="text-center">No sales recorded for this property yet.</td>
+                                                                            </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="row mt-3">
+                                                    <div class="col-md-12 d-flex gap-2">
+                                                        <a href="{% url 'edit_property' property.id %}" class="btn btn-primary">
+                                                            <i class="ri-pencil-line me-1 fs-16 lh-1"></i> Edit Property
+                                                        </a>
+                                                        <a href="{% url 'register_property_sale' %}" class="btn btn-success">
+                                                            <i class="ri-add-line me-1 fs-16 lh-1"></i> Register Sale
+                                                        </a>
+                                                        <a href="{% url 'property_list' %}" class="btn btn-light">
+                                                            <i class="ri-arrow-left-line me-1 fs-16 lh-1"></i> Back to List
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end property details-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+            </div>
+            <!-- end row -->
+
+        </div>
+        <!-- container -->
+
+    </div>
+{% endblock body %}

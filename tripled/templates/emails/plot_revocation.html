@@ -1,0 +1,139 @@
+
+<!-- templates/emails/plot_revocation.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .logo-placeholder {
+            background-color: #f0f0f0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border: 1px dashed #ccc;
+        }
+        .company-name {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .company-details {
+            font-size: 14px;
+            color: #666;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .recipient-info {
+            margin-bottom: 20px;
+        }
+        .subject {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 20px 0;
+            color: #dc3545;
+        }
+        .emphasis {
+            font-weight: bold;
+        }
+        .critical {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .refund-notice {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-placeholder">
+            <img style="height: 85px; background-color: white; border-radius: 50%;" src="/static/user/images/tripledlogo.jpeg" alt="Triple D Logo">
+        </div>
+        <div class="company-name">TRIPLE D BIG DREAM HOMES</div>
+        <div class="company-details">
+            No 66 Shehu RD Lakeview estate phase 2 Ago palace way Amuwo odofin Lagos<br>
+            Email: info@tripledhomes.com.ng<br>
+            Phone: +234-803-303-5633<br>
+            www.tripledhomes.com.ng
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="recipient-info">
+            <strong>To:</strong> {{ client_name }}<br>
+            <strong>Estate Name:</strong> {{ property_name }}<br>
+            <strong>Date:</strong> {{ current_date }}
+        </div>
+
+        <p>Dear {{ client_name }},</p>
+
+        <div class="subject">
+            NOTICE OF PLOT REVOCATION FOR NON-DEVELOPMENT
+        </div>
+
+        <p>We write to formally inform you that the development period granted to you for your allocated plot(s) at <strong>{{ property_name }}</strong> has elapsed.</p>
+
+        <p>Despite our previous reminders and in line with the estate development policy, terms and conditions stated in your <strong>Deed of Agreement, Contract of Sale, and Allocation Letter</strong>, there has been no satisfactory response, commencement of work or completion of development on your plot(s).</p>
+
+        <div class="critical">
+            <p>Please be informed that your failure to develop within the stipulated period constitutes a breach of the estate's development policy. Consequently, <strong>your allocation stands revoked with immediate effect.</strong></p>
+        </div>
+
+        <div class="refund-notice">
+            <p>On this note, please expect a refund of your purchase payment in due time.</p>
+        </div>
+
+        <p>This action is taken to ensure the orderly and timely development of the estate in the collective interest of all stakeholders.</p>
+
+        <p>Should you have any questions or require clarification, you can contact our office within <strong>7 days</strong> of this notice.</p>
+
+        <p>
+            <strong>Email:</strong> info@tripledhomes.com.ng<br>
+            <strong>Phone:</strong> +234-803-303-5633
+        </p>
+
+        <p>Thank you for your attention.</p>
+
+        <p>Sincerely,</p>
+    </div>
+
+    <div class="footer">
+        <p>
+            Yours faithfully,<br>
+            <strong>Management</strong><br>
+            <strong>Triple D Big Dream Homes</strong>
+        </p>
+    </div>
+</body>
+</html>

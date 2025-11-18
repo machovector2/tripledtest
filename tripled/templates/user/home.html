@@ -1,0 +1,690 @@
+{% extends 'user/base.html' %}
+
+{% block body %}
+    <!-- ============================================================== -->
+    <!-- Start Page Content here -->
+    <!-- ============================================================== -->
+
+    <div class="content-page">
+        <div class="content">
+
+            <!-- Start Content-->
+            <div class="container-fluid">
+
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item"><a href="">Triple D Big Dream Homes</a></li>
+                                    <li class="breadcrumb-item"><a href="">Dashboards</a></li>
+                                    <li class="breadcrumb-item active">Welcome!</li>
+                                </ol>
+                            </div>
+                            <h4 class="page-title">Welcome!</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+                <div class="row">
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-success">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-money-dollar-box-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Total Sales">Total Sales</h6>
+                                <h2 class="my-2">{{ total_sales_amount }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-info">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-exchange-dollar-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Number of Sales Transactions">Sales Transactions</h6>
+                                <h2 class="my-2">{{ total_sales_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-purple">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-user-star-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Total Realtors">Total Realtors</h6>
+                                <h2 class="my-2">{{ total_realtors }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-primary">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-checkbox-circle-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Paid Commissions">Paid Commissions</h6>
+                                <h2 class="my-2">{{ paid_commissions_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-warning">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-time-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Unpaid Commissions">Unpaid Commissions</h6>
+                                <h2 class="my-2">{{ unpaid_commissions_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-success">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-wallet-3-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Total Paid Commissions">Paid Commission Value</h6>
+                                <h2 class="my-2">{{ total_paid_commissions }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xxl-3 col-sm-6">
+                        <div class="card widget-flat text-bg-danger">
+                            <div class="card-body">
+                                <div class="float-end">
+                                    <i class="ri-bank-card-line widget-icon"></i>
+                                </div>
+                                <h6 class="text-uppercase mt-0" title="Total Unpaid Commissions">Unpaid Commission Value</h6>
+                                <h2 class="my-2">{{ total_unpaid_commissions }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-widgets">
+                                    <a href="javascript:;" data-bs-toggle="reload"><i
+                                            class="ri-refresh-line"></i></a>
+                                    <a data-bs-toggle="collapse" href="#weeklysales-collapse" role="button"
+                                        aria-expanded="false" aria-controls="weeklysales-collapse"><i
+                                            class="ri-subtract-line"></i></a>
+                                    <a href="#" data-bs-toggle="remove"><i class="ri-close-line"></i></a>
+                                </div>
+                                <h5 class="header-title mb-0">Monthly Sales Report</h5>
+
+                                <div id="weeklysales-collapse" class="collapse pt-3 show">
+                                    <div dir="ltr">
+                                        <div id="revenue-chart" class="apex-charts"
+                                            data-colors="#3bc0c3,#1a2942,#d1d7d973"></div>
+                                    </div>
+
+                                    <div class="row text-center">
+                                        <div class="col">
+                                            <p class="text-muted mt-3">Current Month</p>
+                                            <h3 class="mb-0">
+                                                <span id="current-month-sales">₦0.00</span>
+                                            </h3>
+                                        </div>
+                                        <div class="col">
+                                            <p class="text-muted mt-3">Previous Month</p>
+                                            <h3 class="mb-0">
+                                                <span id="previous-month-sales">₦0.00</span>
+                                            </h3>
+                                        </div>
+                                        <div class="col">
+                                            <p class="text-muted mt-3">Growth</p>
+                                            <h3 class="mb-0">
+                                                <span id="growth-percentage">0.00%</span>
+                                            </h3>
+                                        </div>
+                                        <div class="col">
+                                            <p class="text-muted mt-3">Commissions</p>
+                                            <h3 class="mb-0">
+                                                <span id="total-commissions">₦0.00</span>
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div> <!-- end card-body-->
+                        </div> <!-- end card-->
+                    </div> <!-- end col-->
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-widgets">
+                                    <a href="javascript:;" data-bs-toggle="reload"><i
+                                            class="ri-refresh-line"></i></a>
+                                    <a data-bs-toggle="collapse" href="#top-realtors-collapse" role="button"
+                                        aria-expanded="false" aria-controls="top-realtors-collapse"><i
+                                            class="ri-subtract-line"></i></a>
+                                    <a href="#" data-bs-toggle="remove"><i class="ri-close-line"></i></a>
+                                </div>
+                                <h5 class="header-title mb-0">Top Performing Realtors</h5>
+
+                                <div id="top-realtors-collapse" class="collapse pt-3 show">
+                                    <div dir="ltr">
+                                        <div id="yearly-sales-chart" class="apex-charts"
+                                            data-colors="#3bc0c3,#1a2942,#d1d7d973"></div>
+                                    </div>
+                                    <div class="row text-center mt-3">
+                                        <div class="col-12">
+                                            <p class="text-muted mb-2">Total Sales (All Time)</p>
+                                            <h4 class="mb-0">{{ total_sales_amount }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div> <!-- end card-body-->
+                        </div> <!-- end card-->
+
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="fs-22 fw-semibold" id="commission-percentage">0.00%</h4>
+                                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Paid Commission Share</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div id="us-share-chart" class="apex-charts" dir="ltr"></div>
+                                    </div>
+                                </div>
+                            </div><!-- end card body -->
+                        </div> <!-- end card-->
+                    </div> <!-- end col-->
+
+                </div>
+                <!-- end row -->
+
+            </div>
+            <!-- container -->
+
+        </div>
+        <!-- content -->
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- End Page content -->
+    <!-- ============================================================== -->
+
+    <!-- ApexCharts JS -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <script>
+
+        // Parse the chart data from the server
+const chartData = JSON.parse('{{ chart_data|safe }}');
+
+// Set up colors
+const colors = {
+    primary: "#3bc0c3",
+    secondary: "#1a2942",
+    light: "#d1d7d973",
+    success: "#28a745",
+    warning: "#ffc107",
+    danger: "#dc3545",
+    info: "#17a2b8",
+    purple: "#6f42c1"
+};
+
+// Initialize all charts when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Format the summary statistics
+    updateSummaryStatistics();
+    
+    // Render the monthly sales and commission chart
+    renderMonthlySalesChart();
+    
+    // Render the top realtors chart
+    renderTopRealtorsChart();
+    
+    // Render the commission distribution pie chart
+    renderCommissionDistributionPieChart();
+});
+
+// Update the summary statistics in the dashboard
+function updateSummaryStatistics() {
+    // Calculate current month data for the summary section
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const previousMonth = currentMonth > 0 ? currentMonth - 1 : 11;
+    
+    // Get current and previous month sales
+    const currentMonthSales = chartData.sales[currentMonth] || 0;
+    const previousMonthSales = chartData.sales[previousMonth] || 0;
+    
+    // Calculate total commissions for the year
+    const totalCommissions = chartData.commissions.reduce((a, b) => a + b, 0);
+    
+    // Calculate growth percentage
+    let growthPercentage = 0;
+    if (previousMonthSales > 0) {
+        growthPercentage = ((currentMonthSales - previousMonthSales) / previousMonthSales) * 100;
+    }
+    
+    // Update the summary section values
+    document.getElementById('current-month-sales').textContent = '₦' + formatNumber(currentMonthSales);
+    document.getElementById('previous-month-sales').textContent = '₦' + formatNumber(previousMonthSales);
+    document.getElementById('growth-percentage').textContent = growthPercentage.toFixed(2) + '%';
+    if (growthPercentage >= 0) {
+        document.getElementById('growth-percentage').classList.add('text-success');
+    } else {
+        document.getElementById('growth-percentage').classList.add('text-danger');
+    }
+    document.getElementById('total-commissions').textContent = '₦' + formatNumber(totalCommissions);
+}
+
+// Render the monthly sales and commission chart
+function renderMonthlySalesChart() {
+    const monthlySalesOptions = {
+        series: [{
+            name: 'Property Sales',
+            data: chartData.sales,
+            type: 'column'
+        }, {
+            name: 'Commissions',
+            data: chartData.commissions,
+            type: 'line'
+        }],
+        chart: {
+            height: 350,
+            type: 'line',
+            stacked: false,
+            toolbar: {
+                show: true,
+                tools: {
+                    download: true,
+                    selection: true,
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    pan: true,
+                    reset: true
+                }
+            },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            width: [0, 4],
+            curve: 'smooth'
+        },
+        colors: [colors.primary, colors.success],
+        xaxis: {
+            categories: chartData.months,
+            axisBorder: {
+                show: false
+            },
+        },
+        yaxis: [
+            {
+                title: {
+                    text: 'Property Sales (₦)',
+                    style: {
+                        fontWeight: 500
+                    }
+                },
+                labels: {
+                    formatter: function (value) {
+                        return '₦' + formatYAxis(value);
+                    }
+                }
+            },
+            {
+                opposite: true,
+                title: {
+                    text: 'Commissions (₦)',
+                    style: {
+                        fontWeight: 500
+                    }
+                },
+                labels: {
+                    formatter: function (value) {
+                        return '₦' + formatYAxis(value);
+                    }
+                }
+            }
+        ],
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: function (value, { seriesIndex }) {
+                    return '₦' + formatNumber(value);
+                }
+            }
+        },
+        fill: {
+            type: ['gradient', 'solid'],
+            gradient: {
+                shade: 'light',
+                type: "vertical",
+                shadeIntensity: 0.1,
+                inverseColors: false,
+                opacityFrom: 0.85,
+                opacityTo: 0.55,
+                stops: [0, 100]
+            }
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        },
+        annotations: {
+            points: getSignificantPoints(chartData.sales, chartData.months)
+        }
+    };
+
+    const monthlySalesChart = new ApexCharts(document.querySelector("#revenue-chart"), monthlySalesOptions);
+    monthlySalesChart.render();
+}
+
+// Render the top realtors chart
+function renderTopRealtorsChart() {
+    const chartElement = document.querySelector("#yearly-sales-chart");
+    if (!chartElement) return;
+    
+    if (chartData.topRealtors && chartData.topRealtors.length > 0) {
+        const topRealtorsOptions = {
+            series: [{
+                name: 'Commission Earned',
+                data: chartData.topRealtors.map(r => r.commission)
+            }],
+            chart: {
+                type: 'bar',
+                height: 280,
+                toolbar: {
+                    show: false
+                },
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800,
+                    dynamicAnimation: {
+                        speed: 350
+                    }
+                }
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: true,
+                    distributed: true,
+                    dataLabels: {
+                        position: 'top'
+                    },
+                    barHeight: '70%'
+                }
+            },
+            colors: [
+                colors.primary, 
+                colors.success, 
+                colors.info, 
+                colors.warning, 
+                colors.purple
+            ],
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return '₦' + formatYAxis(val);
+                },
+                offsetX: 30,
+                style: {
+                    fontSize: '12px',
+                    colors: ['#333']
+                }
+            },
+            xaxis: {
+                categories: chartData.topRealtors.map(r => r.name),
+                labels: {
+                    formatter: function (value) {
+                        return '₦' + formatYAxis(value);
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    show: true
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (value) {
+                        return '₦' + formatNumber(value);
+                    }
+                }
+            },
+            title: {
+                text: 'Top Performing Realtors',
+                align: 'center',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 600
+                }
+            }
+        };
+
+        const topRealtorsChart = new ApexCharts(chartElement, topRealtorsOptions);
+        topRealtorsChart.render();
+    } else {
+        // Show message when no realtor data available
+        chartElement.innerHTML = '<div class="text-center p-4"><p class="text-muted">No realtor commission data available yet.</p></div>';
+    }
+}
+
+// Render the commission distribution pie chart
+function renderCommissionDistributionPieChart() {
+    const chartElement = document.querySelector("#us-share-chart");
+    const percentageElement = document.getElementById('commission-percentage');
+    
+    if (!chartElement || !percentageElement) return;
+    
+    // Get raw commission values from the server
+    const totalPaidCommissions = parseFloat('{{ total_paid_commissions_raw }}') || 0;
+    const totalUnpaidCommissions = parseFloat('{{ total_unpaid_commissions_raw }}') || 0;
+    
+    // Calculate percentage safely to avoid division by zero
+    let paidPercentage = 0;
+    const totalCommissionAmount = totalPaidCommissions + totalUnpaidCommissions;
+    
+    if (totalCommissionAmount > 0) {
+        paidPercentage = Math.round((totalPaidCommissions / totalCommissionAmount) * 100);
+    }
+    
+    // Update the percentage in the HTML
+    percentageElement.textContent = paidPercentage + '%';
+    
+    // Only render chart if there's commission data
+    if (totalCommissionAmount === 0) {
+        chartElement.innerHTML = '<div class="text-center p-2"><p class="text-muted small">No commission data</p></div>';
+        return;
+    }
+    
+    // Paid vs Unpaid Commission Chart (Donut chart)
+    const donutOptions = {
+        series: [paidPercentage, 100 - paidPercentage],
+        chart: {
+            height: 120,
+            type: 'donut',
+            sparkline: {
+                enabled: true
+            },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                },
+                dynamicAnimation: {
+                    enabled: true,
+                    speed: 350
+                }
+            }
+        },
+        colors: [colors.success, colors.danger],
+        labels: ['Paid', 'Unpaid'],
+        stroke: {
+            width: 2
+        },
+        legend: {
+            show: false
+        },
+        tooltip: {
+            enabled: true,
+            y: {
+                formatter: function (val) {
+                    return val + "%";
+                }
+            },
+            custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                const labels = ['Paid Commission', 'Unpaid Commission'];
+                const values = [
+                    '₦' + formatNumber(totalPaidCommissions),
+                    '₦' + formatNumber(totalUnpaidCommissions)
+                ];
+                return '<div class="custom-donut-tooltip">' +
+                    '<span style="color:' + (seriesIndex === 0 ? colors.success : colors.danger) + '">' +
+                    labels[seriesIndex] + ': ' + series[seriesIndex] + '% (' + values[seriesIndex] + ')</span>' +
+                    '</div>';
+            }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '75%',
+                    labels: {
+                        show: true,
+                        name: {
+                            show: true,
+                            fontSize: '14px',
+                            offsetY: -10
+                        },
+                        value: {
+                            show: true,
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            formatter: function (val) {
+                                return val + '%';
+                            }
+                        },
+                        total: {
+                            show: false
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    const donutChart = new ApexCharts(document.querySelector("#us-share-chart"), donutOptions);
+    donutChart.render();
+}
+
+// Helper functions for formatting numbers
+function formatNumber(number) {
+    return new Intl.NumberFormat('en-NG').format(parseFloat(number).toFixed(2));
+}
+
+function formatYAxis(number) {
+    number = parseFloat(number);
+    if (number >= 1000000) {
+        return (number / 1000000).toFixed(1) + 'M';
+    } else if (number >= 1000) {
+        return (number / 1000).toFixed(1) + 'K';
+    }
+    return number.toFixed(0);
+}
+
+// Function to get significant points for annotations
+function getSignificantPoints(data, months) {
+    if (!data || data.length === 0) return [];
+    
+    // Find the highest value point
+    const maxValue = Math.max(...data);
+    const maxIndex = data.indexOf(maxValue);
+    
+    // Find the lowest value point (excluding zeros)
+    const nonZeroData = data.filter(value => value > 0);
+    const minValue = nonZeroData.length > 0 ? Math.min(...nonZeroData) : 0;
+    const minIndex = minValue > 0 ? data.indexOf(minValue) : -1;
+    
+    // Create annotation points
+    const annotationPoints = [];
+    
+    // Add highest point annotation
+    if (maxValue > 0) {
+        annotationPoints.push({
+            x: months[maxIndex],
+            y: maxValue,
+            marker: {
+                size: 6,
+                fillColor: '#fff',
+                strokeColor: colors.success,
+                radius: 2
+            },
+            label: {
+                borderColor: colors.success,
+                offsetY: 0,
+                style: {
+                    color: '#fff',
+                    background: colors.success,
+                },
+                text: 'Highest Sales: ₦' + formatYAxis(maxValue),
+            }
+        });
+    }
+    
+    // Add lowest point annotation (if not 0)
+    if (minIndex >= 0 && minValue > 0 && minValue !== maxValue) {
+        annotationPoints.push({
+            x: months[minIndex],
+            y: minValue,
+            marker: {
+                size: 6,
+                fillColor: '#fff',
+                strokeColor: colors.warning,
+                radius: 2
+            },
+            label: {
+                borderColor: colors.warning,
+                offsetY: 0,
+                style: {
+                    color: '#fff',
+                    background: colors.warning,
+                },
+                text: 'Lowest Sales: ₦' + formatYAxis(minValue),
+            }
+        });
+    }
+    
+    return annotationPoints;
+}
+    </script>
+{% endblock body %}

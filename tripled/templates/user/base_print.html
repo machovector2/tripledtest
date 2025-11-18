@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Document{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'estate/images/logos/favicon.png' %}">
+    
+    <!-- CSS -->
+    <link href="{% static 'user/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'user/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'user/css/app.min.css' %}" rel="stylesheet" type="text/css" />
+    
+    <!-- Print-specific CSS -->
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .print-hide {
+                display: none !important;
+            }
+        }
+        body {
+            background-color: #f5f6f8;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <!-- JavaScript -->
+     
+    <script src="{% static 'user/libs/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'user/libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

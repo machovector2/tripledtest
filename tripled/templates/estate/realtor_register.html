@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zxx">
+    {% load static %}
+
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Title -->
+    <title>Triple D Big Dream Homes || Realtor Registration</title>
+    <!-- Favicon Icon -->
+    <link
+      rel="shortcut icon"
+      href="/static/estate/images/logos/favicon.png"
+      type="image/x-icon"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/estate/vendor/fontawesome-5.14.0.min.css" />
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="/static/estate/vendor/bootstrap/css/bootstrap.min.css"
+    />
+    <!-- Magnific Popup -->
+    <link
+      rel="stylesheet"
+      href="/static/estate/vendor/magnific-popup/css/magnific-popup.min.css"
+    />
+    <!-- Nice Select -->
+    <link
+      rel="stylesheet"
+      href="/static/estate/vendor/nice-select/css/nice-select.min.css"
+    />
+    <!-- Animate -->
+    <link rel="stylesheet" href="/static/estate/vendor/animate.min.css" />
+    <!-- Slick -->
+    <link rel="stylesheet" href="/static/estate/vendor/slick/css/slick.min.css" />
+    <!-- Main Style -->
+    <link rel="stylesheet" href="/static/estate/css/style.css" />
+
+    <!-- Professional styles for registration form -->
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .registration-container {
+            background-color: #f8fafc;
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        
+        .registration-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card-header {
+            background-color: #1e293b;
+            color: white;
+            padding: 32px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .logo-container {
+            width: 64px;
+            height: 64px;
+            background: white;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #3b82f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .card-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .card-header p {
+            font-size: 16px;
+            color: #cbd5e1;
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 15px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            background-color: #ffffff;
+            color: #374151;
+        }
+        
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: 0;
+            background-color: #ffffff;
+        }
+        
+        .sponsor-code-field {
+            background-color: #f9fafb !important;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        .btn-register {
+            background-color: #3b82f6;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            padding: 12px 24px;
+            font-size: 15px;
+            width: 100%;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
+        .btn-register:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+        
+        .btn-register:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        
+        .btn-register:disabled {
+            background-color: #9ca3af;
+            border-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            border-radius: 6px;
+            margin-bottom: 24px;
+            border: 1px solid;
+        }
+        
+        .alert-danger {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .alert-success {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #16a34a;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #dc2626;
+        }
+        
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-upload-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-upload-label {
+            border: 2px dashed #d1d5db;
+            border-radius: 6px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+            background-color: #f9fafb;
+            display: block;
+            color: #6b7280;
+        }
+        
+        .file-upload-label:hover {
+            border-color: #3b82f6;
+            background-color: #f0f9ff;
+        }
+        
+        .section-title {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 24px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .text-primary {
+            color: #3b82f6 !important;
+        }
+        
+        .text-success {
+            color: #10b981 !important;
+        }
+        
+        .text-muted {
+            color: #6b7280 !important;
+        }
+        
+        .row {
+            margin-left: -12px;
+            margin-right: -12px;
+        }
+        
+        .col-md-6 {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        small {
+            font-size: 13px;
+        }
+    </style>
+  </head>
+  
+  <body>
+    {% include 'user/_alerts.html' %}
+    <div class="page-wrapper">
+      <!-- Preloader -->
+      <div class="preloader"><div class="custom-loader"></div></div>
+
+      <div class="registration-container">
+        <div class="container">
+            <div class="registration-card">
+                <!-- Header with Logo -->
+                <div class="card-header">
+                    <div class="logo">
+                  <a
+                    ><img
+                      style="
+                        height: 85px;
+                        background-color: white;
+                        border-radius: 50%;
+                      "
+                      src="/static/user/images/tripledlogo.jpeg"
+                      alt="Logo"
+                      title="Logo"
+                  /></a>
+                </div>
+                    <h2>Join Triple D Big Dream Homes</h2>
+                    <p>Become a Professional Realtor Today !!</p>
+                </div>
+                
+                <!-- Form Body -->
+                <div class="card-body">
+                    <!-- Display Messages -->
+                   
+                    
+                    <form method="post" enctype="multipart/form-data" id="realtorRegistrationForm">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information Section -->
+                        <h4 class="section-title">Personal Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">First Name</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="first_name" 
+                                           value="{{ form_data.first_name|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Last Name</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="last_name" 
+                                           value="{{ form_data.last_name|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Email Address</label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           name="email" 
+                                           value="{{ form_data.email|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Phone Number</label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           name="phone" 
+                                           value="{{ form_data.phone|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Profile Image</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" 
+                                       class="file-upload-input" 
+                                       name="image" 
+                                       id="imageUpload" 
+                                       required
+                                       accept="image/*">
+                                <label for="imageUpload" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-3"></i>
+                                    <div>Click to upload your profile image</div>
+                                    <small class="text-muted">JPG, PNG or GIF (Max: 5MB)</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Address Information Section -->
+                        <h4 class="section-title">Address Information</h4>
+                        <div class="form-group">
+                            <label class="form-label required-field">Address</label>
+                            <textarea class="form-control" 
+                                      name="address" 
+                                      rows="3" 
+                                      required>{{ form_data.address|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label required-field">Country</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="country" 
+                                   value="{{ form_data.country|default:'' }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Banking Information Section -->
+                        <h4 class="section-title">Banking Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Bank Name</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="bank_name" 
+                                           value="{{ form_data.bank_name|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Account Number</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="account_number" 
+                                           value="{{ form_data.account_number|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required-field">Account Name</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="account_name" 
+                                           value="{{ form_data.account_name|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Referral Information Section -->
+                        <h4 class="section-title">Referral Information</h4>
+                        <div class="form-group">
+                            <label class="form-label">Sponsor Code</label>
+                            <input type="text" 
+                                   class="form-control sponsor-code-field" 
+                                   name="sponsor_code" 
+                                   value="{{ sponsor_code }}"
+                                   readonly>
+                            <small class="text-muted">
+                                {% if referral_code %}
+                                    You were referred by someone with code: {{ sponsor_code }}
+                                {% else %}
+                                    Default sponsor code applied
+                                {% endif %}
+                            </small>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-register">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Complete Registration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!--End pagewrapper-->
+
+    <!-- Scripts -->
+    <script src="/static/estate/vendor/jquery-3.6.0.min.js"></script>
+    <script src="/static/estate/vendor/bootstrap/js/popper.min.js"></script>
+    <script src="/static/estate/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/estate/js/script.js"></script>
+    
+    <script>
+        // File upload enhancement
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const label = document.querySelector('.file-upload-label');
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Click to upload your profile image';
+            if (e.target.files[0]) {
+                label.innerHTML = `
+                    <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                    <div>Selected: ${fileName}</div>
+                    <small class="text-muted">Click to change</small>
+                `;
+            }
+        });
+        
+        // Form validation enhancement
+        document.getElementById('realtorRegistrationForm').addEventListener('submit', function(e) {
+            const button = document.querySelector('.btn-register');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            button.disabled = true;
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,645 @@
+
+{% extends 'estate/base.html' %}
+
+{% block body %}
+<style>
+    /* Executive styling */
+    .executive-badge {
+        background: linear-gradient(45deg, #ffd700, #ffa500);
+        color: #000;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        border: 2px solid #ffd700;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        to {
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6);
+        }
+    }
+
+    .executive-crown {
+        color: #ffd700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+    }
+
+    .executive-card {
+        border: 2px solid #ffd700;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.1),
+            rgba(255, 165, 0, 0.05)
+        );
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+    }
+
+    .executive-commission-card {
+        border: 3px solid #ffd700 !important;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .executive-commission-card::after {
+        content: "👑";
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        opacity: 0.7;
+    }
+
+    .executive-avatar {
+        border: 3px solid #ffd700;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .regular-badge {
+        background: linear-gradient(45deg, #6c757d, #495057);
+        color: white;
+    }
+
+    .executive-referral-card {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.1),
+            rgba(255, 165, 0, 0.05)
+        );
+        border: 2px solid #ffd700;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+    }
+
+    .executive-title {
+        background: linear-gradient(45deg, #ffd700, #ffa500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+    }
+
+    /* Referral sharing styles */
+    .referral-share-section {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border: 2px dashed #3498db;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+    }
+
+    .executive-referral-share-section {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.15),
+            rgba(255, 165, 0, 0.1)
+        );
+        border: 2px dashed #ffd700;
+    }
+
+    .referral-code-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+        letter-spacing: 2px;
+        margin: 10px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .executive-referral-code-display {
+        color: #b8860b;
+        border: 2px solid #ffd700;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.9),
+            rgba(255, 248, 220, 0.8)
+        );
+    }
+
+    .copy-button {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .copy-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .executive-copy-button {
+        background: linear-gradient(135deg, #ffd700, #ffa500);
+        color: #000;
+        font-weight: bold;
+    }
+
+    .executive-copy-button:hover {
+        color: #000;
+    }
+</style>
+
+<!-- Banner Section Start -->
+<section
+    class="banner-area pt-220 pb-250 rpy-150 corner-shapes-wrap"
+    style="background-image: url(/static/estate/images/anew/manonlaptop.jpg)"
+>
+    <div class="corner-shapes"></div>
+    <div class="container container-1170 pb-200 rpb-0">
+        <div class="row align-items-center justify-content-between">
+            <div class="col-xl-8 col-lg-12">
+                <div class="banner-content wow fadeInUp delay-0-2s">
+                    <nav aria-label="breadcrumb" class="mb-35 rmb-20">
+                        <ol class="breadcrumb wow fadeInUp delay-0-4s">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'home' %}">home</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                Realtors Check
+                            </li>
+                        </ol>
+                    </nav>
+                    <h1>Check realtors profiles</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Banner Section End -->
+
+<section class="py-120">
+    <div class="container">
+        <!-- start page title -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="text-center">
+                    <h3 class="fw-bold">Find Your Realtor Profile</h3>
+                    <p class="text-muted">
+                        Search by referral code, name, or phone number
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="GET" action="{% url 'realtors_check' %}">
+                            <div class="mb-3">
+                                <label for="search_query" class="form-label">Search for Realtor</label>
+                                <div class="input-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="search_query"
+                                        name="search_query"
+                                        placeholder="Enter referral code, name, or phone number"
+                                        value="{{ search_query }}"
+                                        required
+                                    />
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="ri-search-line"></i> Search
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="ri-information-line"></i>
+                                    You can search using: 8-digit referral code,
+                                    name or phone number
+                                </small>
+                            </div>
+                        </form>
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if search_performed and realtor %}
+        <!-- Realtor Profile Section -->
+        <div class="row mt-5">
+            <div class="col-sm-12">
+                <div class="card shadow-sm {% if realtor.is_executive %}executive-card{% endif %}">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 {% if realtor.is_executive %}executive-title{% endif %}">
+                            Realtor Details
+                            {% if realtor.is_executive %}
+                                <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="mb-3">
+                                    {% if realtor.image %}
+                                        <img
+                                            src="{{ realtor.image.url }}"
+                                            alt="{{ realtor.full_name }}"
+                                            class="img-thumbnail rounded-circle {% if realtor.is_executive %}executive-avatar{% endif %}"
+                                            style="width: 150px; height: 150px; object-fit: cover;"
+                                        />
+                                    {% else %}
+                                        <img
+                                            src="/static/user/images/users/avatar-1.jpg"
+                                            alt="Default avatar"
+                                            class="img-thumbnail rounded-circle {% if realtor.is_executive %}executive-avatar{% endif %}"
+                                            style="width: 150px; height: 150px; object-fit: cover;"
+                                        />
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <h4 class="text-uppercase fw-bold mb-2">
+                                    {{ realtor.full_name }}
+                                    {% if realtor.is_executive %}
+                                        <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                                    {% endif %}
+                                </h4>
+                                <div class="mb-3">
+                                    {% if realtor.is_executive %}
+                                        <span class="badge executive-badge px-3 py-2 fs-6">
+                                            👑 EXECUTIVE REALTOR
+                                        </span>
+                                    {% else %}
+                                        <span class="badge regular-badge px-3 py-2 fs-6">
+                                            REAL ESTATE AGENT
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <i class="ri-mail-line me-2"></i> {{ realtor.email }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <i class="ri-phone-line me-2"></i> {{ realtor.phone }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <i class="ri-map-pin-line me-2"></i> {{ realtor.address }}, {{ realtor.country }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <i class="ri-calendar-line me-2"></i> Joined: {{ realtor.created_at|date:"M d, Y" }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Commission Stats -->
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-0 shadow-sm {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                    <div class="card-body text-center p-4">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 mx-auto mb-3" style="width: 60px; height: 60px">
+                                            <i class="ri-money-dollar-circle-line text-primary" style="font-size: 28px"></i>
+                                        </div>
+                                        <h6 class="text-muted mb-1">Total Commission</h6>
+                                        <h4 class="mb-0 fw-bold">₦{{ realtor.total_commission }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-0 shadow-sm {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                    <div class="card-body text-center p-4">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-3 mx-auto mb-3" style="width: 60px; height: 60px">
+                                            <i class="ri-check-double-line text-success" style="font-size: 28px"></i>
+                                        </div>
+                                        <h6 class="text-muted mb-1">Paid Commission</h6>
+                                        <h4 class="mb-0 fw-bold">₦{{ realtor.paid_commission }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-0 shadow-sm {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                    <div class="card-body text-center p-4">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 p-3 mx-auto mb-3" style="width: 60px; height: 60px">
+                                            <i class="ri-time-line text-danger" style="font-size: 28px"></i>
+                                        </div>
+                                        <h6 class="text-muted mb-1">Unpaid Commission</h6>
+                                        <h4 class="mb-0 fw-bold">₦{{ realtor.unpaid_commission }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Referral Code & Sharing Section -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="referral-share-section {% if realtor.is_executive %}executive-referral-share-section{% endif %}">
+                                    <div class="text-center mb-4">
+                                        <h4 class="{% if realtor.is_executive %}executive-title{% else %}text-primary{% endif %}">
+                                            <i class="ri-share-forward-line me-2"></i>
+                                            Share Your Referral Code
+                                            {% if realtor.is_executive %}
+                                                <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-muted">
+                                            {% if realtor.is_executive %}
+                                                Share this premium executive code with potential realtors to earn enhanced commission on their sales.
+                                            {% else %}
+                                                Share this code with potential realtors to earn commission on their sales.
+                                            {% endif %}
+                                        </p>
+                                    </div>
+
+                                    <!-- Referral Code Display -->
+                                    <div class="text-center mb-4">
+                                        <label class="form-label fw-bold">Your Referral Code:</label>
+                                        <div class="referral-code-display {% if realtor.is_executive %}executive-referral-code-display{% endif %}" id="referralCode">
+                                            {{ realtor.referral_code }}
+                                        </div>
+                                        <button class="copy-button {% if realtor.is_executive %}executive-copy-button{% endif %}" onclick="copyReferralCode()">
+                                            <i class="ri-file-copy-line me-2"></i>Copy Code
+                                        </button>
+                                    </div>
+
+                                    <!-- Referral Link Display -->
+                                    <div class="mt-4">
+                                        <label class="form-label fw-bold">Your Registration Link to Share:</label>
+                                        <div class="input-group">
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="referralLink"
+                                                value="{{ request.scheme }}://{{ request.get_host }}{% url 'realtor_register_with_referral' realtor.referral_code %}"
+                                                readonly
+                                            />
+                                            <button class="btn btn-outline-primary" onclick="copyReferralLink()">
+                                                <i class="ri-file-copy-line me-1"></i>Copy Link
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Share this link for direct registration with your referral code.</small>
+                                    </div>
+
+                                    <!-- Social Share Buttons -->
+                                    <div class="mt-4 text-center">
+                                        <h6 class="mb-3">Share via:</h6>
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                            <button class="btn btn-success btn-sm" onclick="shareWhatsApp()">
+                                                <i class="ri-whatsapp-line me-1"></i>WhatsApp
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="shareTwitter()">
+                                                <i class="ri-twitter-line me-1"></i>Twitter
+                                            </button>
+                                            <button class="btn btn-info btn-sm" onclick="shareTelegram()">
+                                                <i class="ri-telegram-line me-1"></i>Telegram
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" onclick="shareEmail()">
+                                                <i class="ri-mail-line me-1"></i>Email
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if realtor.sponsor %}
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="ri-user-received-line text-secondary" style="font-size: 24px"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-1">Referred By</h5>
+                                                <p class="mb-0 fw-bold">
+                                                    {{ realtor.sponsor.full_name }}
+                                                    {% if realtor.sponsor.is_executive %}
+                                                        <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                    {% endif %}
+                                                    <span class="text-muted">({{ realtor.sponsor.referral_code }})</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direct Referrals Section -->
+        {% if direct_referrals %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm {% if realtor.is_executive %}executive-card{% endif %}">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <h5 class="mb-0 {% if realtor.is_executive %}executive-title{% endif %}">
+                            Your Direct Referrals
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0">Name</th>
+                                        <th class="border-0">Code</th>
+                                        <th class="border-0">Date Joined</th>
+                                        <th class="border-0">Total Sales</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for referral in direct_referrals %}
+                                    <tr>
+                                        <td>
+                                            {{ referral.full_name }}
+                                            {% if referral.is_executive %}
+                                                <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">{{ referral.referral_code }}</span>
+                                        </td>
+                                        <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                        <td class="fw-bold">₦{{ referral.total_commission }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            You haven't referred any realtors yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Commissions Section -->
+        {% if commissions %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm {% if realtor.is_executive %}executive-card{% endif %}">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <h5 class="mb-0 {% if realtor.is_executive %}executive-title{% endif %}">
+                            Your Commissions
+                            {% if realtor.is_executive %}
+                                <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0">Description</th>
+                                        <th class="border-0">Property</th>
+                                        <th class="border-0">Amount</th>
+                                        <th class="border-0">Created</th>
+                                        <th class="border-0">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for commission in commissions %}
+                                    <tr>
+                                        <td>{{ commission.description }}</td>
+                                        <td>
+                                            <span class="{% if realtor.is_executive %}executive-title{% else %}text-primary{% endif %}">
+                                                {{ commission.property_reference }}
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold">₦{{ commission.amount }}</td>
+                                        <td>{{ commission.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if commission.is_paid %}
+                                                <span class="badge bg-success">Paid on {{ commission.paid_date|date:"M d, Y" }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Unpaid</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            No commissions found.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    function copyReferralCode() {
+        const codeElement = document.getElementById("referralCode");
+        const code = codeElement.textContent.trim();
+
+        navigator.clipboard
+            .writeText(code)
+            .then(function () {
+                showAlert("Referral code copied to clipboard!", "success");
+            })
+            .catch(function () {
+                const textArea = document.createElement("textarea");
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+                showAlert("Referral code copied to clipboard!", "success");
+            });
+    }
+
+    function copyReferralLink() {
+        const linkElement = document.getElementById("referralLink");
+        linkElement.select();
+        linkElement.setSelectionRange(0, 99999);
+
+        navigator.clipboard
+            .writeText(linkElement.value)
+            .then(function () {
+                showAlert("Referral link copied to clipboard!", "success");
+            })
+            .catch(function () {
+                document.execCommand("copy");
+                showAlert("Referral link copied to clipboard!", "success");
+            });
+    }
+
+    function shareWhatsApp() {
+        const message = `Join Triple D Big Dream Homes as a realtor with my referral code: ${document.getElementById("referralCode").textContent.trim()}\n\nRegister here: ${document.getElementById("referralLink").value}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    }
+
+    function shareTwitter() {
+        const message = `Join Triple D Big Dream Homes as a realtor with my referral code: ${document.getElementById("referralCode").textContent.trim()}`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(document.getElementById("referralLink").value)}`;
+        window.open(url, "_blank");
+    }
+
+    function shareTelegram() {
+        const message = `Join Triple D Big Dream Homes as a realtor with my referral code: ${document.getElementById("referralCode").textContent.trim()}\n\nRegister here: ${document.getElementById("referralLink").value}`;
+        const url = `https://t.me/share/url?url=${encodeURIComponent(document.getElementById("referralLink").value)}&text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    }
+
+    function shareEmail() {
+        const subject = "Join Triple D Big Dream Homes - Real Estate Opportunity";
+        const body = `Hi,\n\nI'd like to invite you to join Triple D Big Dream Homes as a realtor.\n\nUse my referral code: ${document.getElementById("referralCode").textContent.trim()}\n\nRegister directly here: ${document.getElementById("referralLink").value}\n\nBest regards`;
+        const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = url;
+    }
+
+    function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = "top: 20px; right: 20px; z-index: 9999; min-width: 300px;";
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 3000);
+    }
+</script>
+{% endblock body %}

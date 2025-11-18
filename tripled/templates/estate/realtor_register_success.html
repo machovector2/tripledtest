@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zxx">
+{% load static %}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="description" content="Registration Success Page for Triple D Big Dream Homes" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Triple D Big Dream Homes || Registration Success</title>
+    <link rel="shortcut icon" href="{% static 'estate/images/logos/favicon.png' %}" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'estate/vendor/bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'estate/css/style.css' %}" />
+
+    <style>
+        body {
+            /* Remove background gradient and set a soft, neutral background for the entire page */
+            background-color: #f8f9fa;
+            font-family: 'Red Hat Display', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 15px;
+            /* Slightly less aggressive curve */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            /* Softer shadow */
+            padding: 50px;
+            text-align: center;
+            max-width: 650px;
+            /* Slightly wider card */
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            /* Subtle border */
+        }
+
+        .success-icon {
+            width: 90px;
+            /* Slightly smaller icon */
+            height: 90px;
+            background: linear-gradient(135deg, #28a745, #218838);
+            /* Green gradient for success */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            /* Shadow for icon */
+        }
+
+        .success-icon i {
+            color: white;
+            font-size: 3.5rem;
+            /* Larger checkmark */
+        }
+
+        h2.text-success {
+            color: #28a745 !important;
+            /* Ensure success color is consistent */
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        p.text-muted {
+            color: #6c757d !important;
+            line-height: 1.6;
+        }
+
+        .referral-code-box {
+            background-color: #f0f4f7;
+            /* Light, solid background */
+            border: 1px solid #d1d9e6;
+            /* Soft, solid border */
+            border-radius: 10px;
+            padding: 30px;
+            margin: 35px 0;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            /* Subtle inner shadow */
+        }
+
+        h4.text-primary {
+            color: #007bff !important;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .referral-code {
+            font-size: 2.2rem;
+            /* Slightly larger */
+            font-weight: bold;
+            color: #343a40;
+            /* Darker text for prominence */
+            letter-spacing: 2px;
+            /* Slightly reduced letter spacing */
+            margin: 15px 0;
+            padding: 10px 0;
+            background-color: #e9ecef;
+            /* Background for the code itself */
+            border-radius: 5px;
+            word-break: break-all;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            /* Blue gradient */
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            /* More padding */
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+            /* Shadow for button */
+        }
+
+        .copy-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 123, 255, 0.4);
+            background: linear-gradient(135deg, #0056b3, #007bff);
+        }
+
+        .input-group .form-control {
+            border-radius: 8px 0 0 8px;
+            border-color: #ced4da;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+        }
+
+        .input-group .btn-outline-primary {
+            border-radius: 0 8px 8px 0;
+            border-color: #007bff;
+            color: #007bff;
+            transition: all 0.3s ease;
+            padding: 12px 15px;
+        }
+
+        .input-group .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #6f42c1, #563d7c);
+            /* Purple gradient for home button */
+            border: none;
+            color: white;
+            padding: 15px 35px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            /* Use flex for icon alignment */
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 6px 15px rgba(111, 66, 193, 0.3);
+            /* Shadow for home button */
+        }
+
+        .btn-home i {
+            margin-right: 10px;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(111, 66, 193, 0.4);
+            color: white;
+            /* Ensure text color remains white on hover */
+            background: linear-gradient(135deg, #563d7c, #6f42c1);
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'user/_alerts.html' %}
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2 class="text-success mb-3">Registration Successful!</h2>
+        <p class="text-muted mb-4">Welcome to Triple D Big Dream Homes, **{{ realtor.full_name }}**!</p>
+
+        <div class="referral-code-box">
+            <h4 class="text-primary">Your Referral Code</h4>
+            <div class="referral-code" id="referralCode">{{ referral_code }}</div>
+            <button class="copy-button" onclick="copyReferralCode()">
+                <i class="fas fa-copy me-2"></i>Copy Code
+            </button>
+            <p class="text-muted mt-3 mb-0">
+                Share this code with others to earn referral commissions!
+            </p>
+        </div>
+
+        <div class="mt-4">
+            <p class="text-muted">
+                Your registration link to share:
+            </p>
+            <div class="input-group">
+                <input type="text" class="form-control" id="referralLink"
+                    value="{{ request.scheme }}://{{ request.get_host }}{% url 'realtor_register_with_referral' referral_code %}"
+                    readonly>
+                <button class="btn btn-outline-primary" onclick="copyReferralLink()">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+
+        <a href="/" class="btn-home">
+            <i class="fas fa-home"></i>Go to Homepage
+        </a>
+    </div>
+
+    <script src="{% static 'estate/vendor/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'estate/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <script>
+        function copyReferralCode() {
+            const codeElement = document.getElementById('referralCode');
+            const code = codeElement.textContent;
+
+            navigator.clipboard.writeText(code).then(function () {
+                alert('Referral code copied to clipboard!');
+            }).catch(function () {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Referral code copied to clipboard!');
+            });
+        }
+
+        function copyReferralLink() {
+            const linkElement = document.getElementById('referralLink');
+            linkElement.select();
+            linkElement.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(linkElement.value).then(function () {
+                alert('Referral link copied to clipboard!');
+            }).catch(function () {
+                document.execCommand('copy');
+                alert('Referral link copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+
+</html>

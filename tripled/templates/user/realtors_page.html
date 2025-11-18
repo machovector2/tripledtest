@@ -1,0 +1,315 @@
+{% extends 'user/base.html' %}
+
+{% block body %}
+
+<style>
+    /* Executive styling for realtors list */
+    .executive-crown {
+        color: #FFD700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+    }
+    
+    .executive-badge {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        border: 2px solid #FFD700;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glow {
+        from { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+        to { box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6); }
+    }
+    
+    .executive-card {
+        border: 2px solid #FFD700;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+        position: relative;
+    }
+    
+    .executive-card::before {
+        content: '👑';
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 20px;
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .regular-badge {
+        background: linear-gradient(45deg, #6c757d, #495057);
+        color: white;
+    }
+    
+    .executive-avatar {
+        border: 3px solid #FFD700 !important;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+    }
+</style>
+
+ <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+
+                <!-- Start Content-->
+                <div class="container-fluid">
+
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Realtors List</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                    <div class="profile-user-box">
+                        <div class="row align-items-center">
+
+                            <div class="col-lg-5">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <form method="GET" action="{% url 'realtors_page' %}">
+                                            <div class="input-group">
+                                                <input type="text" id="search" name="search" class="form-control" 
+                                                    placeholder="Search by name, referral code, phone..." 
+                                                    value="{{ search_query }}">
+                                                <span class="input-group-append">
+                                                    <button type="submit" class="btn btn-primary rounded-start-0">
+                                                        <i class="ri-search-line fs-16"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <a href="{% url 'create_realtor' %}" class="btn btn-primary">
+                                        <i class="ri-user-add-line align-text-bottom me-1 fs-16 lh-1"></i>
+                                        Add new Realtor
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Show search results info if search was performed -->
+                    {% if search_query %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Showing results for: <strong>{{ search_query }}</strong>
+                                <a href="{% url 'realtors_page' %}" class="btn btn-sm btn-light ms-2">Clear search</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        {% if realtors %}
+                            {% for realtor in realtors %}
+                            {% if realtor.id %}
+                            <div class="col-md-6">
+                                <div class="card {% if realtor.is_executive %}executive-card{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start justify-content-between">
+                                            <div class="d-flex">
+                                                <a class="me-3" href="{% url 'realtor_detail' realtor.id %}">
+                                                    {% if realtor.image %}
+                                                        <img src="{{ realtor.image.url }}" alt="{{ realtor.full_name }}" 
+                                                             class="avatar-md rounded-circle {% if realtor.is_executive %}executive-avatar{% endif %}">
+                                                    {% else %}
+                                                        <img src="/static/user/images/users/avatar-1.jpg" alt="Default avatar" 
+                                                             class="avatar-lg rounded-circle {% if realtor.is_executive %}executive-avatar{% endif %}">
+                                                    {% endif %}
+                                                </a>
+                                                <div class="info">
+                                                    <a href="{% url 'realtor_detail' realtor.id %}"> 
+                                                        <h5 class="fs-18 my-1">
+                                                            {{realtor.first_name}} {{realtor.last_name}}
+                                                            {% if realtor.is_executive %}
+                                                                <i class="ri-vip-crown-fill executive-crown ms-1" title="Executive Realtor"></i>
+                                                            {% endif %}
+                                                        </h5> 
+                                                    </a>
+                                                    <p class="text-muted fs-15 mb-1">Referral code: {{realtor.referral_code}}</p>
+                                                    
+                                                    <!-- Status Badge -->
+                                                    <div class="mb-2">
+                                                        {% if realtor.is_executive %}
+                                                            <span class="badge executive-badge px-2 py-1 fs-6">
+                                                                👑 EXECUTIVE
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge regular-badge px-2 py-1 fs-6">
+                                                                REALTOR
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="">
+                                                <a href="{% url 'edit_realtor' realtor.id %}" class="btn btn-success btn-sm me-1 tooltips" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit"> <i class="ri-pencil-fill"></i> </a>
+                                                <button type="button" class="btn btn-danger btn-sm tooltips" data-bs-toggle="modal" data-bs-target="#deleteModal{{realtor.id}}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete"> <i class="mdi mdi-delete"></i> </button>
+                                            </div>
+                                        </div>
+
+                                        <hr>
+                                        <div class="mt-3 mb-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="fs-16 mb-1">Phone: {{realtor.phone}}</h6>
+                                                    <p class="text-muted mb-0 fs-14">
+                                                        Total Commission: <strong>₦{{ realtor.total_commission|default:0|floatformat:2 }}</strong>
+                                                    </p>
+                                                </div>
+                                                {% if realtor.is_executive %}
+                                                    <div class="text-end">
+                                                        <i class="ri-vip-crown-2-fill executive-crown" style="font-size: 24px;" title="Executive Status"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Confirmation Modal for each realtor -->
+                            <div class="modal fade" id="deleteModal{{realtor.id}}" tabindex="-1" aria-labelledby="deleteModalLabel{{realtor.id}}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{realtor.id}}">Confirm Delete</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to delete <strong>{{realtor.first_name}} {{realtor.last_name}}</strong>
+                                                {% if realtor.is_executive %}
+                                                    <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                {% endif %}?
+                                            </p>
+                                            <p class="text-danger">This action cannot be undone. If this realtor has commissions or sales records, the delete operation will fail.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="POST" action="{% url 'delete_realtor' realtor.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Delete Realtor</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body text-center py-5">
+                                        <h4 class="text-muted mb-3">No realtors found</h4>
+                                        {% if search_query %}
+                                            <p>No realtors match your search criteria.</p>
+                                            <a href="{% url 'realtors_page' %}" class="btn btn-primary">View all realtors</a>
+                                        {% else %}
+                                            <p>There are no realtors in the system yet.</p>
+                                            <a href="{% url 'create_realtor' %}" class="btn btn-primary">Add a realtor</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    {% if page_obj.has_other_pages %}
+                    <div class="row">
+                        <div class="col-12">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page=1" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ paginator.num_pages }}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div> <!-- container -->
+
+            </div> <!-- content -->
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+    
+{% endblock body %}

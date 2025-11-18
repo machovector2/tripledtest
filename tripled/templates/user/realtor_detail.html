@@ -1,0 +1,643 @@
+{% extends 'user/base.html' %}
+{% load humanize %}
+
+{% block body %}
+    <style>
+        /* Executive styling - removed background changes */
+        .executive-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            border: 2px solid #FFD700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+            to { box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6); }
+        }
+        
+        .executive-crown {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        }
+        
+        .executive-card {
+            border: 2px solid #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+        }
+        
+        /* Executive commission cards - keep original colors but add golden border */
+        .executive-commission-card {
+            border: 3px solid #FFD700 !important;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .executive-commission-card::after {
+            content: '👑';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            opacity: 0.7;
+        }
+        
+        .status-toggle-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-toggle-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .regular-badge {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+        }
+
+        /* Referral Link Styles */
+        .referral-link-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #3498db;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .executive .referral-link-section {
+            border: 2px dashed #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+        }
+        
+        .copy-link-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .copy-link-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .executive .copy-link-button {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .referral-code-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+        
+        .executive .referral-code-display {
+            color: #B8860B;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .copy-success {
+            color: #27ae60;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .copy-success.show {
+            opacity: 1;
+        }
+    </style>
+
+    <div class="content-page">
+        <div class="content">
+            <!-- Start Content-->
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/user/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        <!-- meta -->
+                        <div class="profile-user-box">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="profile-user-img">
+                                        {% if realtor.image %}
+                                            <img src="{{ realtor.image.url }}" alt="{{ realtor.full_name }}" class="avatar-lg rounded-circle" style="{% if realtor.is_executive %}border: 3px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);{% endif %}">
+                                        {% else %}
+                                            <img src="/static/user/images/users/avatar-1.jpg" alt="Default avatar" class="avatar-lg rounded-circle" style="{% if realtor.is_executive %}border: 3px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);{% endif %}">
+                                        {% endif %}
+                                    </div>
+                                    <div class="">
+                                        <h4 class="mt-4 fs-17 ellipsis">
+                                            {{ realtor.full_name }}
+                                            {% if realtor.is_executive %}
+                                                <i class="ri-vip-crown-fill executive-crown ms-2" title="Executive Realtor"></i>
+                                            {% endif %}
+                                        </h4>
+                                        <div class="mb-2">
+                                            {% if realtor.is_executive %}
+                                                <span class="badge executive-badge px-3 py-2 fs-6">
+                                                    👑 EXECUTIVE REALTOR
+                                                </span>
+                                            {% else %}
+                                                <span class="badge regular-badge px-3 py-2 fs-6">
+                                                    REAL ESTATE AGENT
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-muted mb-0"><small>{{ realtor.address }}, {{ realtor.country }}</small></p>
+                                        <p class="text-muted mb-0"><small>date joined: {{ realtor.created_at }}</small></p>
+                                        <p class="text-muted mb-0"><small>last updated: {{ realtor.updated_at }}</small></p>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                                        {% if realtor.unpaid_commission > 0 %}
+<a href="{% url 'realtor_unpaid_commissions_print' realtor.id %}" class="btn btn-outline-primary" target="_blank">
+    <i class="ri-printer-line me-1"></i>
+    Print Unpaid Commissions
+</a>
+{% endif %}
+                                        <a href="{% url 'edit_realtor' realtor.id %}" class="btn btn-soft-danger">
+                                            <i class="ri-settings-2-line align-text-bottom me-1 fs-16 lh-1"></i>
+                                            Edit Profile
+                                        </a>
+                                        {% if request.user.is_staff or perms.realtors.can_pay_commission %}
+                                            <form method="post" action="{% url 'pay_all_commissions' realtor.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-soft-success">
+                                                    <i class="ri-money-dollar-circle-line fs-18 me-1 lh-1"></i> 
+                                                    Mark All Commissions Paid
+                                                </button>
+                                            </form>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ meta -->
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <!-- Status Management Card (Admin Only) -->
+                {% if request.user.is_staff %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="status-toggle-card p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-2">
+                                        <i class="ri-user-settings-line me-2"></i>
+                                        Realtor Status Management
+                                    </h5>
+                                    <p class="text-muted mb-0">
+                                        Current Status: 
+                                        {% if realtor.is_executive %}
+                                            <span class="badge executive-badge ms-1">👑 Executive Realtor</span>
+                                        {% else %}
+                                            <span class="badge regular-badge ms-1">Regular Realtor</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <form method="post" action="{% url 'toggle_realtor_status' realtor.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        {% if realtor.is_executive %}
+                                            <button type="submit" class="btn btn-outline-warning">
+                                                <i class="ri-arrow-down-line me-1"></i>
+                                                Demote to Regular
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="ri-vip-crown-line me-1"></i>
+                                                Promote to Executive
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card p-0 {% if realtor.is_executive %}executive-card{% endif %}">
+                            <div class="card-body p-0">
+                                <div class="profile-content">
+                                    <ul class="nav nav-underline nav-justified gap-0">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" aria-selected="true">Realtor Details</a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="m-0 p-4">
+                                        <div class="tab-pane active">
+                                            <div class="profile-desk">
+                                                <h5 class="text-uppercase fs-17 text-dark">
+                                                    {{ realtor.full_name }}
+                                                    {% if realtor.is_executive %}
+                                                        <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                                                    {% endif %}
+                                                </h5>
+                                                <div class="designation mb-4">
+                                                    {% if realtor.is_executive %}
+                                                        <span class="executive-badge badge px-3 py-2">👑 EXECUTIVE REALTOR</span>
+                                                    {% else %}
+                                                        REAL ESTATE AGENT
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <!-- Commission Stats -->
+                                                <div class="row mb-4">
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-primary text-white {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Total Commission</h5>
+                                                                <h2>₦{{ realtor.total_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-success text-white {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Paid Commission</h5>
+                                                                <h2>₦{{ realtor.paid_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-danger text-white {% if realtor.is_executive %}executive-commission-card{% endif %}">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Unpaid Commission</h5>
+                                                                <h2>₦{{ realtor.unpaid_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Enhanced Referral Code Section with Copyable Link -->
+                                                <div class="alert alert-info {% if realtor.is_executive %}executive-card executive{% endif %}">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-8">
+                                                            <h5 class="mt-0">
+                                                                <i class="ri-share-forward-line me-1"></i> 
+                                                                Referral Code
+                                                                {% if realtor.is_executive %}
+                                                                    <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                                                                {% endif %}
+                                                            </h5>
+                                                            <div class="referral-code-display">{{ realtor.referral_code }}</div>
+                                                            <p class="mb-0">
+                                                                {% if realtor.is_executive %}
+                                                                    Share this premium executive code with potential realtors to earn enhanced commission on their sales.
+                                                                {% else %}
+                                                                    Share this code with potential realtors to earn commission on their sales.
+                                                                {% endif %}
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-4 text-end">
+                                                            <button class="copy-link-button" onclick="copyReferralCode()">
+                                                                <i class="ri-file-copy-line me-1"></i>Copy Code
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Copyable Referral Link Section -->
+                                                    <div class="referral-link-section mt-3">
+                                                        <h6 class="mb-2">
+                                                            <i class="ri-links-line me-1"></i>
+                                                            {% if realtor.is_executive %}Premium {% endif %}Registration Link
+                                                        </h6>
+                                                        <div class="input-group">
+                                                            <input type="text" 
+                                                                   class="form-control" 
+                                                                   id="referralLink" 
+                                                                   value="{{ request.scheme }}://{{ request.get_host }}{% url 'realtor_register_with_referral' realtor.referral_code %}"
+                                                                   readonly>
+                                                            <button class="btn copy-link-button" onclick="copyReferralLink()">
+                                                                <i class="ri-file-copy-line"></i>
+                                                            </button>
+                                                        </div>
+                                                        <small class="text-muted mt-2 d-block">
+                                                            Share this link for direct registration with your referral code
+                                                        </small>
+                                                        <div class="copy-success mt-2" id="copySuccess">
+                                                            <i class="ri-check-line me-1"></i>Link copied successfully!
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {% if realtor.sponsor %}
+                                                <div class="alert alert-light">
+                                                    <h5 class="mt-0"><i class="ri-user-received-line me-1"></i> Referred By</h5>
+                                                    <p class="mb-0">
+                                                        <a href="{% url 'realtor_detail' realtor.sponsor.id %}">
+                                                            {{ realtor.sponsor.full_name }} ({{ realtor.sponsor.referral_code }})
+                                                            {% if realtor.sponsor.is_executive %}
+                                                                <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                                {% endif %}
+
+                                                <h5 class="mt-4 fs-17 text-dark">Contact Information</h5>
+                                                <table class="table table-condensed mb-0 border-top">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th scope="row">Email</th>
+                                                            <td>
+                                                                <a href="mailto:{{ realtor.email }}" class="ng-binding">
+                                                                    {{ realtor.email }}
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Phone</th>
+                                                            <td class="ng-binding">{{ realtor.phone }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Address</th>
+                                                            <td class="ng-binding">{{ realtor.address }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Country</th>
+                                                            <td class="ng-binding">{{ realtor.country }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                <h5 class="mt-4 fs-17 text-dark">Banking Information</h5>
+                                                <table class="table table-condensed mb-0 border-top">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th scope="row">Bank Name</th>
+                                                            <td class="ng-binding">{{ realtor.bank_name }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Account Number</th>
+                                                            <td class="ng-binding">{{ realtor.account_number }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Account Name</th>
+                                                            <td class="ng-binding">{{ realtor.account_name }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!-- end profile-desk -->
+                                        </div> <!-- about-me -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commissions Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card {% if realtor.is_executive %}executive-card{% endif %}">
+                            <div class="card-header">
+                                <h4 class="card-title">
+                                    Commissions
+                                    {% if realtor.is_executive %}
+                                        <i class="ri-vip-crown-fill executive-crown ms-2"></i>
+                                    {% endif %}
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Property</th>
+                                                <th>Amount</th>
+                                                <th>Created</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for commission in commissions %}
+                                            <tr>
+                                                <td>{{ commission.description }}</td>
+                                                <td>{{ commission.property_reference }}</td>
+                                                <td>₦{{ commission.amount|intcomma }}</td>
+                                                <td>{{ commission.created_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    {% if commission.is_paid %}
+                                                    <span class="badge bg-success">Paid on {{ commission.paid_date|date:"M d, Y" }}</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Unpaid</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if commission.id and not commission.is_paid and request.user.is_staff %}
+                                                    <form method="post" action="{% url 'pay_commission' commission.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-success">Mark Paid</button>
+                                                    </form>
+                                                    {% elif not commission.id %}
+                                                    <span class="badge bg-warning">Invalid Record</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">No commissions found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Direct Referrals Section -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card {% if realtor.is_executive %}executive-card{% endif %}">
+                            <div class="card-header">
+                                <h4 class="card-title">Direct Referrals</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Date Joined</th>
+                                                <th>Total Sales</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for referral in direct_referrals %}
+                                            <tr>
+                                                <td>
+                                                    {% if referral.id %}
+                                                    <a href="{% url 'realtor_detail' referral.id %}">
+                                                        {{ referral.full_name }}
+                                                        {% if referral.is_executive %}
+                                                            <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                    {% else %}
+                                                    {{ referral.full_name }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ referral.referral_code }}</td>
+                                                <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                                <td>₦{{ referral.total_commission }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No direct referrals found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Referrals Section -->
+                    <div class="col-md-6">
+                        <div class="card {% if realtor.is_executive %}executive-card{% endif %}">
+                            <div class="card-header">
+                                <h4 class="card-title">Second-Level Referrals</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Referred By</th>
+                                                <th>Date Joined</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for referral in secondary_referrals %}
+                                            <tr>
+                                                <td>
+                                                    {% if referral.id %}
+                                                    <a href="{% url 'realtor_detail' referral.id %}">
+                                                        {{ referral.full_name }}
+                                                        {% if referral.is_executive %}
+                                                            <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                    {% else %}
+                                                    {{ referral.full_name }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ referral.referral_code }}</td>
+                                                <td>
+                                                    {% if referral.sponsor and referral.sponsor.id %}
+                                                    <a href="{% url 'realtor_detail' referral.sponsor.id %}">
+                                                        {{ referral.sponsor.full_name }}
+                                                        {% if referral.sponsor.is_executive %}
+                                                            <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                    {% else %}
+                                                    <span class="text-muted">No Sponsor</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No second-level referrals found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- container -->
+        </div>
+    </div>
+
+    <!-- JavaScript for Copy Functionality -->
+    <script>
+        function copyReferralCode() {
+            const codeText = "{{ realtor.referral_code }}";
+            
+            navigator.clipboard.writeText(codeText).then(function() {
+                showCopySuccess('Referral code copied to clipboard!');
+            }).catch(function() {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = codeText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showCopySuccess('Referral code copied to clipboard!');
+            });
+        }
+        
+        function copyReferralLink() {
+            const linkElement = document.getElementById('referralLink');
+            linkElement.select();
+            linkElement.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(linkElement.value).then(function() {
+                showCopySuccess('Referral link copied to clipboard!');
+            }).catch(function() {
+                document.execCommand('copy');
+                showCopySuccess('Referral link copied to clipboard!');
+            });
+        }
+        
+        function showCopySuccess(message) {
+            // Show success message
+            const successElement = document.getElementById('copySuccess');
+            successElement.textContent = message;
+            successElement.classList.add('show');
+            
+            // Hide after 3 seconds
+            setTimeout(function() {
+                successElement.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+{% endblock body %}

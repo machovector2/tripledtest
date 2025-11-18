@@ -1,0 +1,274 @@
+{% extends 'user/base.html' %}
+
+{% load humanize %}
+
+{% block title %}Commissions Management{% endblock %}
+
+{% block body %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Commissions Management</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item"><a href="{% url 'user' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Commissions</li>
+            </ol>
+            
+            <!-- Summary Cards -->
+            <div class="row">
+                <div class="col-xl-4 col-md-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">
+                            <h4 class="mb-0">Total Commissions</h4>
+                            <h2>₦{{ total_commissions|floatformat:2|intcomma }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 col-md-6">
+                    <div class="card bg-success text-white mb-4">
+                        <div class="card-body">
+                            <h4 class="mb-0">Paid Commissions</h4>
+                            <h2>₦{{ paid_commissions|floatformat:2|intcomma }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 col-md-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <h4 class="mb-0">Unpaid Commissions</h4>
+                            <h2>₦{{ unpaid_commissions|floatformat:2|intcomma }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add this button section to your existing commissions_list.html template -->
+            <!--     it right after the summary cards section and before the search/filter section -->
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'unpaid_commissions_print' %}" 
+                        class="btn btn-success" 
+                        target="_blank"
+                        title="Print Unpaid Commissions Report">
+                            <i class="fas fa-print me-2"></i>
+                            Print Unpaid Commissions Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        
+            
+            <!-- Search and Filter Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-search me-1"></i>
+                    Search & Filter Commissions
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" value="{{ search_query }}" placeholder="Reference, Realtor...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="payment_status" class="form-label">Payment Status</label>
+                            <select class="form-select" id="payment_status" name="payment_status">
+                                <option value="" {% if payment_status == '' %}selected{% endif %}>All Statuses</option>
+                                <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="unpaid" {% if payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="realtor_id" class="form-label">Realtor</label>
+                            <select class="form-select" id="realtor_id" name="realtor_id">
+                                <option value="">All Realtors</option>
+                                {% for realtor in realtors %}
+                                    <option value="{{ realtor.id }}" {% if realtor_id == realtor.id %}selected{% endif %}>
+                                        {{ realtor.full_name }}
+                                        {% if realtor.is_executive %}
+                                            (Executive)
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="realtor_status" class="form-label">Realtor Status</label>
+                            <select class="form-select" id="realtor_status" name="realtor_status">
+                                <option value="" {% if realtor_status == '' %}selected{% endif %}>All Types</option>
+                                <option value="executive" {% if realtor_status == 'executive' %}selected{% endif %}>Executive</option>
+                                <option value="regular" {% if realtor_status == 'regular' %}selected{% endif %}>Regular</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="property_ref" class="form-label">Property Reference</label>
+                            <input type="text" class="form-control" id="property_ref" name="property_ref" value="{{ property_ref }}" placeholder="Property Ref...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                        </div>
+                        <div class="col-12 text-end">
+                            <a href="{% url 'commissions_list' %}" class="btn btn-secondary">Clear</a>
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Commissions Table -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    Commissions List
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="commissions-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Realtor</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Property Ref</th>
+                                    <th>Payment Status</th>
+                                    <th>Created Date</th>
+                                    <th>Payment Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for commission in page_obj %}
+                                <tr>
+                                    <td>{{ commission.id }}</td>
+                                    <td>
+                                        <a href="{% url 'realtor_detail' id=commission.realtor.id %}">
+                                            {{ commission.realtor.full_name }}
+                                            {% if commission.realtor.is_executive %}
+                                                <i class="ri-vip-crown-fill executive-crown ms-1"></i>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if commission.realtor.is_executive %}
+                                        <span class="badge bg-primary">Executive</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Regular</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>₦{{ commission.amount|floatformat:2|intcomma }}</td>
+                                    <td>{{ commission.description }}</td>
+                                    <td>{{ commission.property_reference }}</td>
+                                    <td>
+                                        {% if commission.is_paid %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Unpaid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ commission.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if commission.paid_date %}
+                                        {{ commission.paid_date|date:"M d, Y" }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'realtor_detail' id=commission.realtor.id %}" class="btn btn-primary btn-sm" title="View Realtor">
+                                            <i class="fas fa-user"></i> View Realtor
+                                        </a>
+                                        {% if commission.property_reference %}
+                                        {% for sale in commission.realtor.sales.all %}
+                                            {% if sale.reference_number == commission.property_reference %}
+                                            <a href="{% url 'property_sale_detail' id=sale.id %}" class="btn btn-info btn-sm mt-1" title="View Sale">
+                                                <i class="fas fa-file-contract"></i> View Sale
+                                            </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No commissions found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mt-4">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+            
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTables
+        $('#commissions-table').DataTable({
+            "paging": false,  // We're using Django's pagination
+            "ordering": true,
+            "info": true,
+            "searching": false,  // We have our own search functionality
+            "responsive": true
+        });
+    });
+</script>
+{% endblock %}

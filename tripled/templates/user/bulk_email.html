@@ -1,0 +1,464 @@
+
+{% extends 'user/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Send Bulk Email{% endblock %}
+
+{% block body %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row mt-3 mb-4">
+                <div class="col-12">
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0">Send Bulk Email to Clients</h2>
+                    </div>
+                    <p class="text-muted mt-1 mb-0">
+                        <i class="ri-mail-line me-1"></i> Send emails to multiple clients based on filters
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-filter-3-line me-1"></i> Filter Clients
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="search_filter" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search_filter" 
+                                           placeholder="Search by name, reference, email...">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="estate_filter" class="form-label">Estate</label>
+                                    <select class="form-select" id="estate_filter">
+                                        <option value="">All Estates</option>
+                                        {% for property in properties %}
+                                        <option value="{{ property.id }}">{{ property.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="property_type_filter" class="form-label">Property Type</label>
+                                    <select class="form-select" id="property_type_filter">
+                                        <option value="">All Types</option>
+                                        <option value="building">Building Property</option>
+                                        <option value="land">Land</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="payment_status_filter" class="form-label">Payment Status</label>
+                                    <select class="form-select" id="payment_status_filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="fully_paid">Fully Paid</option>
+                                        <option value="partially_paid">Partially Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                                    <i class="ri-refresh-line me-1"></i> Clear Filters
+                                </button>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary me-2" onclick="selectAll()">
+                                        Select All Visible
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()">
+                                        Deselect All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="ri-group-line me-1"></i> Client List 
+                                    <span id="clientCount" class="badge bg-primary ms-2">{{ sales|length }}</span>
+                                    <span id="selectedCount" class="badge bg-success ms-2">0 selected</span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="clientsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="50">
+                                                <input type="checkbox" class="form-check-input" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                            </th>
+                                            <th>Client</th>
+                                            <th>Estate</th>
+                                            <th>Property Type</th>
+                                            <th>Payment Status</th>
+                                            <th>Email</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sale in sales %}
+                                        <tr class="client-row" 
+                                            data-client-name="{{ sale.client_name|lower }}"
+                                            data-reference="{{ sale.reference_number|lower }}"
+                                            data-email="{{ sale.client_email|lower }}"
+                                            data-estate-id="{{ sale.property_item.id }}"
+                                            data-property-type="{{ sale.property_type }}"
+                                            data-payment-status="{% if sale.is_fully_paid %}fully_paid{% else %}partially_paid{% endif %}">
+                                            <td>
+                                                {% if sale.client_email %}
+                                                <input type="checkbox" class="form-check-input client-checkbox" 
+                                                       value="{{ sale.id }}" 
+                                                       data-email="{{ sale.client_email }}"
+                                                       data-name="{{ sale.client_name }}"
+                                                       onchange="updateSelectedCount()">
+                                                {% else %}
+                                                <span class="text-muted">No Email</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if sale.client_picture %}
+                                                        <img src="{{ sale.client_picture.url }}" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="avatar-sm me-2">
+                                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                                {{ sale.client_name|first|upper }}
+                                                            </span>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <h6 class="mb-0">{{ sale.client_name }}</h6>
+                                                        <small class="text-muted">{{ sale.reference_number }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ sale.property_item.name }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ sale.get_property_type_display }}</span>
+                                            </td>
+                                            <td>
+                                                {% if sale.is_fully_paid %}
+                                                    <span class="badge bg-success">Fully Paid</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Partially Paid</span>
+                                                    <br><small class="text-muted">Balance: ₦{{ sale.balance_due|floatformat:2|intcomma }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if sale.client_email %}
+                                                    <span class="text-success">{{ sale.client_email }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">No email address</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'property_sale_detail' sale.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Sale Details">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4">
+                                                <div class="avatar-lg mx-auto mb-4">
+                                                    <div class="avatar-title bg-light text-muted rounded-circle">
+                                                        <i class="ri-inbox-line font-size-24"></i>
+                                                    </div>
+                                                </div>
+                                                <h5>No sales records found</h5>
+                                                <p class="text-muted">There are no property sales to display.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Composition Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-mail-send-line me-1"></i> Compose Email
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="bulkEmailForm">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="emailSubject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="emailSubject" name="subject" 
+                                           placeholder="Enter email subject" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailMessage" class="form-label">Message</label>
+                                    <textarea class="form-control" id="emailMessage" name="message" rows="10" 
+                                              placeholder="Type your message here..." required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="alert alert-info">
+                                        <i class="ri-information-line me-2"></i>
+                                        <strong>Note:</strong> Each email will be personalized with the client's name and property details.
+                                        Only clients with valid email addresses can receive emails.
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary" id="sendBulkEmailBtn">
+                                        <i class="ri-mail-send-line me-1"></i> Send Bulk Email
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedClients = [];
+
+// Filter functionality
+function filterClients() {
+    const searchValue = document.getElementById('search_filter').value.toLowerCase();
+    const estateFilter = document.getElementById('estate_filter').value;
+    const propertyTypeFilter = document.getElementById('property_type_filter').value;
+    const paymentStatusFilter = document.getElementById('payment_status_filter').value;
+    
+    const rows = document.querySelectorAll('.client-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        let show = true;
+        
+        // Search filter
+        if (searchValue) {
+            const clientName = row.dataset.clientName || '';
+            const reference = row.dataset.reference || '';
+            const email = row.dataset.email || '';
+            
+            if (!clientName.includes(searchValue) && 
+                !reference.includes(searchValue) && 
+                !email.includes(searchValue)) {
+                show = false;
+            }
+        }
+        
+        // Estate filter
+        if (show && estateFilter && row.dataset.estateId !== estateFilter) {
+            show = false;
+        }
+        
+        // Property type filter
+        if (show && propertyTypeFilter && row.dataset.propertyType !== propertyTypeFilter) {
+            show = false;
+        }
+        
+        // Payment status filter
+        if (show && paymentStatusFilter && row.dataset.paymentStatus !== paymentStatusFilter) {
+            show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    // Update visible count
+    document.getElementById('clientCount').textContent = visibleCount;
+    
+    // Update selected count
+    updateSelectedCount();
+}
+
+// Clear all filters
+function clearFilters() {
+    document.getElementById('search_filter').value = '';
+    document.getElementById('estate_filter').value = '';
+    document.getElementById('property_type_filter').value = '';
+    document.getElementById('payment_status_filter').value = '';
+    
+    // Show all rows
+    document.querySelectorAll('.client-row').forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update count
+    document.getElementById('clientCount').textContent = '{{ sales|length }}';
+    updateSelectedCount();
+}
+
+// Update selected clients count
+function updateSelectedCount() {
+    const visibleCheckboxes = document.querySelectorAll('.client-checkbox');
+    const selectedCheckboxes = document.querySelectorAll('.client-checkbox:checked');
+    const visibleSelectedCheckboxes = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.client-row').style.display !== 'none') {
+            visibleSelectedCheckboxes.push(checkbox);
+        }
+    });
+    
+    selectedClients = Array.from(visibleSelectedCheckboxes).map(cb => ({
+        id: cb.value,
+        email: cb.dataset.email,
+        name: cb.dataset.name
+    }));
+    
+    document.getElementById('selectedCount').textContent = `${selectedClients.length} selected`;
+    
+    // Update select all checkbox state
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const visibleCheckboxesArray = Array.from(visibleCheckboxes).filter(cb => 
+        cb.closest('.client-row').style.display !== 'none'
+    );
+    
+    if (visibleCheckboxesArray.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (visibleSelectedCheckboxes.length === visibleCheckboxesArray.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else if (visibleSelectedCheckboxes.length > 0) {
+        selectAllCheckbox.indeterminate = true;
+    } else {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    }
+}
+
+// Toggle select all
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const visibleCheckboxes = document.querySelectorAll('.client-checkbox');
+    
+    visibleCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.client-row').style.display !== 'none') {
+            checkbox.checked = selectAllCheckbox.checked;
+        }
+    });
+    
+    updateSelectedCount();
+}
+
+// Select all visible
+function selectAll() {
+    const visibleCheckboxes = document.querySelectorAll('.client-checkbox');
+    
+    visibleCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.client-row').style.display !== 'none') {
+            checkbox.checked = true;
+        }
+    });
+    
+    updateSelectedCount();
+}
+
+// Deselect all
+function deselectAll() {
+    document.querySelectorAll('.client-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    updateSelectedCount();
+}
+
+// Bulk email form submission
+document.getElementById('bulkEmailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (selectedClients.length === 0) {
+        showAlert('Please select at least one client to send email to.', 'warning');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    formData.append('client_ids', JSON.stringify(selectedClients.map(c => c.id)));
+    
+    const submitBtn = document.getElementById('sendBulkEmailBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Sending...';
+    
+    fetch('{% url "send_bulk_email" %}', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Emails sent successfully to ${data.sent_count} clients!`, 'success');
+            document.getElementById('bulkEmailForm').reset();
+            deselectAll();
+        } else {
+            showAlert(data.error || 'Failed to send emails', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Network error occurred', 'danger');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Show alert function
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Add event listeners for filters
+document.getElementById('search_filter').addEventListener('input', filterClients);
+document.getElementById('estate_filter').addEventListener('change', filterClients);
+document.getElementById('property_type_filter').addEventListener('change', filterClients);
+document.getElementById('payment_status_filter').addEventListener('change', filterClients);
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

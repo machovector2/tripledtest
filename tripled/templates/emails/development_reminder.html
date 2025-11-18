@@ -1,0 +1,164 @@
+
+<!-- templates/emails/development_reminder.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .logo-placeholder {
+            background-color: #f0f0f0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border: 1px dashed #ccc;
+        }
+        .company-name {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .company-details {
+            font-size: 14px;
+            color: #666;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .recipient-info {
+            margin-bottom: 20px;
+        }
+        .subject {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 20px 0;
+            text-align: center;
+            text-decoration: underline;
+        }
+        .emphasis {
+            font-weight: bold;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .benefits-list {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .benefits-list li {
+            margin-bottom: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-placeholder">
+            <img style="background-color: white; height: 50px;" src="/static/user/images/tripledlogo.jpeg" alt="Triple D Logo">
+        </div>
+        <div class="company-name">Triple D Big Dream Homes</div>
+        <div class="company-details">
+            No 66 Shehu RD Lakeview estate phase 2 Ago palace way Amuwo odofin Lagos<br>
+            Email: info@tripledhomes.com.ng<br>
+            Phone: +234-803-303-5633<br>
+            www.tripledhomes.com.ng
+
+
+
+            Head office address.<br>
+            No 66 Shehu RD Lakeview estate<br> 
+            phase 2 Ago palace way Amuwo odofin Lagos.<br>
+
+            Branches addresses.<br>
+
+            Suit 1 Adonai Complex<br>
+            No 2 Onyiuke  Street,<br>
+            Off Edimbo Road, Ogui New Layout, Enugu<br>
+
+            Shop B8/B11, Block C, Millennium Plaza,<br> 
+            Opp. ABS, Behind UBA,Aroma,<br> 
+            Enugu-Onitsha Express road, Awka, Anambra State.<br>
+            <br>
+            <br>
+            Phone: +2348033035633<br>
+            Email: info@tripledhomes.com.ng<br>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="recipient-info">
+            <strong>To:</strong> {{ client_name }}<br>
+            <strong>Date:</strong> {{ current_date }}
+        </div>
+
+        <div class="subject">
+            Notice To Commence Development On Your Allocated Plot From Triple D Big Dream Homes
+        </div>
+
+        <p>We bring you warm greetings from the management of <strong>Triple D Big Dream Homes</strong> and sincerely appreciate your continued trust and investment in our estate project.</p>
+
+        <p>As part of our strategic commitment to drive value into the estate and maximize return on investment (ROI) for all stakeholders, we are initiating a <em>Development Activation Phase</em> across the estate. This initiative aims to fast-track infrastructural growth, boost real estate value, and enhance livability within the estate.</p>
+
+        <p>We hereby call on you to commence meaningful development activities on your respective plot(s) in line with the company plot fencing and full development policy stated in your Deed of agreement, contract of sales and allocation letter. The early development of your property is crucial in:</p>
+
+        <ul class="benefits-list">
+            <li>Establishing physical presence within the estate by fencing your plot with gate house within 1 month after physical allocation.</li>
+            <li>Developing your plot(s) within the time allocated to you according your contract of sales agreement or you resale your plot before duration expires.</li>
+            <li>Enhancing the value of your property for resale or development purposes.</li>
+            <li>Protecting your investment against policy changes.</li>
+        </ul>
+
+        <p>Kindly note that this notification also aligns with the estate's development policy, which stipulates a development timeline to ensure uniform growth and avoid speculative holding.</p>
+
+        <div class="warning">
+            <p>Please be informed that your development window will be <strong>due to expire on {{ expiry_date }}</strong>. As of the time of this correspondence, we have observed that no significant development activities have commenced on your plot.</p>
+        </div>
+
+        <p>We wish to emphasize that failure to meet the agreed development timeline constitutes a breach of contract and may lead to <strong>revocation of your plot</strong>, in line with the estate development policies and provisions in your signed agreements.</p>
+
+        <p>We therefore urge you to take immediate action to begin development on your plot to avoid possible <strong>revocation, loss of rights and reassignment of the plot</strong> to another qualified subscriber.</p>
+
+        <p>Please liaise with our office to obtain updated architectural guidelines, development permits, and any support you may need in commencing your fencing and building works.</p>
+
+        <p>Contact our office:</p>
+        <p>
+            <strong>Phone:</strong> +2348033035633<br>
+            <strong>Email:</strong> info@tripledhomes.com.ng
+        
+        </p>
+
+        <p>Thank you once again for being part of the Triple D Big Dream Homes community. We look forward to seeing your development contribute to the emergence of a vibrant and thriving estate.</p>
+    </div>
+
+    <div class="footer">
+        <p>
+            Yours faithfully,<br>
+            <strong>Management</strong><br>
+            <strong>Triple D Big Dream Homes</strong>
+        </p>
+    </div>
+</body>
+</html>

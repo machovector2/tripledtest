@@ -1,0 +1,309 @@
+{% extends 'user/base_print.html' %}
+
+{% block title %}Invoice - {{ sale.reference_number }}{% endblock %}
+{% load static %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body {
+            font-size: 12pt;
+            color: #000;
+            background-color: #fff;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+        .print-hide {
+            display: none !important;
+        }
+        .card {
+            border: 1px solid #ddd;
+            box-shadow: none;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        .table-bordered {
+            border: 1px solid #ddd;
+        }
+        .table-bordered td, .table-bordered th {
+            border: 1px solid #ddd;
+        }
+    }
+    
+    .invoice-title h2, .invoice-title h3 {
+        display: inline-block;
+    }
+    
+    .invoice-title h3 {
+        float: right;
+    }
+    
+    .table.no-border td, .table.no-border th {
+        border-top: none;
+        border-bottom: none;
+    }
+    
+    .payment-info {
+        font-weight: 500;
+    }
+    
+    .payment-info span {
+        font-weight: 400;
+    }
+    
+    .payment-received {
+        color: #28a745;
+    }
+    
+    .payment-due {
+        color: #dc3545;
+    }
+
+    @page { size: auto; margin: 0mm; } html { margin: 0; } body { margin: 10mm; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-4">
+    <div class="row">
+        <div class="col-12 text-end print-hide mb-3">
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="ri-printer-line me-1"></i> Print Invoice
+            </button>
+            <a href="{% url 'property_sale_detail' sale.id %}" class="btn btn-secondary">
+                <i class="ri-arrow-left-line me-1"></i> Back to Sale
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <!-- <img src="{% static 'assets/images/logo-dark.png' %}" alt="Company Logo" height="60"> -->
+                        <span class="logo-lg">
+                            <img style="
+                            height: 60px;
+                            background-color: white;
+                            border-radius: 50%;
+                            margin-top:20px;
+                          " src="/static/estate/images/anew/vatican_logo.png" alt="logo">
+                        </span>
+
+
+                        <h3 class="mt-2">INVOICE</h3>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 text-md-end">
+                    <h3 class="mb-0">Invoice #{{ sale.reference_number }}</h3>
+                    <p class="mb-1">Date: {{ sale.created_at|date:"F d, Y" }}</p>
+                    <p class="mb-1">Status: <span class="{% if balance_due <= 0 %}payment-received{% else %}payment-due{% endif %}">{% if balance_due <= 0 %}Paid{% else %}Partially Paid{% endif %}</span></p>
+                    <p class="mb-0">Due Date: {{ sale.due_date|date:"F d, Y"|default:"Upon Receipt" }}</p>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Addresses -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3">From:</h5>
+                    <p class="mb-1"><strong>{{ company_name|default:"Your Company Name" }}</strong></p>
+                    <p class="mb-1">{{ company_address|default:"123 Company Address" }}</p>
+                    <p class="mb-1">{{ company_city_state_zip|default:"City, State, ZIP" }}</p>
+                    <p class="mb-1">Phone: {{ company_phone|default:"+234 000 000 0000" }}</p>
+                    <p class="mb-0">Email: {{ company_email|default:"info@yourcompany.com" }}</p>
+                </div>
+                
+                <div class="col-md-6 text-md-end">
+                    <h5 class="mb-3">To:</h5>
+                    <p class="mb-1"><strong>{{ sale.client_name }}</strong></p>
+                    <p class="mb-1">{{ sale.client_address }}</p>
+                    <p class="mb-0">Phone: {{ sale.client_phone }}</p>
+                </div>
+            </div>
+            
+            <!-- Invoice Details -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Property Type</th>
+                                    <th>Estate Name</th>
+                                    <th>Quantity</th>
+                                    <th class="text-end">Unit Price (₦)</th>
+                                    <th class="text-end">Total (₦)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ sale.description|default:"Property Purchase" }}</td>
+                                    <td>{{ sale.get_property_type_display }}</td>
+                                    <td>{{ sale.property_item.name }}</td>
+                                    <td>{{ sale.quantity }}</td>
+                                    <td class="text-end">{{ sale.selling_price|floatformat:2|intcomma }}</td>
+                                    <td class="text-end">{{ sale.selling_price|floatformat:2|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Summary -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Payment Plan: {{ sale.get_payment_plan_display }}</h5>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Payment History</h6>
+                            {% if payments %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Method</th>
+                                                <th class="text-end">Amount (₦)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment in payments %}
+                                            <tr>
+                                                <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                                <td>{{ payment.payment_method }}</td>
+                                                <td class="text-end">{{ payment.amount|floatformat:2|intcomma }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="card-text">No payments recorded yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table table-borderless text-end">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Original Price:</td>
+                                    <td width="40%">₦{{ sale.original_price|floatformat:2|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Selling Price:</td>
+                                    <td>₦{{ sale.selling_price|floatformat:2|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Amount Paid:</td>
+                                    <td>₦{{ sale.amount_paid|floatformat:2|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold {% if balance_due > 0 %}text-danger{% else %}text-success{% endif %}">Balance Due:</td>
+                                    <td class="{% if balance_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                                        ₦{{ balance_due|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if balance_due > 0 %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <strong>Note:</strong> Payment of ₦{{ balance_due|floatformat:2|intcomma }} is due.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success mt-3 mb-0">
+                        <strong>Thank you!</strong> This invoice has been fully paid.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Payment Instructions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5>Payment Instructions</h5>
+                    <p>Please make payment to the following account:</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Bank:</strong> {{ settings.company_bank_name|default:"N/A" }}</p>
+                                    <p class="mb-1"><strong>Account Name:</strong> {{ settings.company_account_name|default:"N/A" }}</p>
+                                    <p class="mb-1"><strong>Account Number:</strong> {{ settings.company_account_number|default:"N/A" }}</p>
+                                    <p class="mb-0"><strong>Reference:</strong> Invoice #{{ sale.reference_number }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terms and Conditions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5>Terms and Conditions</h5>
+                    <p class="small">
+                        1. Full payment is due according to the payment plan agreed upon.<br>
+                        2. Ownership of property will only be transferred after complete payment.<br>
+                        3. All payments are non-refundable unless otherwise stated in writing.<br>
+                        4. This invoice is valid for 30 days from the date of issue.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Thank You Note -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <p class="mb-0"><strong>Thank you for your business!</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-12 text-center">
+            <p class="small text-muted">This invoice was generated on {{ now|date:"F d, Y" }} at {{ now|time:"H:i" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// Auto-trigger print dialog when user clicks the print button
+document.getElementById('print-invoice').addEventListener('click', function() {
+    window.print();
+});
+
+// Handle browser print dialog close
+window.addEventListener('afterprint', function() {
+    // You can add custom behavior after printing if neededa
+    console.log('Print dialog closed');
+});
+
+// Format currency values
+document.addEventListener('DOMContentLoaded', function() {
+    // This is optional if you're already using the Django intcomma and floatformat filters
+    // But can be useful for additional formatting if needed
+});
+
+</script>
+
+    
+{% endblock extra_js %}
+    

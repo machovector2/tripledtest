@@ -1,0 +1,318 @@
+{% extends 'user/base.html' %}
+{% load humanize %}
+
+{% block body %}
+    <div class="content-page">
+        <div class="content">
+            <!-- Start Content-->
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="profile-bg-picture"
+                            style="background-image:url('/static/user/images/bg-profile.jpg')">
+                            <span class="picture-bg-overlay"></span>
+                            <!-- overlay -->
+                        </div>
+                        <!-- meta -->
+                        <div class="profile-user-box">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="profile-user-img">
+                                        {% if realtor.image %}
+                                            <img src="{{ realtor.image.url }}" alt="{{ realtor.full_name }}" class="avatar-lg rounded-circle">
+                                        {% else %}
+                                            <img src="/static/user/images/users/avatar-1.jpg" alt="Default avatar" class="avatar-lg rounded-circle">
+                                        {% endif %}
+                                    </div>
+                                    <div class="">
+                                        <h4 class="mt-4 fs-17 ellipsis">{{ realtor.full_name }}</h4>
+                                        <p class="font-13">Real Estate Agent</p>
+                                        <p class="text-muted mb-0"><small>{{ realtor.address }}, {{ realtor.country }}</small></p>
+                                        <p class="text-muted mb-0"><small>date joined: {{ realtor.created_at }}</small></p>
+                                        <p class="text-muted mb-0"><small>last updated: {{ realtor.updated_at }}</small></p>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-end align-items-center gap-2">
+                                        <a href="{% url 'edit_realtor' realtor.id %}" class="btn btn-soft-danger">
+                                            <i class="ri-settings-2-line align-text-bottom me-1 fs-16 lh-1"></i>
+                                            Edit Profile
+                                        </a>
+                                        {% if request.user.is_staff or perms.realtors.can_pay_commission %}
+                                            <form method="post" action="{% url 'pay_all_commissions' realtor.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-soft-success">
+                                                    <i class="ri-money-dollar-circle-line fs-18 me-1 lh-1"></i> 
+                                                    Mark All Commissions Paid
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ meta -->
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card p-0">
+                            <div class="card-body p-0">
+                                <div class="profile-content">
+                                    <ul class="nav nav-underline nav-justified gap-0">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" aria-selected="true">Realtor Details</a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="m-0 p-4">
+                                        <div class="tab-pane active">
+                                            <div class="profile-desk">
+                                                <h5 class="text-uppercase fs-17 text-dark">{{ realtor.full_name }}</h5>
+                                                <div class="designation mb-4">REAL ESTATE AGENT</div>
+                                                
+                                                <!-- Commission Stats -->
+                                                <div class="row mb-4">
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-primary text-white">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Total Commission</h5>
+                                                                <h2>₦{{ realtor.total_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-success text-white">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Paid Commission</h5>
+                                                                <h2>₦{{ realtor.paid_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-danger text-white">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title text-white">Unpaid Commission</h5>
+                                                                <h2>₦{{ realtor.unpaid_commission|intcomma }}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Referral Code Section -->
+                                                <div class="alert alert-info">
+                                                    <h5 class="mt-0"><i class="ri-share-forward-line me-1"></i> Referral Code</h5>
+                                                    <h3 class="mb-1">{{ realtor.referral_code }}</h3>
+                                                    <p class="mb-0">Share this code with potential realtors to earn commission on their sales.</p>
+                                                </div>
+
+                                                {% if realtor.sponsor %}
+                                                <div class="alert alert-light">
+                                                    <h5 class="mt-0"><i class="ri-user-received-line me-1"></i> Referred By</h5>
+                                                    <p class="mb-0">
+                                                        <a href="{% url 'realtor_detail' realtor.sponsor.id %}">
+                                                            {{ realtor.sponsor.full_name }} ({{ realtor.sponsor.referral_code }})
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                                {% endif %}
+
+                                                <h5 class="mt-4 fs-17 text-dark">Contact Information</h5>
+                                                <table class="table table-condensed mb-0 border-top">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th scope="row">Email</th>
+                                                            <td>
+                                                                <a href="mailto:{{ realtor.email }}" class="ng-binding">
+                                                                    {{ realtor.email }}
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Phone</th>
+                                                            <td class="ng-binding">{{ realtor.phone }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Address</th>
+                                                            <td class="ng-binding">{{ realtor.address }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Country</th>
+                                                            <td class="ng-binding">{{ realtor.country }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                <h5 class="mt-4 fs-17 text-dark">Banking Information</h5>
+                                                <table class="table table-condensed mb-0 border-top">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th scope="row">Bank Name</th>
+                                                            <td class="ng-binding">{{ realtor.bank_name }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">Account Number</th>
+                                                            <td class="ng-binding">{{ realtor.account_number }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!-- end profile-desk -->
+                                        </div> <!-- about-me -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commissions Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Commissions</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Property</th>
+                                                <th>Amount</th>
+                                                <th>Created</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for commission in commissions %}
+                                            <tr>
+                                                <td>{{ commission.description }}</td>
+                                                <td>{{ commission.property_reference }}</td>
+                                                <td>₦{{ commission.amount|intcomma }}</td>
+                                                <td>{{ commission.created_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    {% if commission.is_paid %}
+                                                    <span class="badge bg-success">Paid on {{ commission.paid_date|date:"M d, Y" }}</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Unpaid</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if not commission.is_paid and request.user.is_staff %}
+                                                    <form method="post" action="{% url 'pay_commission' commission.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-success">Mark Paid</button>
+                                                    </form>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">No commissions found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Direct Referrals Section -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Direct Referrals</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Date Joined</th>
+                                                <th>Total Sales</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for referral in direct_referrals %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'realtor_detail' referral.id %}">
+                                                        {{ referral.full_name }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ referral.referral_code }}</td>
+                                                <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                                <td>₦{{ referral.total_commission }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No direct referrals found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Referrals Section -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Second-Level Referrals</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Referred By</th>
+                                                <th>Date Joined</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for referral in secondary_referrals %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'realtor_detail' referral.id %}">
+                                                        {{ referral.full_name }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ referral.referral_code }}</td>
+                                                <td>
+                                                    <a href="{% url 'realtor_detail' referral.sponsor.id %}">
+                                                        {{ referral.sponsor.full_name }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No second-level referrals found.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- container -->
+        </div>
+    </div>
+{% endblock body %}

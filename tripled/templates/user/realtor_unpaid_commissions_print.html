@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unpaid Commissions Report - {{ realtor.full_name }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 3px solid #2c3e50;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* Executive Realtor Styling */
+        .executive-header {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: 2px solid #FFD700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .executive-crown {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        }
+        
+        .realtor-profile {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .realtor-profile.executive {
+            border-left: 5px solid #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+        }
+        
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .profile-title {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .executive-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .regular-badge {
+            background: #6c757d;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .profile-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .detail-group {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+            font-size: 13px;
+        }
+        
+        .summary-section {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 2px solid #3498db;
+        }
+        
+        .summary-section.executive {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+            border: 2px solid #FFD700;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-item h3 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item p {
+            color: #7f8c8d;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .unpaid-amount {
+            font-size: 28px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .commissions-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            background: #34495e;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 0;
+        }
+        
+        .section-title.executive {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+        }
+        
+        .commissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .commissions-table th,
+        .commissions-table td {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .commissions-table th {
+            background: #34495e;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .commissions-table.executive th {
+            background: #B8860B;
+        }
+        
+        .commissions-table td {
+            font-size: 12px;
+        }
+        
+        .commissions-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .commissions-table tbody tr:hover {
+            background: #e3f2fd;
+        }
+        
+        .amount {
+            font-weight: bold;
+            color: #27ae60;
+            text-align: right;
+        }
+        
+        .property-name {
+            color: #2980b9;
+            font-weight: 500;
+        }
+        
+        .total-row {
+            background: #2ecc71 !important;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .total-row.executive {
+            background: linear-gradient(45deg, #FFD700, #FFA500) !important;
+            color: #000;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #95a5a6;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 20px;
+        }
+        
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .print-button, .pdf-button, .back-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .print-button:hover, .pdf-button:hover, .back-button:hover {
+            background: #2980b9;
+        }
+        
+        .pdf-button {
+            background: #e74c3c;
+        }
+        
+        .pdf-button:hover {
+            background: #c0392b;
+        }
+        
+        .back-button {
+            background: #95a5a6;
+        }
+        
+        .back-button:hover {
+            background: #7f8c8d;
+        }
+        
+        .no-commissions {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .no-commissions h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #27ae60;
+        }
+        
+        @media print {
+            body {
+                font-size: 11px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .summary-section {
+                background: #e8f4fd !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .summary-section.executive {
+                background: rgba(255, 215, 0, 0.2) !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .section-title {
+                background: #34495e !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .section-title.executive {
+                background: linear-gradient(45deg, #FFD700, #FFA500) !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .commissions-table th {
+                background: #34495e !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .commissions-table.executive th {
+                background: #B8860B !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .total-row {
+                background: #2ecc71 !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .total-row.executive {
+                background: linear-gradient(45deg, #FFD700, #FFA500) !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+            
+            .commissions-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons">
+        <!-- <a href="javascript:history.back()" class="back-button">← Back</a> -->
+        <button class="print-button" onclick="window.print()">🖨️ Print Report</button>
+        <button class="pdf-button" onclick="downloadPDF()">📄 Download PDF</button>
+    </div>
+    
+    <div class="header {% if realtor.is_executive %}executive-header{% endif %}">
+        <h1>UNPAID COMMISSIONS REPORT</h1>
+        <p>Generated on {{ print_date|date:"l, F d, Y" }} at {{ print_date|time:"g:i A" }}</p>
+    </div>
+    
+    <!-- Realtor Profile Section -->
+    <div class="realtor-profile {% if realtor.is_executive %}executive{% endif %}">
+        <div class="profile-header">
+            <div>
+                <h2 class="profile-title">
+                    {{ realtor.full_name }}
+                    {% if realtor.is_executive %}
+                        <span class="executive-crown">👑</span>
+                    {% endif %}
+                </h2>
+                {% if realtor.is_executive %}
+                    <span class="executive-badge">👑 EXECUTIVE REALTOR</span>
+                {% else %}
+                    <span class="regular-badge">REAL ESTATE AGENT</span>
+                {% endif %}
+            </div>
+            <div>
+                <strong>Referral Code:</strong> {{ realtor.referral_code }}
+            </div>
+        </div>
+        
+        <div class="profile-details">
+            <div class="detail-group">
+                <div class="detail-label">Contact Information</div>
+                <div class="detail-value">
+                    <strong>Email:</strong> {{ realtor.email }}<br>
+                    <strong>Phone:</strong> {{ realtor.phone }}<br>
+                    <strong>Address:</strong> {{ realtor.address }}, {{ realtor.country }}
+                </div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Banking Information</div>
+                <div class="detail-value">
+                    <strong>Bank:</strong> {{ realtor.bank_name }}<br>
+                    <strong>Account:</strong> {{ realtor.account_number }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Section -->
+    <div class="summary-section {% if realtor.is_executive %}executive{% endif %}">
+        <div class="summary-stats">
+            <div class="summary-item">
+                <h3>{{ unpaid_commissions.count }}</h3>
+                <p>Unpaid Commission Records</p>
+            </div>
+            <div class="summary-item">
+                <h3 class="unpaid-amount">₦{{ total_unpaid_amount|floatformat:2 }}</h3>
+                <p>Total Outstanding Amount</p>
+            </div>
+            <div class="summary-item">
+                <h3>{{ realtor.created_at|date:"M d, Y" }}</h3>
+                <p>Date Joined</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if unpaid_commissions %}
+    <!-- Commissions Table Section -->
+    <div class="commissions-section">
+        <div class="section-title {% if realtor.is_executive %}executive{% endif %}">
+            Unpaid Commissions Details
+            {% if realtor.is_executive %}
+                <span class="executive-crown">👑</span>
+            {% endif %}
+        </div>
+        
+        <table class="commissions-table {% if realtor.is_executive %}executive{% endif %}">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">ID</th>
+                    <th style="width: 25%;">Property Name</th>
+                    <th style="width: 15%;">Reference No.</th>
+                    <th style="width: 30%;">Description</th>
+                    <th style="width: 12%;">Amount</th>
+                    <th style="width: 10%;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commission in unpaid_commissions %}
+                <tr>
+                    <td>{{ commission.id }}</td>
+                    <td class="property-name">
+                        {% if commission.property_reference and property_sales %}
+                            {% for ref, sale in property_sales.items %}
+                                {% if ref == commission.property_reference and sale %}
+                                    {{ sale.property_item.name }}
+                                {% elif ref == commission.property_reference and not sale %}
+                                    Property Not Found
+                                {% endif %}
+                            {% endfor %}
+                        {% elif commission.property_reference %}
+                            {{ commission.property_reference }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if commission.property_reference %}
+                            {{ commission.property_reference }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ commission.description }}</td>
+                    <td class="amount">₦{{ commission.amount|floatformat:2 }}</td>
+                    <td>{{ commission.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row {% if realtor.is_executive %}executive{% endif %}">
+                    <td colspan="4"><strong>TOTAL UNPAID FOR {{ realtor.full_name|upper }}</strong></td>
+                    <td class="amount"><strong>₦{{ total_unpaid_amount|floatformat:2 }}</strong></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-commissions">
+        <h3>🎉 No Unpaid Commissions!</h3>
+        <p>{{ realtor.full_name }} has no outstanding commission payments.</p>
+        <p>All commissions have been paid.</p>
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>This report contains confidential financial information for {{ realtor.full_name }}. Handle with care.</p>
+        <p>Report generated by Real Estate Commission Management System</p>
+    </div>
+    
+    <script>
+        function downloadPDF() {
+            // Hide buttons before generating PDF
+            const buttons = document.querySelector('.action-buttons');
+            buttons.style.display = 'none';
+            
+            const element = document.body;
+            const realtorName = '{{ realtor.full_name|slugify }}';
+            const today = new Date().toISOString().slice(0,10);
+            
+            const opt = {
+                margin: 0.5,
+                filename: `unpaid_commissions_${realtorName}_${today}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true 
+                },
+                jsPDF: { 
+                    unit: 'in', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Show buttons again after PDF generation
+                buttons.style.display = 'flex';
+            }).catch(() => {
+                // Show buttons even if PDF generation fails
+                buttons.style.display = 'flex';
+                alert('PDF generation failed. Please try the print option instead.');
+            });
+        }
+    </script>
+</body>
+</html>

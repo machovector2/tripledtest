@@ -1,0 +1,808 @@
+{% extends 'user/base.html' %}
+
+{% block title %}Register Property Sale{% endblock %}
+
+{% block body %}
+
+<div class="content-page">
+    <div class="content">
+
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="profile-bg-picture" style="background-image:url('/static/user/images/bg-profile.jpg')">
+                        <span class="picture-bg-overlay"></span>
+                        <!-- overlay -->
+                    </div>
+                    <!-- meta -->
+                    <div class="profile-user-box">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="">
+                                    <h4 class="mt-2 fs-17 ellipsis">New Property Sale</h4>
+                                    <p class="font-13">Register a new property sale and calculate commissions</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <a href="{% url 'property_sales_list' %}" class="btn btn-soft-secondary">
+                                        <i class="ri-list-check align-text-bottom me-1 fs-16 lh-1"></i>
+                                        View All Sales
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--/ meta -->
+                </div>
+            </div>
+            <!-- end row -->
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Property Sale Registration</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+
+                            <form method="POST" action="{% url 'register_property_sale' %}"
+                                enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                <div class="row">
+                                    <!-- Left Column -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0"><i class="ri-building-line me-1"></i> Property
+                                                    Information</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="property"
+                                                        class="col-sm-4 col-form-label">Property</label>
+                                                    <div class="col-sm-8">
+                                                        <select class="form-control" id="property" name="property"
+                                                            required>
+                                                            <option value="">-- Select Property --</option>
+                                                            {% for prop in properties %}
+                                                            <option value="{{ prop.id }}">{{ prop.name }} ({{ prop.get_location_display }})</option>
+                                                            {% endfor %}
+                                                        </select>
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="property_type" class="col-sm-4 col-form-label">Property
+                                                        Type</label>
+                                                    <div class="col-sm-8">
+                                                        <select class="form-control" id="property_type"
+                                                            name="property_type" required>
+                                                            <option value="">-- Select Type --</option>
+                                                            <option value="building">Building Property</option>
+                                                            <option value="land">Land</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="description"
+                                                        class="col-sm-4 col-form-label">Description</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="description"
+                                                            name="description" required>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="quantity"
+                                                        class="col-sm-4 col-form-label">Quantity</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="number" class="form-control" id="quantity"
+                                                            name="quantity" min="1" value="1" required>
+                                                        <small class="form-text text-muted">Number of plots or
+                                                            buildings</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-info text-white">
+                                                <h5 class="mb-0"><i class="ri-user-3-line me-1"></i> Client Information
+                                                </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="client_picture" class="col-sm-4 col-form-label">Client
+                                                        Picture</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="file" required class="form-control"
+                                                            id="client_picture" name="client_picture" accept="image/*">
+                                                        <small class="form-text text-muted">Upload client's photo
+                                                            </small>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label for="client_name" class="col-sm-4 col-form-label">Client
+                                                        Name</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="client_name"
+                                                            name="client_name" required>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="client_address" class="col-sm-4 col-form-label">Client
+                                                        Address</label>
+                                                    <div class="col-sm-8">
+                                                        <textarea class="form-control" id="client_address"
+                                                            name="client_address" rows="2" ></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="client_phone" class="col-sm-4 col-form-label">Client
+                                                        Phone</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i
+                                                                        class="ri-phone-line"></i></span>
+                                                            </div>
+                                                            <input type="text" class="form-control" id="client_phone"
+                                                                name="client_phone" >
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="client_email" class="col-sm-4 col-form-label">Email
+                                                        Address</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i
+                                                                        class="ri-mail-line"></i></span>
+                                                            </div>
+                                                            <input type="email" class="form-control" id="client_email" 
+                                                                name="client_email">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="marital_status" class="col-sm-4 col-form-label">Marital
+                                                        Status</label>
+                                                    <div class="col-sm-8">
+                                                        <select class="form-control" id="marital_status"
+                                                            name="marital_status" required>
+                                                            <option value="single">Single</option>
+                                                            <option value="married">Married</option>
+                                                            <option value="divorced">Divorced</option>
+                                                            <option value="widowed">Widowed</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <script>
+                                                    marital_status = document.getElementById("marital_status")
+                                                    spoused_details = document.getElementById("spouse-details")
+                                                    if (marital_status.value() == "married") {
+                                                        spoused_details.style("display:visible")
+
+
+                                                    }
+                                                </script>
+
+                                                <div id="spouse-details" style="display:none;">
+                                                    <div class="form-group row mb-3">
+                                                        <label for="spouse_name" class="col-sm-4 col-form-label">Spouse
+                                                            Name</label>
+                                                        <div class="col-sm-8">
+                                                            <input type="text" class="form-control" id="spouse_name"
+                                                                name="spouse_name">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group row mb-3">
+                                                        <label for="spouse_phone" class="col-sm-4 col-form-label">Spouse
+                                                            Phone</label>
+                                                        <div class="col-sm-8">
+                                                            <div class="input-group">
+                                                                <div class="input-group-prepend">
+                                                                    <span class="input-group-text"><i
+                                                                            class="ri-phone-line"></i></span>
+                                                                </div>
+                                                                <input type="text" class="form-control"
+                                                                    id="spouse_phone" name="spouse_phone">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-purple text-white">
+                                                <h5 class="mb-0"><i class="ri-profile-line me-1"></i> Client
+                                                    Identification</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="id_type" class="col-sm-4 col-form-label">ID Type</label>
+                                                    <div class="col-sm-8">
+                                                        <select class="form-control" id="id_type" name="id_type"
+                                                            >
+                                                            <option value="national_id">National ID</option>
+                                                            <option value="intl_passport">International Passport
+                                                            </option>
+                                                            <option value="drivers_license">Driver's License</option>
+                                                            <option value="voters_card">Voter's Card</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="id_number" class="col-sm-4 col-form-label">ID
+                                                        Number</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="id_number"
+                                                            name="id_number" >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-warning text-white">
+                                                <h5 class="mb-0"><i class="ri-calendar-line me-1"></i> Plot Development Timeline</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="plot_development_start_date" class="col-sm-4 col-form-label">Start Date</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="date" class="form-control" id="plot_development_start_date" 
+                                                            name="plot_development_start_date">
+                                                        <small class="form-text text-muted">When plot development begins</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="plot_development_expiry_date" class="col-sm-4 col-form-label">Expiry Date</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="date" class="form-control" id="plot_development_expiry_date" 
+                                                            name="plot_development_expiry_date">
+                                                        <small class="form-text text-muted">When plot development expires</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    
+
+                                    <!-- Right Column -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0"><i class="ri-map-pin-line me-1"></i> Client Origin</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="lga_of_origin" class="col-sm-4 col-form-label">LGA of
+                                                        Origin</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="lga_of_origin"
+                                                            name="lga_of_origin" >
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="town_of_origin"
+                                                        class="col-sm-4 col-form-label">Town/City of Origin</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="town_of_origin"
+                                                            name="town_of_origin" >
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="state_of_origin" class="col-sm-4 col-form-label">State
+                                                        of Origin</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="state_of_origin"
+                                                            name="state_of_origin" >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-purple text-white">
+                                                <h5 class="mb-0"><i class="ri-bank-card-line me-1"></i> Client Bank
+                                                    Details</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="bank_name" class="col-sm-4 col-form-label">Bank
+                                                        Name</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="bank_name"
+                                                            name="bank_name" >
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="account_number" class="col-sm-4 col-form-label">Account
+                                                        Number</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="account_number"
+                                                            name="account_number" >
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="account_name" class="col-sm-4 col-form-label">Account
+                                                        Name</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="account_name"
+                                                            name="account_name" >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h5 class="mb-0"><i class="ri-user-follow-line me-1"></i> Next of Kin
+                                                    Information</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="next_of_kin_name"
+                                                        class="col-sm-4 col-form-label">Name</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="next_of_kin_name"
+                                                            name="next_of_kin_name" >
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="next_of_kin_address"
+                                                        class="col-sm-4 col-form-label">Address</label>
+                                                    <div class="col-sm-8">
+                                                        <textarea class="form-control" id="next_of_kin_address"
+                                                            name="next_of_kin_address" rows="2" ></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="next_of_kin_phone"
+                                                        class="col-sm-4 col-form-label">Phone</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i
+                                                                        class="ri-phone-line"></i></span>
+                                                            </div>
+                                                            <input type="text" class="form-control"
+                                                                id="next_of_kin_phone" name="next_of_kin_phone"
+                                                                >
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- financial info -->
+
+                                        <div class="card mt-4">
+                                            <div class="card-header bg-success text-white">
+                                                <h5 class="mb-0"><i class="ri-money-dollar-circle-line me-1"></i>
+                                                    Financial Information</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="original_price" class="col-sm-4 col-form-label">Original
+                                                        Price</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">₦</span>
+                                                            </div>
+                                                            <input type="number" class="form-control"
+                                                                id="original_price" name="original_price" min="0"
+                                                                step="0.01" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="selling_price" class="col-sm-4 col-form-label">Selling
+                                                        Price</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">₦</span>
+                                                            </div>
+                                                            <input type="number" class="form-control" id="selling_price"
+                                                                name="selling_price" min="0" step="0.01" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="discount"
+                                                        class="col-sm-4 col-form-label">Discount</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">₦</span>
+                                                            </div>
+                                                            <input type="number" class="form-control" id="discount"
+                                                                name="discount" min="0" step="0.01" value="0">
+                                                        </div>
+                                                        <small class="form-text text-muted">Discount amount (if
+                                                            any)</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="initial_payment" class="col-sm-4 col-form-label">Initial
+                                                        Payment</label>
+                                                    <div class="col-sm-8">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">₦</span>
+                                                            </div>
+                                                            <input type="number" class="form-control"
+                                                                id="initial_payment" name="initial_payment" min="0"
+                                                                step="0.01" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="id_payment_date" class="col-sm-4 col-form-label">Payment Date</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="date" class="form-control" name="payment_date" id="id_payment_date" max="{{today}}"
+                                                        required>
+                                                    <small class="form-text text-muted">Select the actual date when payment was
+                                                        made</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-3">
+                                                    <label for="payment_plan" class="col-sm-4 col-form-label">Payment
+                                                        Plan</label>
+                                                    <div class="col-sm-8">
+                                                        <select class="form-control" id="payment_plan"
+                                                            name="payment_plan" required>
+                                                            <option value="outright">Outright Purchase</option>
+                                                            <option value="3_months">3 Months Plan</option>
+                                                            <option value="6_months">6 Months Plan</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Column -->
+
+                                    
+                                    <!-- Even safer template version -->
+                                    <div class="col-md">
+                                        <div class="card">
+                                            <div class="card-header bg-danger text-white">
+                                                <h5 class="mb-0"><i class="ri-team-line me-1"></i> Realtor Information</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-3">
+                                                    <label for="realtor" class="col-sm-4 col-form-label">Selling Realtor</label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control mb-2" id="realtor-search"
+                                                            placeholder="Search by name or referral code..."
+                                                            autocomplete="off">
+                                                        <select class="form-control" id="realtor" name="realtor" required>
+                                                            <option value="">-- Select Realtor --</option>
+                                                            {% for realtor in realtors %}
+                                                            <option value="{{ realtor.id }}"
+                                                                data-sponsor="{% firstof realtor.sponsor.id '' %}"
+                                                                data-upline="{% if realtor.sponsor %}{% firstof realtor.sponsor.sponsor.id '' %}{% else %}{% endif %}"
+                                                                data-name="{{ realtor.full_name|lower }}"
+                                                                data-code="{{ realtor.referral_code|lower }}">
+                                                                {{ realtor.full_name }}
+                                                                {% if realtor.is_executive %}👑{% endif %}
+                                                                , Referral code: {{ realtor.referral_code }}
+                                                            </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <p></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                                <!-- Commission Section (For admin purposes) -->
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card bg-light">
+                                            <div class="card-header bg-dark text-white">
+                                                <h5 class="mb-0"><i class="ri-funds-line me-1"></i> Commission Structure
+                                                </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="realtor_commission_percentage">Realtor
+                                                                Commission (%)</label>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control"
+                                                                    id="realtor_commission_percentage"
+                                                                    name="realtor_commission_percentage" min="0"
+                                                                    max="100" step="0.01" value="0" placeholder="0.00"
+                                                                    required>
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">%</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="sponsor_commission_percentage">Sponsor
+                                                                Commission (%)</label>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control"
+                                                                    id="sponsor_commission_percentage"
+                                                                    name="sponsor_commission_percentage" min="0"
+                                                                    max="100" step="0.01" value="0" placeholder="0.00"
+                                                                    required>
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">%</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="upline_commission_percentage">Upline Commission
+                                                                (%)</label>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control"
+                                                                    id="upline_commission_percentage"
+                                                                    name="upline_commission_percentage" min="0"
+                                                                    max="100" step="0.01" value="0" placeholder="0.00"
+                                                                    required>
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">%</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mt-4" id="commission-preview">
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-white shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title text-muted">Realtor Commission
+                                                                </h6>
+                                                                <p class="card-text mb-1"><span id="realtor-name"
+                                                                        class="text-primary font-weight-bold">--</span>
+                                                                </p>
+                                                                <h4 class="text-success">₦<span
+                                                                        id="realtor-commission">0.00</span></h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-white shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title text-muted">Sponsor Commission
+                                                                </h6>
+                                                                <p class="card-text mb-1"><span id="sponsor-name"
+                                                                        class="text-primary font-weight-bold">--</span>
+                                                                </p>
+                                                                <h4 class="text-success">₦<span
+                                                                        id="sponsor-commission">0.00</span></h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-white shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title text-muted">Upline Commission</h6>
+                                                                <p class="card-text mb-1"><span id="upline-name"
+                                                                        class="text-primary font-weight-bold">--</span>
+                                                                </p>
+                                                                <h4 class="text-success">₦<span
+                                                                        id="upline-commission">0.00</span></h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <div class="col-12 text-center">
+                                        <button type="submit" class="btn btn-success btn-lg px-5">
+                                            <i class="ri-save-line me-1"></i> Register Property Sale
+                                        </button>
+                                        <a href="{% url 'property_sales_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                            <i class="ri-close-line me-1"></i> Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('realtor-search');
+        const selectElement = document.getElementById('realtor');
+        const allOptions = Array.from(selectElement.options);
+
+        searchInput.addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase().trim();
+
+            // Clear current options except the first one
+            selectElement.innerHTML = '<option value="">-- Select Realtor --</option>';
+
+            // Filter and add matching options
+            allOptions.slice(1).forEach(option => {
+                const name = option.getAttribute('data-name') || '';
+                const code = option.getAttribute('data-code') || '';
+
+                if (searchTerm === '' ||
+                    name.includes(searchTerm) ||
+                    code.includes(searchTerm)) {
+                    selectElement.appendChild(option.cloneNode(true));
+                }
+            });
+
+            // Reset selection if search term changes
+            selectElement.value = '';
+        });
+
+        // Clear search when a realtor is selected
+        selectElement.addEventListener('change', function () {
+            if (this.value) {
+                searchInput.value = '';
+            }
+        });
+    });
+</script>
+
+<script>
+    const marital_status = document.getElementById("marital_status");
+    const spouse_details = document.getElementById("spouse-details");
+
+    marital_status.addEventListener('change', function () {
+        if (this.value === "married") {
+            spouse_details.style.display = "block"; // Or "visible" depending on your CSS
+        } else {
+            spouse_details.style.display = "none";
+        }
+    });
+
+    // Initial check in case the page loads with "married" selected
+    if (marital_status.value === "married") {
+        spouse_details.style.display = "block"; // Or "visible"
+    } else {
+        spouse_details.style.display = "none";
+    }
+    // Calculate commission preview
+    function calculateCommissions() {
+        const initialPayment = parseFloat(document.getElementById('initial_payment').value) || 0;
+        const realtorPercentage = parseFloat(document.getElementById('realtor_commission_percentage').value) || 0;
+        const sponsorPercentage = parseFloat(document.getElementById('sponsor_commission_percentage').value) || 0;
+        const uplinePercentage = parseFloat(document.getElementById('upline_commission_percentage').value) || 0;
+
+        const realtorCommission = (initialPayment * realtorPercentage / 100).toFixed(2);
+        const sponsorCommission = (initialPayment * sponsorPercentage / 100).toFixed(2);
+        const uplineCommission = (initialPayment * uplinePercentage / 100).toFixed(2);
+
+        document.getElementById('realtor-commission').textContent = realtorCommission;
+        document.getElementById('sponsor-commission').textContent = sponsorCommission;
+        document.getElementById('upline-commission').textContent = uplineCommission;
+    }
+
+    // Update realtor chain information
+    function updateRealtorInfo() {
+        const realtorSelect = document.getElementById('realtor');
+        const selectedOption = realtorSelect.options[realtorSelect.selectedIndex];
+
+        if (selectedOption.value) {
+            document.getElementById('realtor-name').textContent = selectedOption.text;
+
+            // Find sponsor and upline names
+            const sponsorId = selectedOption.getAttribute('data-sponsor');
+            const uplineId = selectedOption.getAttribute('data-upline');
+
+            if (sponsorId) {
+                // Find sponsor name by ID
+                for (let i = 0; i < realtorSelect.options.length; i++) {
+                    if (realtorSelect.options[i].value === sponsorId) {
+                        document.getElementById('sponsor-name').textContent = realtorSelect.options[i].text;
+                        break;
+                    }
+                }
+            } else {
+                document.getElementById('sponsor-name').textContent = "No sponsor";
+            }
+
+            if (uplineId) {
+                // Find upline name by ID
+                for (let i = 0; i < realtorSelect.options.length; i++) {
+                    if (realtorSelect.options[i].value === uplineId) {
+                        document.getElementById('upline-name').textContent = realtorSelect.options[i].text;
+                        break;
+                    }
+                }
+            } else {
+                document.getElementById('upline-name').textContent = "No upline";
+            }
+        } else {
+            document.getElementById('realtor-name').textContent = "--";
+            document.getElementById('sponsor-name').textContent = "--";
+            document.getElementById('upline-name').textContent = "--";
+        }
+
+        calculateCommissions();
+    }
+
+    // Event listeners
+    document.getElementById('initial_payment').addEventListener('input', calculateCommissions);
+    document.getElementById('realtor_commission_percentage').addEventListener('input', calculateCommissions);
+    document.getElementById('sponsor_commission_percentage').addEventListener('input', calculateCommissions);
+    document.getElementById('upline_commission_percentage').addEventListener('input', calculateCommissions);
+    document.getElementById('realtor').addEventListener('change', updateRealtorInfo);
+
+    // Set up validation
+    document.querySelector('form').addEventListener('submit', function (event) {
+        const sellingPrice = parseFloat(document.getElementById('selling_price').value) || 0;
+        const initialPayment = parseFloat(document.getElementById('initial_payment').value) || 0;
+
+        if (initialPayment > sellingPrice) {
+            event.preventDefault();
+            alert('Initial payment cannot be greater than the selling price.');
+        }
+    });
+
+    // Initialize on page load
+    window.addEventListener('load', function () {
+        updateRealtorInfo();
+        calculateCommissions();
+    });
+</script>
+
+{% endblock %}

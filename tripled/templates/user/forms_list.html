@@ -1,0 +1,107 @@
+{% extends 'user/base.html' %}
+
+{% block body %}
+    <div class="content-page">
+        <div class="content">
+            <!-- Start Content-->
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'user' %}">Home</a></li>
+                                    <li class="breadcrumb-item">Frontend Extras</li>
+                                    <li class="breadcrumb-item active">All Forms</li>
+                                </ol>
+                            </div>
+                            <h4 class="page-title">All Downloadable Forms</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="card-title">Available Forms</h4>
+                                <a href="{% url 'upload_form' %}" class="btn btn-success">
+                                    <i class="ri-add-line align-middle me-1"></i> Upload New Form
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-hover mb-0" id="forms-datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Description</th>
+                                                <th>File Type</th>
+                                                <th>Upload Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for form in forms %}
+                                            <tr>
+                                                <td>{{ form.id }}</td>
+                                                <td>{{ form.name }}</td>
+                                                <td>{{ form.description|truncatechars:50 }}</td>
+                                                <td>{{ form.file_type }}</td>
+                                                <td>{{ form.created_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <a href="{% url 'download_form' form.id %}" class="btn btn-sm btn-primary" download>
+                                                        <i class="ri-download-line"></i> Download
+                                                    </a>
+                                                    <a href="{% url 'edit_form' form.id %}" class="btn btn-sm btn-info">
+                                                        <i class="ri-edit-line"></i> Edit
+                                                    </a>
+                                                    <form method="post" action="{% url 'delete_form' form.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this form?');">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">No forms have been uploaded yet.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- container -->
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function() {
+            $('#forms-datatable').DataTable({
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "language": {
+                    "paginate": {
+                        "previous": "<i class='ri-arrow-left-s-line'>",
+                        "next": "<i class='ri-arrow-right-s-line'>"
+                    }
+                },
+                "drawCallback": function() {
+                    $('.dataTables_paginate > .pagination').addClass('pagination-rounded');
+                }
+            });
+        });
+    </script>
+{% endblock body %}
+
+
