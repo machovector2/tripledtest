@@ -641,6 +641,28 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                
+                                                <!-- Total Commission Summary -->
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <div class="card border-primary">
+                                                            <div class="card-body">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <h6 class="card-title mb-1">Total Commission Percentage</h6>
+                                                                        <p class="text-muted mb-0 small">
+                                                                            Realtor + Sponsor + Upline
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="text-end">
+                                                                        <h3 class="mb-0" id="total-commission-percentage" style="font-weight: bold;">0.00%</h3>
+                                                                        <small class="text-muted" id="total-commission-status">Enter commission percentages</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -720,7 +742,7 @@
     } else {
         spouse_details.style.display = "none";
     }
-    // Calculate commission preview
+    // Calculate commission preview and validate
     function calculateCommissions() {
         const initialPayment = parseFloat(document.getElementById('initial_payment').value) || 0;
         const realtorPercentage = parseFloat(document.getElementById('realtor_commission_percentage').value) || 0;
@@ -734,6 +756,90 @@
         document.getElementById('realtor-commission').textContent = realtorCommission;
         document.getElementById('sponsor-commission').textContent = sponsorCommission;
         document.getElementById('upline-commission').textContent = uplineCommission;
+        
+        // Calculate total commission percentage
+        const totalPercentage = realtorPercentage + sponsorPercentage + uplinePercentage;
+        
+        // Update total commission percentage display
+        const totalPercentageEl = document.getElementById('total-commission-percentage');
+        const totalStatusEl = document.getElementById('total-commission-status');
+        const totalCard = totalPercentageEl ? totalPercentageEl.closest('.card') : null;
+        
+        if (totalPercentageEl) {
+            totalPercentageEl.textContent = totalPercentage.toFixed(2) + '%';
+            
+            // Update styling based on percentage
+            if (totalPercentage > 100) {
+                totalPercentageEl.className = 'mb-0 text-danger';
+                totalStatusEl.textContent = '❌ Exceeds 100% - Invalid!';
+                totalStatusEl.className = 'text-danger';
+                if (totalCard) {
+                    totalCard.className = 'card border-danger';
+                }
+            } else if (totalPercentage > 30) {
+                totalPercentageEl.className = 'mb-0 text-warning';
+                totalStatusEl.textContent = '⚠️ Exceeds 30% limit - High commission!';
+                totalStatusEl.className = 'text-warning';
+                if (totalCard) {
+                    totalCard.className = 'card border-warning';
+                }
+            } else if (totalPercentage > 0) {
+                totalPercentageEl.className = 'mb-0 text-success';
+                totalStatusEl.textContent = '✓ Within recommended limit';
+                totalStatusEl.className = 'text-success';
+                if (totalCard) {
+                    totalCard.className = 'card border-success';
+                }
+            } else {
+                totalPercentageEl.className = 'mb-0 text-muted';
+                totalStatusEl.textContent = 'Enter commission percentages';
+                totalStatusEl.className = 'text-muted';
+                if (totalCard) {
+                    totalCard.className = 'card border-primary';
+                }
+            }
+        }
+        
+        // Get or create validation message element
+        let validationMsg = document.getElementById('commission-validation-msg');
+        if (!validationMsg) {
+            validationMsg = document.createElement('div');
+            validationMsg.id = 'commission-validation-msg';
+            validationMsg.className = 'alert mt-2';
+            // Insert after commission inputs
+            const commissionSection = document.querySelector('.card-body').querySelector('.row');
+            if (commissionSection) {
+                commissionSection.parentNode.insertBefore(validationMsg, commissionSection.nextSibling);
+            }
+        }
+        
+        // Clear previous validation
+        validationMsg.className = 'alert mt-2';
+        validationMsg.innerHTML = '';
+        
+        // Validate total percentage
+        if (totalPercentage > 100) {
+            validationMsg.className += ' alert-danger';
+            validationMsg.innerHTML = `
+                <i class="ri-error-warning-line me-2"></i>
+                <strong>Error:</strong> Total commission percentage (${totalPercentage.toFixed(2)}%) exceeds 100%! 
+                Please adjust the percentages. Current breakdown: 
+                Realtor ${realtorPercentage}% + Sponsor ${sponsorPercentage}% + Upline ${uplinePercentage}% = ${totalPercentage.toFixed(2)}%
+            `;
+        } else if (totalPercentage > 30) {
+            validationMsg.className += ' alert-warning';
+            validationMsg.innerHTML = `
+                <i class="ri-alert-line me-2"></i>
+                <strong>Warning:</strong> Total commission percentage (${totalPercentage.toFixed(2)}%) exceeds the recommended 30% limit. 
+                This may significantly impact profit margins. You will be asked to confirm before submitting.
+            `;
+        } else if (totalPercentage > 0) {
+            validationMsg.className += ' alert-info';
+            validationMsg.innerHTML = `
+                <i class="ri-information-line me-2"></i>
+                Total commission: ${totalPercentage.toFixed(2)}% (Within recommended limit)
+            `;
+        }
     }
 
     // Update realtor chain information
@@ -791,10 +897,50 @@
     document.querySelector('form').addEventListener('submit', function (event) {
         const sellingPrice = parseFloat(document.getElementById('selling_price').value) || 0;
         const initialPayment = parseFloat(document.getElementById('initial_payment').value) || 0;
+        const realtorPercentage = parseFloat(document.getElementById('realtor_commission_percentage').value) || 0;
+        const sponsorPercentage = parseFloat(document.getElementById('sponsor_commission_percentage').value) || 0;
+        const uplinePercentage = parseFloat(document.getElementById('upline_commission_percentage').value) || 0;
+        const totalPercentage = realtorPercentage + sponsorPercentage + uplinePercentage;
 
+        // Validate initial payment
         if (initialPayment > sellingPrice) {
             event.preventDefault();
             alert('Initial payment cannot be greater than the selling price.');
+            return false;
+        }
+        
+        // Validate total commission percentage doesn't exceed 100%
+        if (totalPercentage > 100) {
+            event.preventDefault();
+            alert(
+                `Error: Total commission percentage (${totalPercentage.toFixed(2)}%) cannot exceed 100%!\n\n` +
+                `Current breakdown:\n` +
+                `- Realtor: ${realtorPercentage}%\n` +
+                `- Sponsor: ${sponsorPercentage}%\n` +
+                `- Upline: ${uplinePercentage}%\n` +
+                `- Total: ${totalPercentage.toFixed(2)}%\n\n` +
+                `Please adjust the commission percentages before submitting.`
+            );
+            return false;
+        }
+        
+        // Show confirmation dialog if total commission exceeds 30%
+        if (totalPercentage > 30) {
+            const confirmed = confirm(
+                `⚠️ WARNING: Commission Exceeds 30%\n\n` +
+                `Total commission percentage: ${totalPercentage.toFixed(2)}%\n\n` +
+                `Breakdown:\n` +
+                `- Realtor: ${realtorPercentage}%\n` +
+                `- Sponsor: ${sponsorPercentage}%\n` +
+                `- Upline: ${uplinePercentage}%\n\n` +
+                `This exceeds the recommended 30% limit and may significantly impact profit margins.\n\n` +
+                `Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                event.preventDefault();
+                return false;
+            }
         }
     });
 

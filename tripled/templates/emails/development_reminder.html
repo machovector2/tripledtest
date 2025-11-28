@@ -77,7 +77,11 @@
 <body>
     <div class="header">
         <div class="logo-placeholder">
-            <img style="background-color: white; height: 50px;" src="/static/user/images/tripledlogo.jpeg" alt="Triple D Logo">
+            {% if logo_url %}
+            <img style="background-color: white; height: 50px; max-width: 200px;" src="{{ logo_url }}" alt="Triple D Big Dream Homes Logo">
+            {% else %}
+            <div style="color: #333; font-weight: bold; font-size: 18px;">Triple D Big Dream Homes</div>
+            {% endif %}
         </div>
         <div class="company-name">Triple D Big Dream Homes</div>
         <div class="company-details">

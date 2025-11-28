@@ -8,6 +8,32 @@
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
+            <!-- Created By Information Card at the Top -->
+            {% if sale.created_by %}
+            <div class="row mt-3 mb-3">
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="ri-user-line me-2 fs-18"></i>
+                        <div>
+                            <strong>Created By:</strong> 
+                            <span class="badge bg-primary ms-2">
+                                {{ sale.created_by.get_full_name|default:sale.created_by.username }}
+                            </span>
+                            {% if sale.created_by.is_staff %}
+                                <span class="badge bg-success ms-1">Admin</span>
+                            {% endif %}
+                            {% if sale.created_by.secretaryadmin %}
+                                <span class="badge bg-info ms-1">Secretary</span>
+                            {% endif %}
+                            <small class="text-muted ms-2">
+                                <i class="ri-time-line me-1"></i>{{ sale.created_at|date:"M d, Y g:i A" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Page Title with Status Badge -->
             <div class="row mt-3 mb-4">
                 <div class="col-lg-8">

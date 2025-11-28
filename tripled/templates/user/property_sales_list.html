@@ -189,6 +189,7 @@
                   <th>Balance</th>
                   <th>Development Status</th>
                   <th>Realtor</th>
+                  <th>Created By</th>
                   <th>Date</th>
                   <th>Actions</th>
                 </tr>
@@ -227,6 +228,16 @@
                         {% endif %}
                       </td>
                       <td>{{ sale.realtor.full_name }} {% if sale.realtor.is_executive %}<i class="ri-vip-crown-fill executive-crown ms-1"></i>{% endif %}</td>
+                      <td>
+                        {% if sale.created_by %}
+                          <span class="badge bg-info">
+                            <i class="ri-user-line me-1"></i>
+                            {{ sale.created_by.get_full_name|default:sale.created_by.username }}
+                          </span>
+                        {% else %}
+                          <span class="text-muted">Unknown</span>
+                        {% endif %}
+                      </td>
                       <td>{{ sale.created_at|date:"M d, Y" }}</td>
                       
 
@@ -254,7 +265,7 @@
                   {% endfor %}
                 {% else %}
                   <tr>
-                    <td colspan="11" class="text-center py-4">
+                    <td colspan="12" class="text-center py-4">
                       No property sales recorded yet.
                       <a href="{% url 'register_property_sale' %}">Register your first sale</a>.
                     </td>

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6*pnna$62=ymeaauivj)wi&n54)m)$u&4hm_%=qh$@ojg%9u=='
+# Load from environment variable, fallback to default for development
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-6*pnna$62=ymeaauivj)wi&n54)m)$u&4hm_%=qh$@ojg%9u==')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Load from environment variable, default to True for development
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = [
     'machovector2.pythonanywhere.com',
@@ -153,12 +156,15 @@ LOGIN_REDIRECT_URL = '/user/'
 LOGOUT_REDIRECT_URL = '/user/signin/'
 
 # Email settings
-DEFAULT_FROM_EMAIL = 'noreply@tripledhomes.com.ng'  # Change this to your actual email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development - prints to console
-# For production, use SMTP:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+# Load email configuration from environment variables
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='tripledbigdreamhomes@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='tripledbigdreamhomes@gmail.com')
+
+# Base URL for absolute URLs in emails (used when request object is not available)
+# Set this to your production domain, e.g., 'https://machovector2.pythonanywhere.com'
+SITE_URL = config('SITE_URL', default='http://localhost:8000')

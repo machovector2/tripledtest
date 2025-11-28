@@ -110,6 +110,8 @@ class Realtor(models.Model):
         self.save()
     
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        
         # Generate unique referral code for new realtors
         if not self.referral_code:
             self.referral_code = self._generate_unique_code()
@@ -122,6 +124,10 @@ class Realtor(models.Model):
                 pass  # Handle invalid sponsor code (could log this)
                 
         super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("Realtor object was saved but did not receive an ID. This should never happen.")
     
     def _generate_unique_code(self):
         """Generate a unique 8-digit numeric referral code"""
@@ -154,6 +160,14 @@ class Commission(models.Model):
     is_paid = models.BooleanField(default=False)
     paid_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("Commission object was saved but did not receive an ID. This should never happen.")
     
     def mark_as_paid(self):
         """Mark this commission as paid and update the realtor's paid_commission"""
@@ -219,6 +233,14 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("Property object was saved but did not receive an ID. This should never happen.")
+    
     def __str__(self):
         return self.name
     
@@ -254,10 +276,12 @@ class PropertySale(models.Model):
     ]
     
     # Generate a unique reference number
+    @staticmethod
     def generate_reference_number():
+        """Generate a unique 12-character uppercase reference number"""
         return ''.join(uuid.uuid4().hex[:12].upper())
     
-    reference_number = models.CharField(max_length=12, default=generate_reference_number, unique=True, editable=False)
+    reference_number = models.CharField(max_length=12, unique=True, editable=False, blank=True)
     description = models.TextField(max_length=255)
     property_type = models.CharField(max_length=10, choices=PROPERTY_TYPE_CHOICES)
     property_item = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='sales')  # Renamed from 'property'
@@ -317,6 +341,9 @@ class PropertySale(models.Model):
     realtor_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     sponsor_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     upline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    # Track who created this sale (admin or secretary)
+    created_by = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_property_sales', verbose_name='Created By')
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -413,12 +440,16 @@ class PropertySale(models.Model):
         realtor_commission = (new_payment_amount * self.realtor_commission_percentage) / Decimal('100')
         
         # Create commission for the selling realtor
-        Commission.objects.create(
+        commission = Commission.objects.create(
             realtor=self.realtor,
             amount=realtor_commission,
             description=f"Commission for property sale {self.reference_number}",
             property_reference=self.reference_number
         )
+        
+        # CRITICAL: Verify commission got an ID
+        if not commission.pk:
+            raise ValueError("Commission object was created but did not receive an ID.")
         
         # Add to realtor's total commission
         self.realtor.total_commission += realtor_commission
@@ -428,12 +459,16 @@ class PropertySale(models.Model):
         if self.realtor.sponsor and self.sponsor_commission_percentage > Decimal('0'):
             sponsor_commission = (new_payment_amount * self.sponsor_commission_percentage) / Decimal('100')
             
-            Commission.objects.create(
+            commission = Commission.objects.create(
                 realtor=self.realtor.sponsor,
                 amount=sponsor_commission,
                 description=f"Sponsor commission for property sale {self.reference_number}",
                 property_reference=self.reference_number
             )
+            
+            # CRITICAL: Verify commission got an ID
+            if not commission.pk:
+                raise ValueError("Sponsor commission object was created but did not receive an ID.")
             
             self.realtor.sponsor.total_commission += sponsor_commission
             self.realtor.sponsor.save(update_fields=['total_commission'])
@@ -442,12 +477,16 @@ class PropertySale(models.Model):
             if self.realtor.sponsor.sponsor and self.upline_commission_percentage > Decimal('0'):
                 upline_commission = (new_payment_amount * self.upline_commission_percentage) / Decimal('100')
                 
-                Commission.objects.create(
+                commission = Commission.objects.create(
                     realtor=self.realtor.sponsor.sponsor,
                     amount=upline_commission,
                     description=f"Upline commission for property sale {self.reference_number}",
                     property_reference=self.reference_number
                 )
+                
+                # CRITICAL: Verify commission got an ID
+                if not commission.pk:
+                    raise ValueError("Upline commission object was created but did not receive an ID.")
                 
                 self.realtor.sponsor.sponsor.total_commission += upline_commission
                 self.realtor.sponsor.sponsor.save(update_fields=['total_commission'])
@@ -463,7 +502,15 @@ class PropertySale(models.Model):
             except PropertySale.DoesNotExist:
                 pass
         
+        # Ensure reference_number is set before saving
+        if not self.reference_number:
+            self.reference_number = self.generate_reference_number()
+        
         super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("PropertySale object was saved but did not receive an ID. This should never happen.")
         
         # Check if amount_paid has changed
         if is_new or old_amount_paid != self.amount_paid:
@@ -487,6 +534,14 @@ class Payment(models.Model):
         
         is_new = self.pk is None
         super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("Payment object was saved but did not receive an ID. This should never happen.")
+        
+        # Ensure property_sale has an ID before using it
+        if not self.property_sale_id:
+            raise ValueError("Payment object must have a valid property_sale_id before saving.")
         
         # Only update the property sale's amount_paid if this is a new payment
         if is_new:
@@ -514,12 +569,16 @@ class Payment(models.Model):
                 # Create commission for the selling realtor only if amount > 0
                 if realtor_commission > Decimal('0'):
                     try:
-                        Commission.objects.create(
+                        commission = Commission.objects.create(
                             realtor=self.property_sale.realtor,
                             amount=realtor_commission,
                             description=f"Commission for payment on sale {self.property_sale.reference_number}",
                             property_reference=self.property_sale.reference_number
                         )
+                        
+                        # CRITICAL: Verify commission got an ID
+                        if not commission.pk:
+                            raise ValueError("Commission object was created but did not receive an ID.")
                         
                         # Add to realtor's total commission
                         self.property_sale.realtor.total_commission += realtor_commission
@@ -536,12 +595,16 @@ class Payment(models.Model):
                     
                     if sponsor_commission > Decimal('0'):
                         try:
-                            Commission.objects.create(
+                            commission = Commission.objects.create(
                                 realtor=self.property_sale.realtor.sponsor,
                                 amount=sponsor_commission,
                                 description=f"Sponsor commission for payment on sale {self.property_sale.reference_number}",
                                 property_reference=self.property_sale.reference_number
                             )
+                            
+                            # CRITICAL: Verify commission got an ID
+                            if not commission.pk:
+                                raise ValueError("Sponsor commission object was created but did not receive an ID.")
                             
                             self.property_sale.realtor.sponsor.total_commission += sponsor_commission
                             self.property_sale.realtor.sponsor.save(update_fields=['total_commission'])
@@ -556,12 +619,16 @@ class Payment(models.Model):
                         
                         if upline_commission > Decimal('0'):
                             try:
-                                Commission.objects.create(
+                                commission = Commission.objects.create(
                                     realtor=self.property_sale.realtor.sponsor.sponsor,
                                     amount=upline_commission,
                                     description=f"Upline commission for payment on sale {self.property_sale.reference_number}",
                                     property_reference=self.property_sale.reference_number
                                 )
+                                
+                                # CRITICAL: Verify commission got an ID
+                                if not commission.pk:
+                                    raise ValueError("Upline commission object was created but did not receive an ID.")
                                 
                                 self.property_sale.realtor.sponsor.sponsor.total_commission += upline_commission
                                 self.property_sale.realtor.sponsor.sponsor.save(update_fields=['total_commission'])
@@ -579,6 +646,13 @@ class General(models.Model):
     company_account_number = models.CharField(max_length=150, blank=True, null=True)
     # phone = models.CharField(max_length=20)
     
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("General object was saved but did not receive an ID. This should never happen.")
 
     def __str__(self):
             return self.company_bank_name
@@ -618,6 +692,14 @@ class SecretaryAdmin(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_secretaries')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # CRITICAL: Verify ID was assigned after save
+        if not self.pk:
+            raise ValueError("SecretaryAdmin object was saved but did not receive an ID. This should never happen.")
     
     class Meta:
         verbose_name = 'Secretary Admin'

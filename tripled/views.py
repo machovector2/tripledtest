@@ -445,7 +445,15 @@ def create_realtor(request):
 
         # Save the realtor (this will also generate the referral code)
         try:
-            realtor.save()
+            with transaction.atomic():
+                realtor.save()
+                
+                # CRITICAL: Verify ID was assigned
+                if not realtor.pk:
+                    raise ValueError("Realtor was saved but did not receive an ID. This should never happen.")
+                
+                # Refresh from database to ensure all fields are properly set
+                realtor.refresh_from_db()
 
             # Send welcome email immediately after successful creation
             try:
@@ -677,9 +685,14 @@ def register_property(request):
         address = request.POST.get("address")
 
         # Create new property
-        property = Property.objects.create(
-            name=name, description=description, location=location, address=address
-        )
+        with transaction.atomic():
+            property = Property.objects.create(
+                name=name, description=description, location=location, address=address
+            )
+            
+            # CRITICAL: Verify ID was assigned
+            if not property.pk:
+                raise ValueError("Property was created but did not receive an ID. This should never happen.")
 
         messages.success(
             request, f'Property "{name}" has been registered successfully!'
@@ -787,7 +800,7 @@ def delete_property(request, property_id):
 @login_required
 def property_sales_list(request):
     """View to display all property sales"""
-    all_sales = PropertySale.objects.all().order_by("-created_at")
+    all_sales = PropertySale.objects.select_related('created_by', 'property_item', 'realtor').all().order_by("-created_at")
     paginator = Paginator(all_sales, 20)  # 20 sales per page
     page_number = request.GET.get("page", 1)  # get ?page= from URL, default to 1
     sales = paginator.get_page(page_number)
@@ -824,6 +837,9 @@ def send_client_email(request, sale_id):
         # Calculate development duration (you may need to adjust this based on your business logic)
         development_duration = "3 years"  # Default, you can make this dynamic
 
+        # Build absolute URL for logo (required for email clients)
+        logo_url = request.build_absolute_uri('/static/user/images/tripledlogo.jpeg')
+        
         # Prepare context for email template
         context = {
             "client_name": sale.client_name,
@@ -834,6 +850,7 @@ def send_client_email(request, sale_id):
             "development_duration": development_duration,
             "reference_number": sale.reference_number,
             "current_date": datetime.now().strftime("%B %d, %Y"),
+            "logo_url": logo_url,  # Absolute URL for logo in emails
         }
 
         # Render email content
@@ -989,7 +1006,7 @@ def bulk_email(request):
     """Display bulk email page with all sales records"""
 
     # Get all sales records - no filtering or pagination
-    sales = PropertySale.objects.select_related("property_item", "realtor").order_by(
+    sales = PropertySale.objects.select_related("property_item", "realtor", "created_by").order_by(
         "-created_at"
     )
 
@@ -1134,6 +1151,147 @@ Property Type: {sale.get_property_type_display()}
         )
 
 
+@login_required
+@admin_required
+def bulk_email_realtors(request):
+    """Display bulk email page with all realtors"""
+    
+    # Get all realtors
+    realtors = Realtor.objects.all().order_by("-created_at")
+    
+    context = {
+        "realtors": realtors,
+    }
+    
+    return render(request, "user/bulk_email_realtors.html", context)
+
+
+@login_required
+@admin_required
+@require_http_methods(["POST"])
+def send_bulk_email_realtors(request):
+    """Send bulk emails to selected realtors"""
+    try:
+        # Get form data
+        subject = request.POST.get("subject", "").strip()
+        message = request.POST.get("message", "").strip()
+        realtor_ids_json = request.POST.get("realtor_ids", "[]")
+        
+        if not subject or not message:
+            return JsonResponse(
+                {"success": False, "error": "Subject and message are required."}
+            )
+        
+        # Parse realtor IDs
+        try:
+            realtor_ids = json.loads(realtor_ids_json)
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "error": "Invalid realtor selection."}
+            )
+        
+        if not realtor_ids:
+            return JsonResponse(
+                {"success": False, "error": "Please select at least one realtor."}
+            )
+        
+        # Get selected realtors - only those with valid emails
+        realtors = Realtor.objects.filter(
+            id__in=realtor_ids, email__isnull=False, email__gt=""
+        )
+        
+        if not realtors.exists():
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "No valid email addresses found for selected realtors.",
+                }
+            )
+        
+        sent_count = 0
+        failed_emails = []
+        
+        # Send emails
+        for realtor in realtors:
+            try:
+                # Personalize the message
+                personalized_message = f"""Dear {realtor.full_name},
+
+{message}
+
+Best regards,
+Triple D Big Dream Homes ADMIN
+
+Head office address.
+No 66 Shehu RD Lakeview estate 
+phase 2 Ago palace way Amuwo odofin Lagos.
+
+Branches addresses.
+
+Suit 1 Adonai Complex
+No 2 Onyiuke  Street,
+Off Edimbo Road, Ogui New Layout, Enugu
+
+Shop B8/B11, Block C, Millennium Plaza, 
+Opp. ABS, Behind UBA,Aroma, 
+Enugu-Onitsha Express road, Awka, Anambra State.
+
+Phone: +2348033035633
+Email: info@tripledhomes.com.ng
+
+---
+Realtor Details:
+Name: {realtor.full_name}
+Email: {realtor.email}
+Phone: {realtor.phone or 'Not provided'}
+Status: {realtor.status_display}
+Referral Code: {realtor.referral_code}
+                """
+                
+                # Send email
+                send_mail(
+                    subject=subject,
+                    message=personalized_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[realtor.email],
+                    fail_silently=False,
+                )
+                
+                sent_count += 1
+                
+            except Exception as e:
+                failed_emails.append(realtor.email)
+                # Log the error if you have logging configured
+                print(f"Failed to send email to {realtor.email}: {str(e)}")
+        
+        # Prepare response
+        if sent_count > 0:
+            response_data = {
+                "success": True,
+                "sent_count": sent_count,
+                "message": f"Successfully sent {sent_count} emails.",
+            }
+            
+            if failed_emails:
+                response_data["warning"] = (
+                    f"Failed to send to: {', '.join(failed_emails)}"
+                )
+            
+            return JsonResponse(response_data)
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Failed to send emails. Please try again.",
+                }
+            )
+            
+    except Exception as e:
+        logger.error(f"Error in send_bulk_email_realtors: {str(e)}")
+        return JsonResponse(
+            {"success": False, "error": f"An error occurred: {str(e)}"}
+        )
+
 
 @login_required
 def register_property_sale(request):  # with expiry date
@@ -1260,6 +1418,39 @@ def register_property_sale(request):  # with expiry date
                     "user/register_property_sale.html",
                     {"properties": properties, "realtors": realtors},
                 )
+            
+            # Validate commission percentages
+            total_commission_percentage = (
+                realtor_commission_decimal + 
+                sponsor_commission_decimal + 
+                upline_commission_decimal
+            )
+            
+            # Check if total commission exceeds 100%
+            if total_commission_percentage > Decimal('100'):
+                messages.error(
+                    request,
+                    f"Total commission percentage ({total_commission_percentage}%) cannot exceed 100%. "
+                    f"Please adjust the commission percentages. "
+                    f"Current: Realtor {realtor_commission_decimal}%, "
+                    f"Sponsor {sponsor_commission_decimal}%, "
+                    f"Upline {upline_commission_decimal}%"
+                )
+                return render(
+                    request,
+                    "user/register_property_sale.html",
+                    {"properties": properties, "realtors": realtors},
+                )
+            
+            # Check if total commission exceeds 30%
+            if total_commission_percentage > Decimal('30'):
+                messages.warning(
+                    request,
+                    f"Warning: Total commission percentage ({total_commission_percentage}%) exceeds the recommended 30% limit. "
+                    f"This may significantly impact profit margins."
+                )
+                # Note: We'll still allow it, but show a warning
+                # The JavaScript will also show a confirmation dialog
 
             # Validate quantity
             try:
@@ -1377,59 +1568,76 @@ def register_property_sale(request):  # with expiry date
             )
 
             # Create the property sale object with all fields
-            property_sale = PropertySale.objects.create(
-                description=description,
-                property_type=property_type,
-                property_item=property_obj,
-                quantity=quantity_int,
-                client_name=client_name,
-                client_address=client_address,
-                client_phone=client_phone,
-                client_email=client_email,
-                marital_status=marital_status,
-                spouse_name=spouse_name,
-                spouse_phone=spouse_phone,
-                # Add to client information section
-                client_picture=client_picture,
-                id_type=id_type,
-                id_number=id_number,
-                # Add the new plot development timeline fields
-                plot_development_start_date=plot_development_start_date,
-                plot_development_expiry_date=plot_development_expiry_date,
-                lga_of_origin=lga_of_origin,
-                town_of_origin=town_of_origin,
-                state_of_origin=state_of_origin,
-                bank_name=bank_name,
-                account_number=account_number,
-                account_name=account_name,
-                next_of_kin_name=next_of_kin_name,
-                next_of_kin_address=next_of_kin_address,
-                next_of_kin_phone=next_of_kin_phone,
-                original_price=original_price_decimal,
-                selling_price=selling_price_decimal,
-                payment_plan=payment_plan,
-                # Add to pricing section
-                discount=discount_decimal,
-                realtor=realtor,
-                realtor_commission_percentage=realtor_commission_decimal,
-                sponsor_commission_percentage=sponsor_commission_decimal,
-                upline_commission_percentage=upline_commission_decimal,
-            )
-
-            # Create initial payment if provided
-            if initial_payment_decimal > 0:
-                # Update the amount_paid field first
-                property_sale.amount_paid = initial_payment_decimal
-                property_sale.save()
-
-                # Create the payment record with the validated payment_date
-                Payment.objects.create(
-                    property_sale=property_sale,
-                    amount=initial_payment_decimal,
-                    payment_method="Cash",
-                    notes="Initial payment at registration",
-                    payment_date=payment_date,
+            with transaction.atomic():
+                property_sale = PropertySale.objects.create(
+                    description=description,
+                    property_type=property_type,
+                    property_item=property_obj,
+                    quantity=quantity_int,
+                    client_name=client_name,
+                    client_address=client_address,
+                    client_phone=client_phone,
+                    client_email=client_email,
+                    marital_status=marital_status,
+                    spouse_name=spouse_name,
+                    spouse_phone=spouse_phone,
+                    # Add to client information section
+                    client_picture=client_picture,
+                    id_type=id_type,
+                    id_number=id_number,
+                    # Add the new plot development timeline fields
+                    plot_development_start_date=plot_development_start_date,
+                    plot_development_expiry_date=plot_development_expiry_date,
+                    lga_of_origin=lga_of_origin,
+                    town_of_origin=town_of_origin,
+                    state_of_origin=state_of_origin,
+                    bank_name=bank_name,
+                    account_number=account_number,
+                    account_name=account_name,
+                    next_of_kin_name=next_of_kin_name,
+                    next_of_kin_address=next_of_kin_address,
+                    next_of_kin_phone=next_of_kin_phone,
+                    original_price=original_price_decimal,
+                    selling_price=selling_price_decimal,
+                    payment_plan=payment_plan,
+                    # Add to pricing section
+                    discount=discount_decimal,
+                    realtor=realtor,
+                    realtor_commission_percentage=realtor_commission_decimal,
+                    sponsor_commission_percentage=sponsor_commission_decimal,
+                    upline_commission_percentage=upline_commission_decimal,
+                    created_by=request.user,  # Automatically track who created this sale
                 )
+                
+                # CRITICAL: Verify ID was assigned
+                if not property_sale.pk:
+                    raise ValueError("PropertySale was created but did not receive an ID. This should never happen.")
+                
+                # Refresh from database to ensure all fields are properly set
+                property_sale.refresh_from_db()
+
+                # Create initial payment if provided
+                if initial_payment_decimal > 0:
+                    # Update the amount_paid field first
+                    property_sale.amount_paid = initial_payment_decimal
+                    property_sale.save()
+                    
+                    # CRITICAL: Verify property_sale still has ID after save
+                    if not property_sale.pk:
+                        raise ValueError("PropertySale lost its ID after save. This should never happen.")
+
+                    # Create the payment record with the validated payment_date
+                    payment = Payment.objects.create(
+                        property_sale=property_sale,
+                        amount=initial_payment_decimal,
+                        payment_method="Cash",
+                        notes="Initial payment at registration",
+                        payment_date=payment_date,
+                    )
+                    
+                    # CRITICAL: Verify payment got an ID
+                    if not payment.pk:
+                        raise ValueError("Payment was created but did not receive an ID. This should never happen.")
 
             messages.success(
                 request,
@@ -1467,7 +1675,7 @@ def register_property_sale(request):  # with expiry date
 @login_required
 def property_sale_detail(request, id):
     """View details of a property sale and handle new payments"""
-    sale = get_object_or_404(PropertySale, pk=id)
+    sale = get_object_or_404(PropertySale.objects.select_related('created_by', 'property_item', 'realtor'), pk=id)
     payments = Payment.objects.filter(property_sale=sale).order_by("-payment_date")
 
     # Get balance due directly from the model property
@@ -1560,15 +1768,20 @@ def property_sale_detail(request, id):
                     return redirect("property_sale_detail", id=sale.id)
 
                 # Create new payment - this will automatically update the sale's amount_paid in the Payment.save() method
-                payment = Payment(
-                    property_sale=sale,
-                    amount=amount,
-                    payment_method=payment_method,
-                    reference=reference,
-                    notes=notes,
-                    payment_date=payment_date,
-                )
-                payment.save()
+                with transaction.atomic():
+                    payment = Payment(
+                        property_sale=sale,
+                        amount=amount,
+                        payment_method=payment_method,
+                        reference=reference,
+                        notes=notes,
+                        payment_date=payment_date,
+                    )
+                    payment.save()
+                    
+                    # CRITICAL: Verify ID was assigned
+                    if not payment.pk:
+                        raise ValueError("Payment was saved but did not receive an ID. This should never happen.")
 
                 # Refresh the sale object to get updated values after payment
                 sale.refresh_from_db()
@@ -1677,7 +1890,12 @@ def property_sale_invoice(request, sale_id):
 
     # Calculate balance due
     balance_due = sale.selling_price - sale.amount_paid
-    settings, created = General.objects.get_or_create(id=1)
+    # Get or create general settings (singleton pattern - only one instance)
+    # Don't force id=1 to avoid conflicts with database sequences
+    settings, created = General.objects.get_or_create()
+    # If multiple exist, use the first one
+    if not created and General.objects.count() > 1:
+        settings = General.objects.first()
 
     context = {
         "sale": sale,
@@ -1977,7 +2195,12 @@ def general_settings(request):
     View to handle displaying and updating general settings
     """
     # Get or create general settings object (assuming only one instance exists)
-    settings, created = General.objects.get_or_create(id=1)
+    # Get or create general settings (singleton pattern - only one instance)
+    # Don't force id=1 to avoid conflicts with database sequences
+    settings, created = General.objects.get_or_create()
+    # If multiple exist, use the first one
+    if not created and General.objects.count() > 1:
+        settings = General.objects.first()
 
     if request.method == "POST":
         # Update settings with form data
@@ -2400,6 +2623,10 @@ def create_secretary(request):
                     if len(full_name.split()) > 1
                     else "",
                 )
+                
+                # CRITICAL: Verify user got an ID
+                if not user.pk:
+                    raise ValueError("User was created but did not receive an ID. This should never happen.")
 
                 # Create secretary admin profile
                 secretary = SecretaryAdmin.objects.create(
@@ -2409,6 +2636,10 @@ def create_secretary(request):
                     phone_number=phone_number,
                     created_by=request.user,
                 )
+                
+                # CRITICAL: Verify secretary got an ID
+                if not secretary.pk:
+                    raise ValueError("SecretaryAdmin was created but did not receive an ID. This should never happen.")
 
                 messages.success(
                     request, f'Secretary admin "{full_name}" created successfully!'

@@ -1,0 +1,452 @@
+
+{% extends 'user/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Send Bulk Email to Realtors{% endblock %}
+
+{% block body %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row mt-3 mb-4">
+                <div class="col-12">
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0">Send Bulk Email to Realtors</h2>
+                    </div>
+                    <p class="text-muted mt-1 mb-0">
+                        <i class="ri-mail-line me-1"></i> Send emails to multiple realtors based on filters
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-filter-3-line me-1"></i> Filter Realtors
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="search_filter" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search_filter" 
+                                           placeholder="Search by name, email, referral code...">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="status_filter" class="form-label">Status</label>
+                                    <select class="form-select" id="status_filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="regular">Regular Realtor</option>
+                                        <option value="executive">Executive Realtor</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="email_filter" class="form-label">Email Status</label>
+                                    <select class="form-select" id="email_filter">
+                                        <option value="">All</option>
+                                        <option value="has_email">Has Email</option>
+                                        <option value="no_email">No Email</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                                    <i class="ri-refresh-line me-1"></i> Clear Filters
+                                </button>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary me-2" onclick="selectAll()">
+                                        Select All Visible
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()">
+                                        Deselect All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="ri-team-line me-1"></i> Realtor List 
+                                    <span id="realtorCount" class="badge bg-primary ms-2">{{ realtors|length }}</span>
+                                    <span id="selectedCount" class="badge bg-success ms-2">0 selected</span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="realtorsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="50">
+                                                <input type="checkbox" class="form-check-input" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                            </th>
+                                            <th>Realtor</th>
+                                            <th>Status</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Referral Code</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for realtor in realtors %}
+                                        <tr class="realtor-row" 
+                                            data-realtor-name="{{ realtor.full_name|lower }}"
+                                            data-email="{{ realtor.email|lower|default:'' }}"
+                                            data-referral-code="{{ realtor.referral_code|lower }}"
+                                            data-status="{{ realtor.status }}"
+                                            data-has-email="{% if realtor.email %}has_email{% else %}no_email{% endif %}">
+                                            <td>
+                                                {% if realtor.email %}
+                                                <input type="checkbox" class="form-check-input realtor-checkbox" 
+                                                       value="{{ realtor.id }}" 
+                                                       data-email="{{ realtor.email }}"
+                                                       data-name="{{ realtor.full_name }}"
+                                                       onchange="updateSelectedCount()">
+                                                {% else %}
+                                                <span class="text-muted">No Email</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if realtor.image %}
+                                                        <img src="{{ realtor.image.url }}" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="avatar-sm me-2">
+                                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                                {{ realtor.first_name|first|upper }}{{ realtor.last_name|first|upper }}
+                                                            </span>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <h6 class="mb-0">{{ realtor.full_name }}</h6>
+                                                        <small class="text-muted">{{ realtor.email|default:"No email" }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if realtor.is_executive %}
+                                                    <span class="badge bg-success">{{ realtor.status_display }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">{{ realtor.status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if realtor.email %}
+                                                    <span class="text-success">{{ realtor.email }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">No email address</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if realtor.phone %}
+                                                    <span>{{ realtor.phone }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">Not provided</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <code>{{ realtor.referral_code }}</code>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'realtor_detail' realtor.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Realtor Details">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4">
+                                                <div class="avatar-lg mx-auto mb-4">
+                                                    <div class="avatar-title bg-light text-muted rounded-circle">
+                                                        <i class="ri-inbox-line font-size-24"></i>
+                                                    </div>
+                                                </div>
+                                                <h5>No realtors found</h5>
+                                                <p class="text-muted">There are no realtors to display.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Composition Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-mail-send-line me-1"></i> Compose Email
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="bulkEmailForm">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="emailSubject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="emailSubject" name="subject" 
+                                           placeholder="Enter email subject" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailMessage" class="form-label">Message</label>
+                                    <textarea class="form-control" id="emailMessage" name="message" rows="10" 
+                                              placeholder="Type your message here..." required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="alert alert-info">
+                                        <i class="ri-information-line me-2"></i>
+                                        <strong>Note:</strong> Each email will be personalized with the realtor's name and details.
+                                        Only realtors with valid email addresses can receive emails.
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary" id="sendBulkEmailBtn">
+                                        <i class="ri-mail-send-line me-1"></i> Send Bulk Email to Realtors
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedRealtors = [];
+
+// Filter functionality
+function filterRealtors() {
+    const searchValue = document.getElementById('search_filter').value.toLowerCase();
+    const statusFilter = document.getElementById('status_filter').value;
+    const emailFilter = document.getElementById('email_filter').value;
+    
+    const rows = document.querySelectorAll('.realtor-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        let show = true;
+        
+        // Search filter
+        if (searchValue) {
+            const realtorName = row.dataset.realtorName || '';
+            const email = row.dataset.email || '';
+            const referralCode = row.dataset.referralCode || '';
+            
+            if (!realtorName.includes(searchValue) && 
+                !email.includes(searchValue) && 
+                !referralCode.includes(searchValue)) {
+                show = false;
+            }
+        }
+        
+        // Status filter
+        if (show && statusFilter && row.dataset.status !== statusFilter) {
+            show = false;
+        }
+        
+        // Email filter
+        if (show && emailFilter && row.dataset.hasEmail !== emailFilter) {
+            show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    // Update visible count
+    document.getElementById('realtorCount').textContent = visibleCount;
+    
+    // Update selected count
+    updateSelectedCount();
+}
+
+// Clear all filters
+function clearFilters() {
+    document.getElementById('search_filter').value = '';
+    document.getElementById('status_filter').value = '';
+    document.getElementById('email_filter').value = '';
+    
+    // Show all rows
+    document.querySelectorAll('.realtor-row').forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update count
+    document.getElementById('realtorCount').textContent = '{{ realtors|length }}';
+    updateSelectedCount();
+}
+
+// Update selected realtors count
+function updateSelectedCount() {
+    const visibleCheckboxes = document.querySelectorAll('.realtor-checkbox');
+    const selectedCheckboxes = document.querySelectorAll('.realtor-checkbox:checked');
+    const visibleSelectedCheckboxes = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.realtor-row').style.display !== 'none') {
+            visibleSelectedCheckboxes.push(checkbox);
+        }
+    });
+    
+    selectedRealtors = Array.from(visibleSelectedCheckboxes).map(cb => ({
+        id: cb.value,
+        email: cb.dataset.email,
+        name: cb.dataset.name
+    }));
+    
+    document.getElementById('selectedCount').textContent = `${selectedRealtors.length} selected`;
+    
+    // Update select all checkbox state
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const visibleCheckboxesArray = Array.from(visibleCheckboxes).filter(cb => 
+        cb.closest('.realtor-row').style.display !== 'none'
+    );
+    
+    if (visibleCheckboxesArray.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (visibleSelectedCheckboxes.length === visibleCheckboxesArray.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else if (visibleSelectedCheckboxes.length > 0) {
+        selectAllCheckbox.indeterminate = true;
+    } else {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    }
+}
+
+// Toggle select all
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const visibleCheckboxes = document.querySelectorAll('.realtor-checkbox');
+    
+    visibleCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.realtor-row').style.display !== 'none') {
+            checkbox.checked = selectAllCheckbox.checked;
+        }
+    });
+    
+    updateSelectedCount();
+}
+
+// Select all visible
+function selectAll() {
+    const visibleCheckboxes = document.querySelectorAll('.realtor-checkbox');
+    
+    visibleCheckboxes.forEach(checkbox => {
+        if (checkbox.closest('.realtor-row').style.display !== 'none') {
+            checkbox.checked = true;
+        }
+    });
+    
+    updateSelectedCount();
+}
+
+// Deselect all
+function deselectAll() {
+    document.querySelectorAll('.realtor-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    updateSelectedCount();
+}
+
+// Bulk email form submission
+document.getElementById('bulkEmailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (selectedRealtors.length === 0) {
+        showAlert('Please select at least one realtor to send email to.', 'warning');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    formData.append('realtor_ids', JSON.stringify(selectedRealtors.map(r => r.id)));
+    
+    const submitBtn = document.getElementById('sendBulkEmailBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Sending...';
+    
+    fetch('{% url "send_bulk_email_realtors" %}', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Emails sent successfully to ${data.sent_count} realtors!`, 'success');
+            document.getElementById('bulkEmailForm').reset();
+            deselectAll();
+        } else {
+            showAlert(data.error || 'Failed to send emails', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Network error occurred', 'danger');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Show alert function
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Add event listeners for filters
+document.getElementById('search_filter').addEventListener('input', filterRealtors);
+document.getElementById('status_filter').addEventListener('change', filterRealtors);
+document.getElementById('email_filter').addEventListener('change', filterRealtors);
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+</script>
+{% endblock %}
+
