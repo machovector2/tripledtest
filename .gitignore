@@ -94,3 +94,10 @@ dmypy.json
 *.backup
 *.tmp
 
+*.db
+media/
+staticfiles/
+venv/
+.env
+__pycache__/
+*.pyc
