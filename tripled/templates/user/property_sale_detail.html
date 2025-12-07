@@ -529,23 +529,9 @@
                                             <div class="card bg-light mb-3">
                                                 <div class="card-body">
                                                     <h5 class="card-title mb-3">Bank Details</h5>
-                                                    <div class="table-responsive">
-                                                        <table class="table table-borderless mb-0">
-                                                            <tbody>
-                                                                <tr>
-                                                                    <th scope="row" width="30%"><i class="ri-bank-line me-2"></i>Bank Name</th>
-                                                                    <td>{{ sale.bank_name|default:"Not Provided" }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <th scope="row"><i class="ri-user-line me-2"></i>Account Name</th>
-                                                                    <td>{{ sale.account_name|default:"Not Provided" }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <th scope="row"><i class="ri-bank-card-line me-2"></i>Account Number</th>
-                                                                    <td>{{ sale.account_number|default:"Not Provided" }}</td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
+                                                    <div class="alert alert-info mb-0">
+                                                        <i class="ri-information-line me-2"></i>
+                                                        Client bank details are not collected during property sale registration.
                                                     </div>
                                                 </div>
                                             </div>

@@ -1344,10 +1344,10 @@ def register_property_sale(request):  # with expiry date
             town_of_origin = request.POST.get("town_of_origin")
             state_of_origin = request.POST.get("state_of_origin")
 
-            # Extract client bank details
-            bank_name = request.POST.get("bank_name")
-            account_number = request.POST.get("account_number")
-            account_name = request.POST.get("account_name")
+            # Client bank details removed from form - set to None
+            bank_name = None
+            account_number = None
+            account_name = None
 
             # Extract next of kin information
             next_of_kin_name = request.POST.get("next_of_kin_name")
@@ -1595,9 +1595,10 @@ def register_property_sale(request):  # with expiry date
                 lga_of_origin=lga_of_origin,
                 town_of_origin=town_of_origin,
                 state_of_origin=state_of_origin,
-                bank_name=bank_name,
-                account_number=account_number,
-                account_name=account_name,
+                # Client bank details removed from form
+                bank_name=None,
+                account_number=None,
+                account_name=None,
                 next_of_kin_name=next_of_kin_name,
                 next_of_kin_address=next_of_kin_address,
                 next_of_kin_phone=next_of_kin_phone,
