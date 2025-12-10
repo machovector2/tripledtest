@@ -1579,41 +1579,41 @@ def register_property_sale(request):  # with expiry date
                     property_item=property_obj,
                     quantity=quantity_int,
                     client_name=client_name,
-                client_address=client_address,
-                client_phone=client_phone,
-                client_email=client_email,
-                marital_status=marital_status,
-                spouse_name=spouse_name,
-                spouse_phone=spouse_phone,
-                # Add to client information section
-                client_picture=client_picture,
-                id_type=id_type,
-                id_number=id_number,
-                # Add the new plot development timeline fields
-                plot_development_start_date=plot_development_start_date,
-                plot_development_expiry_date=plot_development_expiry_date,
-                lga_of_origin=lga_of_origin,
-                town_of_origin=town_of_origin,
-                state_of_origin=state_of_origin,
-                # Client bank details removed from form
-                bank_name=None,
-                account_number=None,
-                account_name=None,
-                next_of_kin_name=next_of_kin_name,
-                next_of_kin_address=next_of_kin_address,
-                next_of_kin_phone=next_of_kin_phone,
-                original_price=original_price_decimal,
-                selling_price=selling_price_decimal,
-                payment_plan=payment_plan,
-                # Add to pricing section
-                discount=discount_decimal,
-                realtor=realtor,
-                realtor_commission_percentage=realtor_commission_decimal,
-                sponsor_commission_percentage=sponsor_commission_decimal,
-                upline_commission_percentage=upline_commission_decimal,
-                    created_by=request.user,  # Automatically track who created this sale
-                )
-                
+                    client_address=client_address,
+                    client_phone=client_phone,
+                    client_email=client_email,
+                    marital_status=marital_status,
+                    spouse_name=spouse_name,
+                    spouse_phone=spouse_phone,
+                    # Add to client information section
+                    client_picture=client_picture,
+                    id_type=id_type,
+                    id_number=id_number,
+                    # Add the new plot development timeline fields
+                    plot_development_start_date=plot_development_start_date,
+                    plot_development_expiry_date=plot_development_expiry_date,
+                    lga_of_origin=lga_of_origin,
+                    town_of_origin=town_of_origin,
+                    state_of_origin=state_of_origin,
+                    # Client bank details removed from form
+                    bank_name=None,
+                    account_number=None,
+                    account_name=None,
+                    next_of_kin_name=next_of_kin_name,
+                    next_of_kin_address=next_of_kin_address,
+                    next_of_kin_phone=next_of_kin_phone,
+                    original_price=original_price_decimal,
+                    selling_price=selling_price_decimal,
+                    payment_plan=payment_plan,
+                    # Add to pricing section
+                    discount=discount_decimal,
+                    realtor=realtor,
+                    realtor_commission_percentage=realtor_commission_decimal,
+                    sponsor_commission_percentage=sponsor_commission_decimal,
+                    upline_commission_percentage=upline_commission_decimal,
+                        created_by=request.user,  # Automatically track who created this sale
+                    )
+
                 # CRITICAL: Verify ID was assigned
                 if not property_sale.pk:
                     raise ValueError("PropertySale was created but did not receive an ID. This should never happen.")
@@ -1778,18 +1778,18 @@ def property_sale_detail(request, id):
                         property_sale=sale,
                         amount=amount,
                         payment_method=payment_method,
-                    reference=reference,
-                    notes=notes,
-                    payment_date=payment_date,
-                )
-                payment.save()
+                        reference=reference,
+                        notes=notes,
+                        payment_date=payment_date,
+                    )
+                    payment.save()
 
-                # CRITICAL: Verify ID was assigned
-                if not payment.pk:
-                    raise ValueError("Payment was saved but did not receive an ID. This should never happen.")
+                    # CRITICAL: Verify ID was assigned
+                    if not payment.pk:
+                        raise ValueError("Payment was saved but did not receive an ID. This should never happen.")
 
-                # Refresh the sale object to get updated values after payment
-                sale.refresh_from_db()
+                    # Refresh the sale object to get updated values after payment
+                    sale.refresh_from_db()
 
                 # Recalculate balance due
                 balance_due = sale.balance_due
