@@ -7,7 +7,7 @@ from tripled.models import User
 
 class Branch(models.Model):
     BRANCH_TYPES = (
-        ('main', 'Main Branch (Enugu)'),
+        ('main', 'Main Branch'),
         ('sub', 'Sub Branch'),
     )
 

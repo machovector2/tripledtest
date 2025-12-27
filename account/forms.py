@@ -154,7 +154,7 @@ class FundAllocationForm(forms.ModelForm):
                 if amount > main_balance:
                     from django.core.exceptions import ValidationError
                     raise ValidationError(
-                        f"❌ Insufficient Funds in Main Branch (Enugu)!\n\n"
+                        f"❌ Insufficient Funds in Main Branch!\n\n"
                         f"Cannot allocate ₦{amount:,.2f} because the main branch only has ₦{main_balance:,.2f} available.\n\n"
                         f"Available Balance: ₦{main_balance:,.2f}\n"
                         f"Requested Amount: ₦{amount:,.2f}\n"
@@ -163,7 +163,7 @@ class FundAllocationForm(forms.ModelForm):
                     )
             except Branch.DoesNotExist:
                 from django.core.exceptions import ValidationError
-                raise ValidationError("Main branch (Enugu) not found. Please contact system administrator.")
+                raise ValidationError("Main branch not found. Please contact system administrator.")
         
         return cleaned_data
 
