@@ -2793,6 +2793,185 @@ def reset_secretary_password(request, secretary_id):
     return redirect("secretary_list")
 
 
+# ========================CHIEF ACCOUNTANT VIEWS=================================
+
+
+@login_required
+@admin_required
+def chief_accountant_list(request):
+    """List all chief accountants"""
+    chief_accountants = User.objects.filter(user_type='chief_accountant').order_by("-date_joined")
+    return render(request, "user/chief_accountant_list.html", {"chief_accountants": chief_accountants})
+
+
+@login_required
+@admin_required
+def create_chief_accountant(request):
+    """Create a new chief accountant"""
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        phone_number = request.POST.get("phone_number")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        # Validate required fields
+        if not all([full_name, email, username, password]):
+            messages.error(request, "All required fields must be filled.")
+            return render(request, "user/create_chief_accountant.html")
+
+        # Check if username or email already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
+            return render(request, "user/create_chief_accountant.html")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+            return render(request, "user/create_chief_accountant.html")
+
+        try:
+            with transaction.atomic():
+                # Create user account
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=full_name.split()[0],
+                    last_name=" ".join(full_name.split()[1:])
+                    if len(full_name.split()) > 1
+                    else "",
+                    user_type='chief_accountant',
+                    phone=phone_number
+                )
+
+                messages.success(
+                    request, f'Chief Accountant "{full_name}" created successfully!'
+                )
+                return redirect("chief_accountant_list")
+
+        except Exception as e:
+            messages.error(request, f"Error creating chief accountant: {str(e)}")
+
+    return render(request, "user/create_chief_accountant.html")
+
+
+@login_required
+@admin_required
+def edit_chief_accountant(request, user_id):
+    """Edit chief accountant details"""
+    try:
+        chief_accountant = User.objects.get(id=user_id, user_type='chief_accountant')
+    except User.DoesNotExist:
+        messages.error(request, "Chief Accountant not found.")
+        return redirect("chief_accountant_list")
+
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        phone_number = request.POST.get("phone_number")
+        # username cannot be changed easily
+
+        # Validate required fields
+        if not all([full_name, email]):
+            messages.error(request, "Name and Email are required.")
+            return render(
+                request,
+                "user/edit_chief_accountant.html",
+                {"chief_accountant": chief_accountant},
+            )
+
+        # Check email uniqueness
+        if User.objects.exclude(id=user_id).filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+            return render(
+                request,
+                "user/edit_chief_accountant.html",
+                {"chief_accountant": chief_accountant},
+            )
+
+        try:
+            chief_accountant.first_name = full_name.split()[0]
+            chief_accountant.last_name = (
+                " ".join(full_name.split()[1:]) if len(full_name.split()) > 1 else ""
+            )
+            chief_accountant.email = email
+            chief_accountant.phone = phone_number
+            chief_accountant.save()
+
+            messages.success(request, "Chief Accountant details updated successfully.")
+            return redirect("chief_accountant_list")
+        except Exception as e:
+            messages.error(request, f"Error updating details: {str(e)}")
+
+    return render(
+        request,
+        "user/edit_chief_accountant.html",
+        {"chief_accountant": chief_accountant},
+    )
+
+
+@login_required
+@admin_required
+def delete_chief_accountant(request, user_id):
+    """Delete chief accountant"""
+    if request.method == "POST":
+        try:
+            chief_accountant = User.objects.get(id=user_id, user_type='chief_accountant')
+            name = chief_accountant.get_full_name()
+            chief_accountant.delete()
+            messages.success(request, f'Chief Accountant "{name}" deleted successfully.')
+        except User.DoesNotExist:
+            messages.error(request, "Chief Accountant not found.")
+        except Exception as e:
+            messages.error(request, f"Error deleting user: {str(e)}")
+
+    return redirect("chief_accountant_list")
+
+
+@login_required
+@admin_required
+def toggle_chief_accountant_status(request, user_id):
+    """Toggle chief accountant active status"""
+    try:
+        chief_accountant = User.objects.get(id=user_id, user_type='chief_accountant')
+        chief_accountant.is_active = not chief_accountant.is_active
+        chief_accountant.save()
+
+        status = "activated" if chief_accountant.is_active else "deactivated"
+        messages.success(
+            request, f'Chief Accountant "{chief_accountant.get_full_name()}" {status}.'
+        )
+    except User.DoesNotExist:
+        messages.error(request, "Chief Accountant not found.")
+
+    return redirect("chief_accountant_list")
+
+
+@login_required
+@admin_required
+def reset_chief_accountant_password(request, user_id):
+    """Reset chief accountant password"""
+    try:
+        chief_accountant = User.objects.get(id=user_id, user_type='chief_accountant')
+
+        if request.method == "POST":
+            password = request.POST.get("password")
+            if password:
+                chief_accountant.set_password(password)
+                chief_accountant.save()
+                messages.success(
+                    request,
+                    f'Password for "{chief_accountant.get_full_name()}" reset successfully.',
+                )
+            else:
+                messages.error(request, "Password cannot be empty.")
+
+    except User.DoesNotExist:
+        messages.error(request, "Chief Accountant not found.")
+
+    return redirect("chief_accountant_list")
+
+
 # ===========================SECRETARY DASHBOARD================================
 
 @login_required

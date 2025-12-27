@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Branch - Real Estate Accounting{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">Create New Branch</h2>
+      <p>Add a new branch to the system</p>
+    </div>
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'accounting:manage_branches' %}">
+        <i class="material-icons md-arrow_back"></i>Back to Branches
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="card-title mb-0">
+            <i class="material-icons md-business me-2"></i>Branch Information
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <!-- Display messages -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <form method="post" id="branchForm">
+            {% csrf_token %}
+            
+            <!-- Display form errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+            
+            <!-- Basic Information Section -->
+            <div class="mb-4">
+              <h6 class="text-success mb-3">
+                <i class="material-icons md-info me-1"></i>Basic Information
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">Branch Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                      <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.branch_type.id_for_label }}" class="form-label">Branch Type *</label>
+                    {{ form.branch_type }}
+                    {% if form.branch_type.errors %}
+                      <div class="text-danger small mt-1">{{ form.branch_type.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Information Section -->
+            <div class="mb-4">
+              <h6 class="text-success mb-3">
+                <i class="material-icons md-location_on me-1"></i>Location Information
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.location.id_for_label }}" class="form-label">City/Location *</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                      <div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.state.id_for_label }}" class="form-label">State *</label>
+                    {{ form.state }}
+                    {% if form.state.errors %}
+                      <div class="text-danger small mt-1">{{ form.state.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="{{ form.address.id_for_label }}" class="form-label">Full Address *</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                      <div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Financial Information Section -->
+            <div class="mb-4">
+              <h6 class="text-success mb-3">
+                <i class="material-icons md-account_balance me-1"></i>Financial Information
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.allocated_funds.id_for_label }}" class="form-label">Initial Allocated Funds</label>
+                    {{ form.allocated_funds }}
+                    <small class="form-text text-muted">Amount to allocate to this branch initially (optional)</small>
+                    {% if form.allocated_funds.errors %}
+                      <div class="text-danger small mt-1">{{ form.allocated_funds.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+              <a href="{% url 'accounting:manage_branches' %}" class="btn btn-outline-secondary">
+                <i class="material-icons md-cancel me-1"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-success">
+                <i class="material-icons md-save me-1"></i>Create Branch
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

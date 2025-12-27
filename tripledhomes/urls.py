@@ -21,9 +21,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('tripled.urls')),
+    path('accounting/', include('account.urls')),  # Accounting portal
+    path('', include('tripled.urls')),              # Admin portal, estate & homepage
 ]
 
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

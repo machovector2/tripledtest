@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if transaction_type == 'income' %}
+    Add Income - Real Estate Accounting
+  {% elif transaction_type == 'expenditure' %}
+    Add Expenditure - Real Estate Accounting
+  {% else %}
+    Add Transaction - Real Estate Accounting
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        {% if transaction_type == 'income' %}
+          Add Income Transaction
+        {% elif transaction_type == 'expenditure' %}
+          Add Expenditure Transaction
+        {% else %}
+          Add New Transaction
+        {% endif %}
+      </h2>
+      <p>
+        {% if transaction_type == 'income' %}
+          Record income transaction
+        {% elif transaction_type == 'expenditure' %}
+          Record expenditure transaction
+        {% else %}
+          Record income or expenditure transaction
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a class="btn btn-light" href="{% url 'accounting:transactions' %}">
+        <i class="material-icons md-arrow_back"></i>Back to Transactions
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Transaction Details</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" id="transactionForm">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              <ul class="mb-0">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            
+            <div class="row">
+              {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.branch.id_for_label }}" class="form-label">Branch *</label>
+                  {{ form.branch }}
+                  {% if form.branch.errors %}
+                    <div class="text-danger">{{ form.branch.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if not transaction_type %}
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.transaction_type.id_for_label }}" class="form-label">Transaction Type *</label>
+                  {{ form.transaction_type }}
+                  {% if form.transaction_type.errors %}
+                    <div class="text-danger">{{ form.transaction_type.errors }}</div>
+                  {% endif %}
+                  {% if user.user_type == 'branch_admin' %}
+                    <small class="form-text text-muted">
+                      <i class="material-icons md-info" style="font-size: 16px;"></i>
+                      Branch administrators can only add expenditure transactions. Income can only be added by the main administrator.
+                    </small>
+                  {% endif %}
+                </div>
+              </div>
+              {% else %}
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <div class="alert {% if transaction_type == 'income' %}alert-success{% else %}alert-danger{% endif %}">
+                    <i class="material-icons {% if transaction_type == 'income' %}md-trending_up{% else %}md-warning{% endif %} me-2"></i>
+                    <strong>Transaction Type:</strong> 
+                    {% if transaction_type == 'income' %}
+                      Adding Income Transaction
+                    {% else %}
+                      Adding Expenditure Transaction
+                    {% endif %}
+                  </div>
+                  <!-- Render the hidden transaction_type field from the form -->
+                  {{ form.transaction_type }}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.amount.id_for_label }}" class="form-label">Amount (₦) *</label>
+                  {{ form.amount }}
+                  {% if form.amount.errors %}
+                    <div class="text-danger">{{ form.amount.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.date.id_for_label }}" class="form-label">Transaction Date *</label>
+                  {{ form.date }}
+                  {% if form.date.errors %}
+                    <div class="text-danger">{{ form.date.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6" id="income-category-group" style="display: none;">
+                <div class="mb-3">
+                  <label for="{{ form.income_category.id_for_label }}" class="form-label">Income Category</label>
+                  {{ form.income_category }}
+                  {% if form.income_category.errors %}
+                    <div class="text-danger">{{ form.income_category.errors }}</div>
+                  {% endif %}
+                  <small class="form-text text-muted">
+                    <a href="{% url 'accounting:add_income_category' %}" target="_blank">Add new income category</a>
+                  </small>
+                </div>
+              </div>
+              
+              <div class="col-md-6" id="expenditure-category-group" style="display: none;">
+                <div class="mb-3">
+                  <label for="{{ form.expenditure_category.id_for_label }}" class="form-label">Expenditure Category</label>
+                  {{ form.expenditure_category }}
+                  {% if form.expenditure_category.errors %}
+                    <div class="text-danger">{{ form.expenditure_category.errors }}</div>
+                  {% endif %}
+                  <small class="form-text text-muted">
+                    <a href="{% url 'accounting:add_expenditure_category' %}" target="_blank">Add new expenditure category</a>
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+              {% endif %}
+              <small class="form-text text-muted">Provide detailed description of the transaction</small>
+            </div>
+
+            <div class="text-end">
+              <a href="{% url 'accounting:transactions' %}" class="btn btn-light me-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="material-icons md-save me-2"></i>Save Transaction
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const transactionTypeField = document.getElementById('{{ form.transaction_type.id_for_label }}');
+    const incomeCategoryGroup = document.getElementById('income-category-group');
+    const expenditureCategoryGroup = document.getElementById('expenditure-category-group');
+    
+    function toggleCategoryFields() {
+        let selectedType;
+        
+        {% if transaction_type %}
+            selectedType = '{{ transaction_type }}';
+        {% else %}
+            selectedType = transactionTypeField ? transactionTypeField.value : '';
+        {% endif %}
+        
+        if (selectedType === 'income') {
+            incomeCategoryGroup.style.display = 'block';
+            expenditureCategoryGroup.style.display = 'none';
+        } else if (selectedType === 'expenditure') {
+            incomeCategoryGroup.style.display = 'none';
+            expenditureCategoryGroup.style.display = 'block';
+        } else {
+            incomeCategoryGroup.style.display = 'none';
+            expenditureCategoryGroup.style.display = 'none';
+        }
+    }
+    
+    // Initial toggle
+    toggleCategoryFields();
+    
+    // Toggle on change (only if transaction type field exists)
+    if (transactionTypeField) {
+        transactionTypeField.addEventListener('change', toggleCategoryFields);
+    }
+    
+    // Set today's date as default
+    const dateField = document.getElementById('{{ form.date.id_for_label }}');
+    if (!dateField.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateField.value = today;
+    }
+});
+</script>
+{% endblock content %}

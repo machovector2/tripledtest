@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - Triple D Homes{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        <i class="material-icons md-people text-primary me-2"></i>
+        Manage Users
+      </h2>
+      <p>Overview and management of branch administrators</p>
+    </div>
+    <div>
+      <a class="btn btn-primary" href="{% url 'accounting:create_branch_admin' %}">
+        <i class="material-icons md-add"></i> Create Branch Admin
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Row -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-primary-light">
+            <i class="material-icons text-primary md-people"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Total Admins</h6>
+            <span class="h4">{{ total_admins }}</span>
+            <span class="text-sm text-muted d-block">Branch administrators</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-success-light">
+            <i class="material-icons text-success md-check_circle"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Active</h6>
+            <span class="h4">{{ active_admins }}</span>
+            <span class="text-sm text-muted d-block">Currently active</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-danger-light">
+            <i class="material-icons text-danger md-block"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Inactive</h6>
+            <span class="h4">{{ inactive_admins }}</span>
+            <span class="text-sm text-muted d-block">Access disabled</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-warning-light">
+            <i class="material-icons text-warning md-business"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Branches Covered</h6>
+            <span class="h4">{{ total_assigned_branches }}</span>
+            <span class="text-sm text-muted d-block">With admin assigned</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Row -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-4 col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="material-icons md-search"></i></span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by name, username, email or phone" onkeyup="filterUsers()">
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <select class="form-select" id="branchFilter" onchange="filterUsers()">
+            <option value="">All Branches</option>
+            <option value="unassigned">Unassigned</option>
+            {% for branch in branches %}
+              <option value="{{ branch.name|lower }}">{{ branch.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <select class="form-select" id="statusFilter" onchange="filterUsers()">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <select class="form-select" id="sortBy" onchange="sortUsers()">
+            <option value="recent">Newest First</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="username">Username (A-Z)</option>
+            <option value="branches">Branch Count</option>
+          </select>
+        </div>
+        <div class="col-lg-1 col-md-2 text-lg-end">
+          <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+            <i class="material-icons md-refresh"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if users %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="usersTable">
+          <thead class="table-light">
+            <tr>
+              <th>Administrator</th>
+              <th>Contact</th>
+              <th>Branches</th>
+              <th>Joined</th>
+              <th>Last Login</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr class="user-row" 
+                data-name="{{ user.get_full_name|lower }}"
+                data-username="{{ user.username|lower }}"
+                data-email="{{ user.email|lower }}"
+                data-phone="{{ user.phone|default:''|lower }}"
+                data-branches="{% for branch in user.managed_branches.all %}{{ branch.name|lower }} {% endfor %}{% if not user.managed_branches.all %}unassigned{% endif %}"
+                data-status="{% if user.is_active %}active{% else %}inactive{% endif %}"
+                data-joined="{{ user.date_joined|date:'U' }}"
+                data-branch-count="{{ user.branch_count }}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-initials bg-primary text-white rounded-circle me-3">
+                    {{ user.first_name|first|default:'U' }}{{ user.last_name|first|default:'A' }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ user.get_full_name }}</div>
+                    <div class="text-muted small">
+                      <i class="material-icons md-person_pin me-1" style="font-size: 14px; vertical-align: middle;"></i>
+                      {{ user.username }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex flex-column">
+                  <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                    <i class="material-icons md-email text-primary me-1" style="font-size: 16px; vertical-align: middle;"></i>
+                    {{ user.email }}
+                  </a>
+                  {% if user.phone %}
+                  <a href="tel:{{ user.phone }}" class="text-decoration-none text-muted small">
+                    <i class="material-icons md-phone me-1" style="font-size: 14px; vertical-align: middle;"></i>
+                    {{ user.phone }}
+                  </a>
+                  {% else %}
+                  <span class="text-muted small">
+                    <i class="material-icons md-phone_disabled me-1" style="font-size: 14px; vertical-align: middle;"></i>
+                    No phone number
+                  </span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% if user.managed_branches.all %}
+                  <div class="d-flex flex-wrap">
+                    {% for branch in user.managed_branches.all %}
+                      <span class="badge bg-info text-dark me-1 mb-1">
+                        <i class="material-icons md-location_city me-1" style="font-size: 13px; vertical-align: middle;"></i>
+                        {{ branch.name }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <span class="badge bg-warning text-dark">
+                    <i class="material-icons md-warning me-1" style="font-size: 13px; vertical-align: middle;"></i>
+                    Not assigned
+                  </span>
+                {% endif %}
+                <div class="text-muted small mt-1">
+                  {{ user.branch_count }} branch{{ user.branch_count|pluralize }}
+                </div>
+              </td>
+              <td>
+                <div>{{ user.date_joined|date:"M d, Y" }}</div>
+                <div class="text-muted small">
+                  {{ user.date_joined|date:"H:i A" }}
+                </div>
+              </td>
+              <td>
+                {% if user.last_login %}
+                  <div>{{ user.last_login|date:"M d, Y" }}</div>
+                  <div class="text-muted small">
+                    {{ user.last_login|date:"H:i A" }}
+                  </div>
+                {% else %}
+                  <span class="text-muted small">No login yet</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_active %}
+                  <span class="badge bg-success">
+                    <i class="material-icons md-check_circle me-1" style="font-size: 14px; vertical-align: middle;"></i>
+                    Active
+                  </span>
+                {% else %}
+                  <span class="badge bg-danger">
+                    <i class="material-icons md-block me-1" style="font-size: 14px; vertical-align: middle;"></i>
+                    Inactive
+                  </span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="btn-group" role="group">
+                  <a class="btn btn-sm btn-outline-primary action-btn-icon" href="{% url 'accounting:assign_branch_admin_with_user' user.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Assign Branches">
+                    <i class="material-icons md-assignment_ind"></i>
+                  </a>
+                  <a class="btn btn-sm btn-outline-info action-btn-icon" href="{% url 'accounting:reset_user_password' user.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset Password">
+                    <i class="material-icons md-vpn_key"></i>
+                  </a>
+                  {% if user.is_active %}
+                    <a class="btn btn-sm btn-outline-warning action-btn-icon" href="{% url 'accounting:toggle_user_status' user.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Deactivate User" onclick="return confirm('Are you sure you want to deactivate {{ user.get_full_name }}?')">
+                      <i class="material-icons md-block"></i>
+                    </a>
+                  {% else %}
+                    <a class="btn btn-sm btn-outline-success action-btn-icon" href="{% url 'accounting:toggle_user_status' user.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Activate User" onclick="return confirm('Are you sure you want to activate {{ user.get_full_name }}?')">
+                      <i class="material-icons md-check_circle"></i>
+                    </a>
+                  {% endif %}
+                  <a class="btn btn-sm btn-outline-danger action-btn-icon" href="{% url 'accounting:delete_user' user.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete User" onclick="return confirm('Delete {{ user.get_full_name }}? This action cannot be undone.')">
+                    <i class="material-icons md-delete"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="noResults" class="text-center py-5" style="display: none;">
+        <i class="material-icons md-search_off" style="font-size: 4rem; color: #ccc;"></i>
+        <h5 class="mt-3 text-muted">No users match your filters</h5>
+        <p class="text-muted">Try adjusting your search or filter criteria.</p>
+        <button class="btn btn-outline-secondary" onclick="resetFilters()">
+          <i class="material-icons md-refresh me-2"></i>Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body text-center py-5">
+      <i class="material-icons md-people" style="font-size: 4rem; color: #ccc;"></i>
+      <h5 class="mt-3 text-muted">No branch admins found</h5>
+      <p class="text-muted">Create your first branch administrator to get started.</p>
+      <a href="{% url 'accounting:create_branch_admin' %}" class="btn btn-primary">
+        <i class="material-icons md-add me-2"></i>Create Branch Admin
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<style>
+.bg-primary-light { background-color: #dceeff; }
+.bg-success-light { background-color: #d4edda; }
+.bg-danger-light { background-color: #f8d7da; }
+.bg-warning-light { background-color: #fff3cd; }
+
+.icontext .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-initials {
+  width: 45px;
+  height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.action-btn-icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.action-btn-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.action-btn-icon:active {
+  transform: translateY(0);
+}
+
+.action-btn-icon i {
+  font-size: 18px;
+}
+
+.btn-group .action-btn-icon {
+  margin: 0 2px;
+  border-radius: 6px !important;
+}
+
+.btn-group .action-btn-icon:first-child {
+  margin-left: 0;
+}
+
+.btn-group .action-btn-icon:last-child {
+  margin-right: 0;
+}
+
+.form-select, .form-control {
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+#usersTable tbody tr {
+  transition: transform 0.2s ease;
+}
+
+#usersTable tbody tr:hover {
+  transform: translateY(-1px);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.card-title i {
+  font-size: 20px;
+  vertical-align: middle;
+}
+</style>
+
+<script>
+function filterUsers() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const branchFilter = document.getElementById('branchFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+
+  const rows = document.querySelectorAll('#usersTable tbody tr.user-row');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const name = row.getAttribute('data-name');
+    const username = row.getAttribute('data-username');
+    const email = row.getAttribute('data-email');
+    const phone = row.getAttribute('data-phone');
+    const branches = row.getAttribute('data-branches');
+    const status = row.getAttribute('data-status');
+
+    const matchesSearch = !searchTerm ||
+      name.includes(searchTerm) ||
+      username.includes(searchTerm) ||
+      email.includes(searchTerm) ||
+      phone.includes(searchTerm);
+
+    const matchesBranch = !branchFilter || branches.includes(branchFilter);
+    const matchesStatus = !statusFilter || status === statusFilter;
+
+    if (matchesSearch && matchesBranch && matchesStatus) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+}
+
+function sortUsers() {
+  const tableBody = document.querySelector('#usersTable tbody');
+  if (!tableBody) {
+    return;
+  }
+  const rows = Array.from(tableBody.querySelectorAll('tr.user-row'));
+  const sortBy = document.getElementById('sortBy').value;
+
+  rows.sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+    }
+    if (sortBy === 'username') {
+      return a.getAttribute('data-username').localeCompare(b.getAttribute('data-username'));
+    }
+    if (sortBy === 'branches') {
+      return parseInt(b.getAttribute('data-branch-count')) - parseInt(a.getAttribute('data-branch-count'));
+    }
+    // Default: recent (date joined descending)
+    return parseInt(b.getAttribute('data-joined')) - parseInt(a.getAttribute('data-joined'));
+  });
+
+  rows.forEach(row => tableBody.appendChild(row));
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('branchFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('sortBy').value = 'recent';
+  filterUsers();
+  sortUsers();
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+  filterUsers();
+  sortUsers();
+  
+  // Initialize Bootstrap tooltips with custom settings
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl, {
+      trigger: 'hover focus',
+      delay: { show: 200, hide: 100 }
+    });
+  });
+});
+</script>
+{% endblock content %}

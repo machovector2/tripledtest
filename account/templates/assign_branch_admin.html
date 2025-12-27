@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}Assign Branch Admin - Triple D Homes{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        <i class="material-icons md-assignment_ind text-primary me-2"></i>
+        Assign Branch Administrators
+      </h2>
+      <p>Manage branch administrator assignments</p>
+    </div>
+    <div>
+      {% if pre_selected_branch %}
+        <a class="btn btn-outline-primary" href="{% url 'accounting:manage_branches' %}">
+          <i class="material-icons md-arrow_back"></i> Back to Branches
+        </a>
+      {% elif pre_selected_user %}
+        <a class="btn btn-outline-primary" href="{% url 'accounting:manage_users' %}">
+          <i class="material-icons md-arrow_back"></i> Back to Users
+        </a>
+      {% else %}
+        <a class="btn btn-outline-primary" href="{% url 'accounting:manage_branches' %}">
+          <i class="material-icons md-arrow_back"></i> Back to Branches
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if pre_selected_branch or pre_selected_user %}
+  <div class="row mb-4">
+    {% if pre_selected_branch %}
+    <div class="col-12">
+      <div class="card shadow-sm border-0 border-start border-primary border-4">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="branch-icon-lg bg-primary text-white rounded-circle me-3">
+              <i class="material-icons md-business"></i>
+            </div>
+            <div>
+              <h5 class="mb-1">
+                <i class="material-icons md-lock text-muted" style="font-size: 18px; vertical-align: middle;"></i>
+                Selected Branch
+              </h5>
+              <h4 class="mb-0">{{ pre_selected_branch.name }}</h4>
+              <p class="text-muted mb-0">
+                <i class="material-icons md-location_on" style="font-size: 16px; vertical-align: middle;"></i>
+                {{ pre_selected_branch.location }}, {{ pre_selected_branch.state }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if pre_selected_user %}
+    <div class="col-12">
+      <div class="card shadow-sm border-0 border-start border-info border-4">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="user-icon-lg bg-info text-white rounded-circle me-3">
+              {{ pre_selected_user.first_name|first|default:'U' }}{{ pre_selected_user.last_name|first|default:'A' }}
+            </div>
+            <div>
+              <h5 class="mb-1">
+                <i class="material-icons md-lock text-muted" style="font-size: 18px; vertical-align: middle;"></i>
+                Selected Administrator
+              </h5>
+              <h4 class="mb-0">{{ pre_selected_user.get_full_name }}</h4>
+              <p class="text-muted mb-0">
+                <i class="material-icons md-email" style="font-size: 16px; vertical-align: middle;"></i>
+                {{ pre_selected_user.email }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        
+        {% if pre_selected_branch %}
+          <!-- Hidden field for pre-selected branch -->
+          <input type="hidden" name="branch" value="{{ pre_selected_branch.id }}">
+          
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="material-icons md-people text-primary" style="font-size: 20px; vertical-align: middle;"></i>
+              Select Branch Administrators
+            </label>
+            <p class="text-muted small mb-3">Choose which administrators should manage <strong>{{ pre_selected_branch.name }}</strong></p>
+            
+            <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+              {% for admin in branch_admins %}
+                <div class="form-check mb-3 p-3 border rounded hover-highlight">
+                  <input class="form-check-input" type="checkbox" name="admins" value="{{ admin.id }}" id="admin_{{ admin.id }}" 
+                         {% if admin.id in assigned_admin_ids %}checked{% endif %}>
+                  <label class="form-check-label w-100" for="admin_{{ admin.id }}">
+                    <div class="d-flex align-items-center">
+                      <div class="admin-avatar bg-info text-white rounded-circle me-3">
+                        {{ admin.first_name|first|default:'U' }}{{ admin.last_name|first|default:'A' }}
+                      </div>
+                      <div>
+                        <strong class="d-block">{{ admin.get_full_name }}</strong>
+                        <small class="text-muted">
+                          <i class="material-icons md-email" style="font-size: 14px; vertical-align: middle;"></i>
+                          {{ admin.email }}
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              {% empty %}
+                <div class="text-center py-4">
+                  <i class="material-icons md-people" style="font-size: 3rem; color: #ccc;"></i>
+                  <p class="text-muted mt-2">No branch admins available.</p>
+                  <a href="{% url 'accounting:create_branch_admin' %}" class="btn btn-sm btn-primary">
+                    <i class="material-icons md-add"></i> Create Branch Admin
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+            
+            {% if form.admins.errors %}
+              <div class="alert alert-danger mt-2">{{ form.admins.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+        {% elif pre_selected_user %}
+          <!-- Show branch selection for user assignment -->
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="material-icons md-business text-primary" style="font-size: 20px; vertical-align: middle;"></i>
+              Select Branches for {{ pre_selected_user.get_full_name }}
+            </label>
+            <p class="text-muted small mb-3">Choose which branches this user should manage</p>
+            
+            <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+              {% for branch in all_branches %}
+                <div class="form-check mb-3 p-3 border rounded hover-highlight">
+                  <input class="form-check-input" type="checkbox" name="branches" value="{{ branch.id }}" id="branch_{{ branch.id }}"
+                         {% if branch.id in assigned_branch_ids %}checked{% endif %}>
+                  <label class="form-check-label w-100" for="branch_{{ branch.id }}">
+                    <div class="d-flex align-items-center">
+                      <div class="branch-avatar {% if branch.branch_type == 'main' %}bg-success{% else %}bg-primary{% endif %} text-white rounded-circle me-3">
+                        <i class="material-icons md-business" style="font-size: 20px;"></i>
+                      </div>
+                      <div>
+                        <strong class="d-block">{{ branch.name }}</strong>
+                        <small class="text-muted">
+                          <i class="material-icons md-location_on" style="font-size: 14px; vertical-align: middle;"></i>
+                          {{ branch.location }}
+                          {% if branch.branch_type == 'main' %}
+                            <span class="badge bg-success ms-2">Main Branch</span>
+                          {% endif %}
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              {% empty %}
+                <div class="text-center py-4">
+                  <i class="material-icons md-business" style="font-size: 3rem; color: #ccc;"></i>
+                  <p class="text-muted mt-2">No branches available.</p>
+                  <a href="{% url 'accounting:create_branch' %}" class="btn btn-sm btn-primary">
+                    <i class="material-icons md-add"></i> Create Branch
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+        {% else %}
+          <!-- Normal mode: select both branch and admins -->
+          <div class="mb-4">
+            <label for="{{ form.branch.id_for_label }}" class="form-label fw-bold">
+              <i class="material-icons md-business text-primary" style="font-size: 20px; vertical-align: middle;"></i>
+              Select Branch *
+            </label>
+            {{ form.branch }}
+            {% if form.branch.errors %}
+              <div class="alert alert-danger mt-2">{{ form.branch.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="material-icons md-people text-primary" style="font-size: 20px; vertical-align: middle;"></i>
+              Select Branch Administrators
+            </label>
+            
+            <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+              {% for admin in branch_admins %}
+                <div class="form-check mb-3 p-3 border rounded hover-highlight">
+                  <input class="form-check-input" type="checkbox" name="admins" value="{{ admin.id }}" id="admin_normal_{{ admin.id }}"
+                         {% if admin.id in assigned_admin_ids %}checked{% endif %}>
+                  <label class="form-check-label w-100" for="admin_normal_{{ admin.id }}">
+                    <div class="d-flex align-items-center">
+                      <div class="admin-avatar bg-info text-white rounded-circle me-3">
+                        {{ admin.first_name|first|default:'U' }}{{ admin.last_name|first|default:'A' }}
+                      </div>
+                      <div>
+                        <strong class="d-block">{{ admin.get_full_name }}</strong>
+                        <small class="text-muted">
+                          <i class="material-icons md-email" style="font-size: 14px; vertical-align: middle;"></i>
+                          {{ admin.email }}
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              {% empty %}
+                <div class="text-center py-4">
+                  <i class="material-icons md-people" style="font-size: 3rem; color: #ccc;"></i>
+                  <p class="text-muted mt-2">No branch admins available.</p>
+                  <a href="{% url 'accounting:create_branch_admin' %}" class="btn btn-sm btn-primary">
+                    <i class="material-icons md-add"></i> Create Branch Admin
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+            
+            {% if form.admins.errors %}
+              <div class="alert alert-danger mt-2">{{ form.admins.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          {% if pre_selected_branch %}
+            <a href="{% url 'accounting:manage_branches' %}" class="btn btn-outline-secondary">
+              <i class="material-icons md-close"></i> Cancel
+            </a>
+          {% elif pre_selected_user %}
+            <a href="{% url 'accounting:manage_users' %}" class="btn btn-outline-secondary">
+              <i class="material-icons md-close"></i> Cancel
+            </a>
+          {% else %}
+            <a href="{% url 'accounting:manage_branches' %}" class="btn btn-outline-secondary">
+              <i class="material-icons md-close"></i> Cancel
+            </a>
+          {% endif %}
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="material-icons md-check"></i> Assign Administrators
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+.branch-icon-lg, .user-icon-lg {
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.branch-icon-lg i {
+  font-size: 32px;
+}
+
+.user-icon-lg {
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.admin-avatar {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.branch-avatar {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.hover-highlight {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.hover-highlight:hover {
+  background-color: #f8f9fa;
+  border-color: #0d6efd !important;
+}
+
+.form-check-input:checked + .form-check-label {
+  color: #0d6efd;
+}
+
+.card-title i {
+  font-size: 20px;
+  vertical-align: middle;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Make checkbox labels clickable for better UX
+  document.querySelectorAll('.hover-highlight').forEach(function(element) {
+    element.addEventListener('click', function(e) {
+      if (e.target.tagName !== 'INPUT') {
+        const checkbox = this.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+        }
+      }
+    });
+  });
+});
+</script>
+{% endblock content %}

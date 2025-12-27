@@ -1,0 +1,662 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Transactions - Real Estate Accounting{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">Transactions</h2>
+      <p>View and manage all financial transactions</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-success no-print" onclick="printTransactions()" id="printBtn">
+        <i class="material-icons md-print"></i>Print
+      </button>
+      <button class="btn btn-danger no-print" onclick="downloadPDF()" id="pdfBtn">
+        <i class="material-icons md-download"></i>Download PDF
+      </button>
+      <a class="btn btn-primary no-print" href="{% url 'accounting:add_transaction' %}">
+        <i class="material-icons md-add"></i>Add Transaction
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">Filter Transactions</h5>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+        <div class="col-md-4">
+          <label class="form-label">Branch</label>
+          <select name="branch" class="form-control">
+            <option value="">All Branches</option>
+            {% for branch in branches %}
+              <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>
+                {{ branch.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div class="col-md-2">
+          <label class="form-label">Transaction Type</label>
+          <select name="type" class="form-control" id="typeFilter">
+            <option value="">All Types</option>
+            <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>Income</option>
+            <option value="expenditure" {% if request.GET.type == 'expenditure' %}selected{% endif %}>Expenditure</option>
+          </select>
+        </div>
+        <div class="col-md-3" id="incomeCategoryFilter" style="{% if request.GET.type != 'income' %}display:none;{% endif %}">
+          <label class="form-label">Income Category</label>
+          <select name="income_category" class="form-control">
+            <option value="">All Categories</option>
+            {% for category in income_categories %}
+              <option value="{{ category.id }}" {% if selected_income_category == category.id|stringformat:"s" %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3" id="expenditureCategoryFilter" style="{% if request.GET.type != 'expenditure' %}display:none;{% endif %}">
+          <label class="form-label">Expenditure Category</label>
+          <select name="expenditure_category" class="form-control">
+            <option value="">All Categories</option>
+            {% for category in expenditure_categories %}
+              <option value="{{ category.id }}" {% if selected_expenditure_category == category.id|stringformat:"s" %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">From Date</label>
+          <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">To Date</label>
+          <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">Filter</button>
+          <a href="{% url 'accounting:transactions' %}" class="btn btn-outline-secondary">Clear</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="card" id="report-content">
+    <div class="card-header">
+      <h5 class="card-title">Transaction History</h5>
+    </div>
+    <div class="card-body">
+      {% if transactions %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                <th>Branch</th>
+                {% endif %}
+                <th>Type</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Created By</th>
+                <th>Created Date</th>
+                {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                <th class="text-end">Actions</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for transaction in transactions %}
+              <tr>
+                <td>
+                  <strong>{{ transaction.date|date:"M d, Y" }}</strong>
+                </td>
+                {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                <td>
+                  <span class="badge bg-info">{{ transaction.branch.name }}</span>
+                </td>
+                {% endif %}
+                <td>
+                  {% if transaction.transaction_type == 'income' %}
+                    <span class="badge bg-success">
+                      <i class="material-icons md-trending_up me-1"></i>Income
+                    </span>
+                  {% else %}
+                    <span class="badge bg-danger">
+                      <i class="material-icons md-trending_down me-1"></i>Expenditure
+                    </span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="text-truncate" style="max-width: 200px;" title="{{ transaction.description }}">
+                    {{ transaction.description }}
+                  </div>
+                </td>
+                <td>
+                  {% if transaction.income_category %}
+                    <span class="badge bg-light text-dark">{{ transaction.income_category.name }}</span>
+                  {% elif transaction.expenditure_category %}
+                    <span class="badge bg-light text-dark">{{ transaction.expenditure_category.name }}</span>
+                  {% else %}
+                    <span class="text-muted">No category</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong class="{% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                    {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}₦{{ transaction.amount|intcomma }}
+                  </strong>
+                </td>
+                <td>
+                  <small class="text-muted">{{ transaction.created_by.get_full_name|default:transaction.created_by.username }}</small>
+                </td>
+                <td>
+                  <small class="text-muted">{{ transaction.created_date|date:"M d, Y H:i" }}</small>
+                </td>
+                {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                <td class="text-end">
+                  {% if transaction.fund_allocation %}
+                    <!-- Fund allocation transactions are protected -->
+                    <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="This transaction is part of a fund allocation and cannot be edited or deleted. Use the Reverse button on the Fund Allocations page instead.">
+                      <i class="material-icons md-lock" style="font-size: 14px; vertical-align: middle;"></i>
+                      Protected
+                    </span>
+                  {% else %}
+                    <button class="btn btn-sm btn-outline-primary no-print" onclick="editTransaction({{ transaction.id }})" title="Edit Transaction">
+                      <i class="material-icons md-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger no-print" onclick="deleteTransaction({{ transaction.id }}, '{{ transaction.description|truncatewords:5 }}')" title="Delete Transaction">
+                      <i class="material-icons md-delete"></i>
+                    </button>
+                  {% endif %}
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary Footer -->
+        <div class="row mt-4">
+          <div class="col-md-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-md-4">
+                    <h6 class="text-success">Total Income</h6>
+                    <h5 class="text-success">₦{{ total_income|intcomma }}</h5>
+                  </div>
+                  <div class="col-md-4">
+                    <h6 class="text-danger">Total Expenditure</h6>
+                    <h5 class="text-danger">₦{{ total_expenditure|intcomma }}</h5>
+                  </div>
+                  <div class="col-md-4">
+                    <h6 class="text-primary">Net Balance</h6>
+                    <h5 class="text-primary {% if net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">₦{{ net_balance|intcomma }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {% else %}
+        <div class="text-center py-5">
+          <i class="material-icons md-receipt_long" style="font-size: 4rem; color: #ccc;"></i>
+          <h5 class="mt-3 text-muted">No transactions found</h5>
+          <p class="text-muted">No transactions match your current filters.</p>
+          <a href="{% url 'accounting:add_transaction' %}" class="btn btn-primary">
+            <i class="material-icons md-add me-2"></i>Add Your First Transaction
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Pagination would go here if needed -->
+  <div class="pagination-area mt-30 mb-50">
+    <nav aria-label="Transaction pagination">
+      <ul class="pagination justify-content-center">
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <!-- Add more pagination logic here if needed -->
+      </ul>
+    </nav>
+  </div>
+
+</section>
+
+
+<!-- Include html2pdf library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function printTransactions() {
+  // Simple print function
+  window.print();
+}
+
+function downloadPDF() {
+  const element = document.getElementById('report-content');
+  
+  const opt = {
+    margin:       0.5,
+    filename:     'Transactions_Report_{{ "now"|date:"Y_m_d_His" }}.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+  };
+
+  html2pdf().set(opt).from(element).save();
+}
+
+// Test function
+function testFunctions() {
+  alert('Test function works! Print and PDF should work now.');
+}
+
+// Toggle category filters based on transaction type
+document.addEventListener('DOMContentLoaded', function() {
+  const typeFilter = document.getElementById('typeFilter');
+  const incomeCategoryFilter = document.getElementById('incomeCategoryFilter');
+  const expenditureCategoryFilter = document.getElementById('expenditureCategoryFilter');
+  
+  if (typeFilter) {
+    typeFilter.addEventListener('change', function() {
+      const selectedType = this.value;
+      
+      if (selectedType === 'income') {
+        incomeCategoryFilter.style.display = 'block';
+        expenditureCategoryFilter.style.display = 'none';
+      } else if (selectedType === 'expenditure') {
+        incomeCategoryFilter.style.display = 'none';
+        expenditureCategoryFilter.style.display = 'block';
+      } else {
+        incomeCategoryFilter.style.display = 'none';
+        expenditureCategoryFilter.style.display = 'none';
+      }
+    });
+  }
+});
+
+// Edit transaction function
+function editTransaction(transactionId) {
+  fetch(`/accounting/edit-transaction/${transactionId}/`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Populate modal with transaction data
+        document.getElementById('edit_transaction_id').value = data.transaction.id;
+        document.getElementById('edit_date').value = data.transaction.date;
+        document.getElementById('edit_description').value = data.transaction.description;
+        document.getElementById('edit_amount').value = data.transaction.amount;
+        document.getElementById('original_amount').value = data.transaction.amount;
+        document.getElementById('edit_transaction_type').value = data.transaction.transaction_type;
+        
+        // Show/hide category fields based on type
+        toggleEditCategories(data.transaction.transaction_type);
+        
+        // Set categories
+        if (data.transaction.transaction_type === 'income' && data.transaction.income_category) {
+          document.getElementById('edit_income_category').value = data.transaction.income_category;
+        } else if (data.transaction.transaction_type === 'expenditure' && data.transaction.expenditure_category) {
+          document.getElementById('edit_expenditure_category').value = data.transaction.expenditure_category;
+        }
+        
+        // Set branch if chief accountant
+        if (data.transaction.branch) {
+          document.getElementById('edit_branch').value = data.transaction.branch;
+        }
+        
+        // Show modal
+        const editModal = new bootstrap.Modal(document.getElementById('editTransactionModal'));
+        editModal.show();
+      } else {
+        alert('Error loading transaction: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to load transaction data');
+    });
+}
+
+// Delete transaction function
+function deleteTransaction(transactionId, description) {
+  // First, fetch transaction details to show impact
+  fetch(`/accounting/edit-transaction/${transactionId}/`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const transaction = data.transaction;
+        const amount = parseFloat(transaction.amount);
+        const type = transaction.transaction_type;
+        
+        // Create warning message based on transaction type
+        let impactMessage = '';
+        if (type === 'income') {
+          impactMessage = `⚠️ WARNING: Deleting this INCOME transaction will:\n` +
+                         `• REDUCE the branch balance by ₦${amount.toLocaleString()}\n` +
+                         `• DECREASE total income for this branch\n` +
+                         `• AFFECT all financial reports and statistics`;
+        } else {
+          impactMessage = `⚠️ WARNING: Deleting this EXPENDITURE transaction will:\n` +
+                         `• INCREASE the branch balance by ₦${amount.toLocaleString()}\n` +
+                         `• DECREASE total expenditure for this branch\n` +
+                         `• AFFECT all financial reports and statistics`;
+        }
+        
+        const confirmMessage = `${impactMessage}\n\n` +
+                              `Transaction: "${description}"\n` +
+                              `Amount: ₦${amount.toLocaleString()}\n\n` +
+                              `This action CANNOT be undone!\n\n` +
+                              `Are you absolutely sure you want to proceed?`;
+        
+        if (confirm(confirmMessage)) {
+          fetch(`/accounting/delete-transaction/${transactionId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'Content-Type': 'application/json',
+            },
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('✅ Transaction deleted successfully!\n\nThe branch balance and all reports have been updated automatically.');
+              location.reload();
+            } else {
+              alert('❌ Error deleting transaction: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Failed to delete transaction');
+          });
+        }
+      } else {
+        alert('Error loading transaction details');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to load transaction data');
+    });
+}
+
+// Toggle category fields in edit modal
+function toggleEditCategories(transactionType) {
+  const incomeCategory = document.getElementById('edit_income_category_div');
+  const expenditureCategory = document.getElementById('edit_expenditure_category_div');
+  
+  if (transactionType === 'income') {
+    incomeCategory.style.display = 'block';
+    expenditureCategory.style.display = 'none';
+  } else {
+    incomeCategory.style.display = 'none';
+    expenditureCategory.style.display = 'block';
+  }
+}
+
+// Get CSRF token from cookie
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Handle edit form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const editForm = document.getElementById('editTransactionForm');
+  if (editForm) {
+    editForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const transactionId = document.getElementById('edit_transaction_id').value;
+      const originalAmount = parseFloat(document.getElementById('original_amount').value);
+      const newAmount = parseFloat(document.getElementById('edit_amount').value);
+      const transactionType = document.getElementById('edit_transaction_type').value;
+      
+      // Calculate the impact
+      let confirmMessage = '⚠️ BALANCE IMPACT WARNING\n\n';
+      
+      if (originalAmount !== newAmount) {
+        const difference = Math.abs(newAmount - originalAmount);
+        
+        if (transactionType === 'income') {
+          if (newAmount > originalAmount) {
+            confirmMessage += `✅ This change will INCREASE the branch balance by ₦${difference.toLocaleString()}\n\n`;
+            confirmMessage += `• Original income: ₦${originalAmount.toLocaleString()}\n`;
+            confirmMessage += `• New income: ₦${newAmount.toLocaleString()}\n`;
+            confirmMessage += `• Difference: +₦${difference.toLocaleString()}`;
+          } else {
+            confirmMessage += `⚠️ This change will DECREASE the branch balance by ₦${difference.toLocaleString()}\n\n`;
+            confirmMessage += `• Original income: ₦${originalAmount.toLocaleString()}\n`;
+            confirmMessage += `• New income: ₦${newAmount.toLocaleString()}\n`;
+            confirmMessage += `• Difference: -₦${difference.toLocaleString()}`;
+          }
+        } else {
+          if (newAmount > originalAmount) {
+            confirmMessage += `⚠️ This change will DECREASE the branch balance by ₦${difference.toLocaleString()}\n\n`;
+            confirmMessage += `• Original expenditure: ₦${originalAmount.toLocaleString()}\n`;
+            confirmMessage += `• New expenditure: ₦${newAmount.toLocaleString()}\n`;
+            confirmMessage += `• Difference: +₦${difference.toLocaleString()} spent`;
+          } else {
+            confirmMessage += `✅ This change will INCREASE the branch balance by ₦${difference.toLocaleString()}\n\n`;
+            confirmMessage += `• Original expenditure: ₦${originalAmount.toLocaleString()}\n`;
+            confirmMessage += `• New expenditure: ₦${newAmount.toLocaleString()}\n`;
+            confirmMessage += `• Difference: -₦${difference.toLocaleString()} spent`;
+          }
+        }
+        
+        confirmMessage += '\n\n📊 All reports and statistics will be automatically updated.\n\n';
+        confirmMessage += 'Do you want to proceed with this change?';
+      } else {
+        confirmMessage = '💾 Save changes to this transaction?\n\n';
+        confirmMessage += 'Note: All reports will be automatically updated.';
+      }
+      
+      if (confirm(confirmMessage)) {
+        const formData = new FormData(this);
+        
+        fetch(`/accounting/edit-transaction/${transactionId}/`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('✅ Transaction updated successfully!\n\nThe branch balance and all reports have been recalculated automatically.');
+            location.reload();
+          } else {
+            alert('❌ Error updating transaction: ' + (data.message || 'Unknown error'));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('❌ Failed to update transaction');
+        });
+      }
+    });
+  }
+});
+</script>
+
+<!-- Edit Transaction Modal -->
+{% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+<div class="modal fade" id="editTransactionModal" tabindex="-1" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTransactionModalLabel">
+          <i class="material-icons md-edit text-primary" style="vertical-align: middle;"></i>
+          Edit Transaction
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="editTransactionForm" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <input type="hidden" id="edit_transaction_id" name="transaction_id">
+          <input type="hidden" id="original_amount" value="">
+          
+          <!-- Warning Alert -->
+          <div class="alert alert-warning border-warning" role="alert">
+            <div class="d-flex align-items-start">
+              <i class="material-icons md-warning text-warning me-2" style="font-size: 24px;"></i>
+              <div>
+                <h6 class="alert-heading mb-2">⚠️ Important: Balance Impact Warning</h6>
+                <p class="mb-1"><strong>Editing this transaction will affect:</strong></p>
+                <ul class="mb-0" style="font-size: 0.9em;">
+                  <li>Branch balance calculations</li>
+                  <li>Total income/expenditure figures</li>
+                  <li>All financial reports and statistics</li>
+                  <li>Historical data integrity</li>
+                </ul>
+                <hr class="my-2">
+                <p class="mb-0 text-muted" style="font-size: 0.85em;">
+                  <i class="material-icons md-info" style="font-size: 14px; vertical-align: middle;"></i>
+                  The system will automatically recalculate all balances when you save changes.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_date" class="form-label">Date *</label>
+              <input type="date" class="form-control" id="edit_date" name="date" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit_amount" class="form-label">Amount *</label>
+              <input type="number" class="form-control" id="edit_amount" name="amount" step="0.01" required>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_transaction_type" class="form-label">Transaction Type *</label>
+              <select class="form-control" id="edit_transaction_type" name="transaction_type" onchange="toggleEditCategories(this.value)" disabled>
+                <option value="income">Income</option>
+                <option value="expenditure">Expenditure</option>
+              </select>
+              <small class="text-muted">Transaction type cannot be changed</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit_branch" class="form-label">Branch *</label>
+              <select class="form-control" id="edit_branch" name="branch" required>
+                {% for branch in branches %}
+                  <option value="{{ branch.id }}">{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3" id="edit_income_category_div" style="display:none;">
+              <label for="edit_income_category" class="form-label">Income Category</label>
+              <select class="form-control" id="edit_income_category" name="income_category">
+                <option value="">Select category</option>
+                {% for category in income_categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3" id="edit_expenditure_category_div" style="display:none;">
+              <label for="edit_expenditure_category" class="form-label">Expenditure Category</label>
+              <select class="form-control" id="edit_expenditure_category" name="expenditure_category">
+                <option value="">Select category</option>
+                {% for category in expenditure_categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="edit_description" class="form-label">Description *</label>
+            <textarea class="form-control" id="edit_description" name="description" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="material-icons md-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<style>
+@media print {
+  .btn, .no-print, #filters-section {
+    display: none !important;
+  }
+  
+  .card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .table thead th {
+    background-color: #343a40 !important;
+    color: white !important;
+  }
+  
+  .badge {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  .badge.bg-success { background-color: #28a745 !important; color: white !important; }
+  .badge.bg-danger { background-color: #dc3545 !important; color: white !important; }
+  
+  .text-success {
+    color: #28a745 !important;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }
+  
+  body {
+    font-size: 12px;
+  }
+  
+  .table {
+    font-size: 11px;
+  }
+}
+</style>
+{% endblock content %}

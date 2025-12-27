@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta
+            name="description"
+            content="Triple D Homes - Secure Login Portal"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+            rel="shortcut icon"
+            type="image/x-icon"
+            href="/static/assets/imgs/theme/favicon.svg"
+        />
+        <link href="/static/assets/css/style.css?v=1.0.0" rel="stylesheet" />
+        <style>
+            /* Hide any inline form field errors */
+            .form-control.is-invalid,
+            .form-control:invalid {
+                border-color: #ced4da !important;
+                box-shadow: none !important;
+            }
+            .password-toggle-btn {
+                background: white;
+                border: 1px solid #ced4da;
+                border-left: none;
+                cursor: pointer;
+            }
+            .password-input {
+                border-right: none;
+            }
+        </style>
+        <title>Triple D Homes - Sign In</title>
+    </head>
+    <body>
+        <section class="content-main">
+            <div class="card mx-auto card-login shadow-sm" style="max-width: 400px; margin-top: 100px;">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <!-- Add Logo here if available, or just branding text -->
+                        <h4 class="card-title mb-2">Triple D Homes</h4>
+                        <p class="text-muted small">Accounting System Login</p>
+                    </div>
+
+                    {% include '_alerts.html' %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Username or Email</label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   placeholder="Enter your username or email" 
+                                   autofocus 
+                                   required
+                                   value="{{ form.username.value|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label">Password</label>
+                                <a class="float-end font-sm text-muted" href="#">Forgot password?</a>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" 
+                                       name="password" 
+                                       id="password_input"
+                                       class="form-control password-input" 
+                                       placeholder="Enter your password"
+                                       required>
+                                <button class="btn btn-outline-secondary bg-white border-start-0 border-secondary-subtle" type="button" id="togglePassword">
+                                    <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16" style="display: none;">
+                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                                    </svg>
+                                    <svg id="icon-eye-slash" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                        <path d="M13.359 3.359a11.943 11.943 0 0 1 3.1 3.1C14.633 9.775 11.777 12.5 8 12.5c-2.132 0-3.866-.895-5.147-2.147L1.846 12.188A.5.5 0 0 1 1.121 11.47l.88-.88C1.218 9.539 1 8.584 1 8c0-3.723 2.855-6.447 6.447-6.447.636 0 1.677.106 2.651.488l.847-.847a.5.5 0 0 1 .708.708l-1.294 1.294zM2.864 3.57a10.537 10.537 0 0 0-.583.682A11.025 11.025 0 0 0 1.229 8c1.373 3.393 4.609 5.5 7.771 5.5 2.021 0 3.704-.766 4.938-2.093l-8.074-8.074zm10.702 9.262c.703-.396 1.343-.883 1.868-1.466A10.975 10.975 0 0 0 14.771 8c-1.373-3.393-4.609-5.5-7.771-5.5-.327 0-.649.02-.962.062l1.625 1.625c.34-.041.69-.062 1.05-.062 2.615 0 4.966 1.725 5.792 4.19.231.69.349 1.41.349 2.155 0 .285-.017.564-.047.838l1.264 1.258z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" 
+                                       name="remember_me" 
+                                       class="form-check-input" 
+                                       {% if form.remember_me.value %}checked{% endif %}>
+                                <span class="form-check-label">Remember me</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
+                            <button class="btn btn-primary w-100" type="submit">
+                                Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <script src="/static/assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="/static/assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script>
+            // Password toggle functionality
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password_input');
+                const iconEye = document.getElementById('icon-eye');
+                const iconEyeSlash = document.getElementById('icon-eye-slash');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    iconEye.style.display = 'block';
+                    iconEyeSlash.style.display = 'none';
+                } else {
+                    passwordInput.type = 'password';
+                    iconEye.style.display = 'none';
+                    iconEyeSlash.style.display = 'block';
+                }
+            });
+        </script>
+    </body>
+</html>

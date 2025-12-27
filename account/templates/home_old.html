@@ -1,0 +1,547 @@
+{% extends 'base.html' %} {% block title %}Dashboard - Real Estate Accounting{%
+endblock %} {% block content %}
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">
+                {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %} Chief Accountant Dashboard
+                {% elif branch %} {{ branch.name }} Branch Dashboard {% else %}
+                Account Dashboard {% endif %}
+            </h2>
+            <p>Real Estate Accounting Management System</p>
+        </div>
+        <div>
+            {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+            <a class="btn btn-primary" href="{% url 'accounting:create_branch' %}">
+                <i class="material-icons md-add"></i>Create New Branch
+            </a>
+            {% endif %} {% if branch or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+            <a class="btn btn-success" href="{% url 'accounting:add_transaction' %}">
+                <i class="material-icons md-add"></i>Add Transaction
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Error/Info Messages for users without proper setup -->
+    {% if error_message or info_message %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    {% if error_message %}
+                    <div class="alert alert-warning" role="alert">
+                        <i
+                            class="material-icons md-warning"
+                            style="
+                                font-size: 48px;
+                                color: #f0ad4e;
+                                margin-bottom: 20px;
+                            "
+                        ></i>
+                        <h4 class="alert-heading">Account Setup Required</h4>
+                        <p class="mb-3">{{ error_message }}</p>
+                        {% if show_contact_info %}
+                        <hr />
+                        <p class="mb-0">
+                            <strong>Contact Information:</strong><br />
+                            Please contact your system administrator to complete
+                            your account setup.
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% elif info_message %}
+                    <div class="alert alert-info" role="alert">
+                        <i
+                            class="material-icons md-info"
+                            style="
+                                font-size: 48px;
+                                color: #5bc0de;
+                                margin-bottom: 20px;
+                            "
+                        ></i>
+                        <h4 class="alert-heading">Welcome!</h4>
+                        <p class="mb-3">{{ info_message }}</p>
+                        {% if show_contact_info %}
+                        <hr />
+                        <p class="mb-0">
+                            <strong>Next Steps:</strong><br />
+                            Your account is being set up. Please contact your
+                            system administrator to complete the setup process.
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Cards - Only show if user has proper access -->
+    {% if not error_message and not info_message %}
+    <div class="row">
+        {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-primary-light">
+                        <i class="text-primary material-icons md-store"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Total Branches</h6>
+                        <span class="h4">{{ branches_count }}</span>
+                        <span class="text-sm text-muted d-block"
+                            >Active branches</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-success-light">
+                        <i
+                            class="text-success material-icons md-trending_up"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Total Income</h6>
+                        <span class="h4 text-success"
+                            >₦{{ total_income|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >All branches combined</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-danger-light">
+                        <i
+                            class="text-danger material-icons md-trending_down"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Total Expenditure</h6>
+                        <span class="h4 text-danger"
+                            >₦{{ total_expenditure|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >All branches combined</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span
+                        class="icon icon-sm rounded-circle {% if total_balance >= 0 %}bg-success-light{% else %}bg-danger-light{% endif %}"
+                    >
+                        <i
+                            class="{% if total_balance >= 0 %}text-success{% else %}text-danger{% endif %} material-icons md-account_balance_wallet"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Net Balance</h6>
+                        <span
+                            class="h4 {% if total_balance >= 0 %}text-success{% else %}text-danger{% endif %}"
+                            >₦{{ total_balance|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Current balance</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- Additional Chief Accountant Cards -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-info-light">
+                        <i
+                            class="text-info material-icons md-account_balance"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Total Allocated</h6>
+                        <span class="h4 text-info"
+                            >₦{{ total_allocated|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Funds allocated</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-warning-light">
+                        <i class="text-warning material-icons md-people"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Active Admins</h6>
+                        <span class="h4">{{ active_admins }}</span>
+                        <span class="text-sm text-muted d-block"
+                            >Branch administrators</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-success-light">
+                        <i
+                            class="text-success material-icons md-account_balance"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Main Branch Income</h6>
+                        <span class="h4 text-success"
+                            >₦{{ main_income|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >{{ main_branch.name }}</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-danger-light">
+                        <i
+                            class="text-danger material-icons md-account_balance"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Main Branch Expenditure</h6>
+                        <span class="h4 text-danger"
+                            >₦{{ main_expenditure|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >{{ main_branch.name }}</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-success-light">
+                        <i
+                            class="text-success material-icons md-trending_up"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Branch Income</h6>
+                        <span class="h4 text-success"
+                            >₦{{ branch_income|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Total income</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-danger-light">
+                        <i
+                            class="text-danger material-icons md-trending_down"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Branch Expenditure</h6>
+                        <span class="h4 text-danger"
+                            >₦{{ branch_expenditure|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Total expenditure</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span
+                        class="icon icon-sm rounded-circle {% if branch_balance >= 0 %}bg-success-light{% else %}bg-danger-light{% endif %}"
+                    >
+                        <i
+                            class="{% if branch_balance >= 0 %}text-success{% else %}text-danger{% endif %} material-icons md-account_balance_wallet"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Branch Balance</h6>
+                        <span
+                            class="h4 {% if branch_balance >= 0 %}text-success{% else %}text-danger{% endif %}"
+                            >₦{{ branch_balance|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Current balance</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-info-light">
+                        <i
+                            class="text-info material-icons md-account_balance"
+                        ></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Remaining Funds</h6>
+                        <span class="h4 text-info"
+                            >₦{{ remaining_funds|floatformat:2 }}</span
+                        >
+                        <span class="text-sm text-muted d-block"
+                            >Available to spend</span
+                        >
+                    </div>
+                </article>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Branches List (Chief Accountant Only) -->
+    {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Branch Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <th>Location</th>
+                                    <th>Admin</th>
+                                    <th>Income</th>
+                                    <th>Expenditure</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for branch in branches %}
+                                <tr>
+                                    <td><strong>{{ branch.name }}</strong></td>
+                                    <td>
+                                        {{ branch.location }}, {{ branch.state
+                                        }}
+                                    </td>
+                                    <td>
+                                        {% for admin in branch.admins.all %} {{
+                                        admin.get_full_name }}{% if not
+                                        forloop.last %}, {% endif %} {% empty %}
+                                        No admin assigned {% endfor %}
+                                    </td>
+                                    <td class="text-success">
+                                        ₦{{
+                                        branch.get_total_income|floatformat:2 }}
+                                    </td>
+                                    <td class="text-danger">
+                                        ₦{{
+                                        branch.get_total_expenditure|floatformat:2
+                                        }}
+                                    </td>
+                                    <td
+                                        class="{% if branch.get_balance >= 0 %}text-success{% else %}text-danger{% endif %}"
+                                    >
+                                        ₦{{ branch.get_balance|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        {% if branch.is_active %}
+                                        <span class="badge bg-success"
+                                            >Active</span
+                                        >
+                                        {% else %}
+                                        <span class="badge bg-danger"
+                                            >Inactive</span
+                                        >
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        No branches created yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Transactions -->
+    <div class="card mb-4">
+        <div
+            class="card-header d-flex justify-content-between align-items-center"
+        >
+            <h5 class="card-title">Recent Transactions</h5>
+            <a
+                href="{% url 'accounting:transactions' %}"
+                class="btn btn-sm btn-outline-primary"
+                >View All</a
+            >
+        </div>
+        <div class="card-body">
+            {% if recent_transactions %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Branch</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recent_transactions %}
+                        <tr>
+                            <td>{{ transaction.date|date:"M d, Y" }}</td>
+                            <td>{{ transaction.branch.name }}</td>
+                            <td>
+                                {% if transaction.transaction_type == 'income'
+                                %}
+                                <span class="badge bg-success">Income</span>
+                                {% else %}
+                                <span class="badge bg-danger">Expenditure</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ transaction.description|truncatechars:50 }}
+                            </td>
+                            <td
+                                class="{% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}"
+                            >
+                                ₦{{ transaction.amount|floatformat:2 }}
+                            </td>
+                            <td>
+                                {% if transaction.income_category %} {{
+                                transaction.income_category.name }} {% elif
+                                transaction.expenditure_category %} {{
+                                transaction.expenditure_category.name }} {% else
+                                %} - {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">No transactions recorded yet.</p>
+                <a href="{% url 'accounting:add_transaction' %}" class="btn btn-primary"
+                    >Add Your First Transaction</a
+                >
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a
+                            href="{% url 'accounting:add_transaction' %}"
+                            class="btn btn-primary"
+                        >
+                            <i class="material-icons md-add me-2"></i>Add
+                            Transaction
+                        </a>
+                        <a
+                            href="{% url 'accounting:transactions' %}"
+                            class="btn btn-outline-primary"
+                        >
+                            <i class="material-icons md-list me-2"></i>View All
+                            Transactions
+                        </a>
+                        <a
+                            href="{% url 'accounting:manage_categories' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            <i class="material-icons md-category me-2"></i
+                            >Manage Categories
+                        </a>
+                        {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                        <a
+                            href="{% url 'accounting:create_branch' %}"
+                            class="btn btn-outline-success"
+                        >
+                            <i class="material-icons md-add_business me-2"></i
+                            >Create New Branch
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ user.get_full_name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p>
+                        <strong>Role:</strong>
+                        {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %} Super
+                        Administrator {% else %} Branch Administrator {% endif
+                        %}
+                    </p>
+                    {% if user.user_type == 'branch_admin' %}
+                    <p><strong>Branch:</strong> {{ branch.name }}</p>
+                    <p>
+                        <strong>Location:</strong> {{ branch.location }}, {{
+                        branch.state }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock content %}

@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Allocate Funds - Triple D Homes{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        <i class="material-icons md-account_balance text-success me-2"></i>
+        Allocate Funds
+      </h2>
+      <p>Transfer funds from main branch to sub branches</p>
+    </div>
+    <div>
+      {% if pre_selected_branch %}
+        <a class="btn btn-outline-primary" href="{% url 'accounting:manage_branches' %}">
+          <i class="material-icons md-arrow_back"></i> Back to Branches
+        </a>
+      {% else %}
+        <a class="btn btn-outline-primary" href="{% url 'accounting:fund_allocations' %}">
+          <i class="material-icons md-arrow_back"></i> View Allocations
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Branch Info -->
+  <div class="row mb-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 border-start border-primary border-4 h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="branch-icon-lg bg-primary text-white rounded-circle me-3">
+              <i class="material-icons md-account_balance_wallet"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">
+                <i class="material-icons md-trending_down" style="font-size: 16px; vertical-align: middle;"></i>
+                From (Source)
+              </h6>
+              <h4 class="mb-1">{{ main_branch.name }}</h4>
+              <p class="text-muted mb-0 small">
+                <i class="material-icons md-location_on" style="font-size: 14px; vertical-align: middle;"></i>
+                {{ main_branch.location }}, {{ main_branch.state }}
+              </p>
+            </div>
+          </div>
+          <hr class="my-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">Available Balance</small>
+              <h5 class="mb-0 {% if main_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                ₦{{ main_balance|intcomma }}
+              </h5>
+            </div>
+            <div class="text-end">
+              <small class="text-muted d-block">Total Allocated</small>
+              <h5 class="mb-0 text-info">
+                ₦{{ main_branch.allocated_funds|intcomma }}
+              </h5>
+            </div>
+          </div>
+          {% if main_balance < 0 %}
+            <div class="alert alert-danger mt-3 mb-0">
+              <i class="material-icons md-warning" style="font-size: 16px; vertical-align: middle;"></i>
+              <small>Insufficient balance! Main branch has a deficit.</small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if pre_selected_branch %}
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 border-start border-success border-4 h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="branch-icon-lg bg-success text-white rounded-circle me-3">
+              <i class="material-icons md-business"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">
+                <i class="material-icons md-lock text-muted" style="font-size: 16px; vertical-align: middle;"></i>
+                To (Destination)
+              </h6>
+              <h4 class="mb-1">{{ pre_selected_branch.name }}</h4>
+              <p class="text-muted mb-0 small">
+                <i class="material-icons md-location_on" style="font-size: 14px; vertical-align: middle;"></i>
+                {{ pre_selected_branch.location }}, {{ pre_selected_branch.state }}
+              </p>
+            </div>
+          </div>
+          <hr class="my-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <small class="text-muted d-block">Current Balance</small>
+              <h5 class="mb-0 {% if pre_selected_branch.get_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                ₦{{ pre_selected_branch.get_balance|intcomma }}
+              </h5>
+            </div>
+            <div class="text-end">
+              <small class="text-muted d-block">Already Allocated</small>
+              <h5 class="mb-0 text-info">
+                ₦{{ pre_selected_branch.allocated_funds|intcomma }}
+              </h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Allocation Form -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <form method="post" id="allocationForm">
+        {% csrf_token %}
+        
+        {% if pre_selected_branch %}
+          <!-- Hidden field for pre-selected branch -->
+          <input type="hidden" name="to_branch" value="{{ pre_selected_branch.id }}">
+        {% else %}
+          <!-- Branch Selection -->
+          <div class="mb-4">
+            <label for="{{ form.to_branch.id_for_label }}" class="form-label fw-bold">
+              <i class="material-icons md-business text-success" style="font-size: 20px; vertical-align: middle;"></i>
+              Target Branch *
+            </label>
+            <p class="text-muted small mb-2">Select the sub-branch to receive funds</p>
+            {{ form.to_branch }}
+            {% if form.to_branch.errors %}
+              <div class="alert alert-danger mt-2">{{ form.to_branch.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="row">
+          <!-- Amount Input -->
+          <div class="col-md-6">
+            <div class="mb-4">
+              <label for="{{ form.amount.id_for_label }}" class="form-label fw-bold">
+                <i class="material-icons md-attach_money text-success" style="font-size: 20px; vertical-align: middle;"></i>
+                Amount to Allocate *
+              </label>
+              <p class="text-muted small mb-2">Enter the amount to transfer</p>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-success text-white">
+                  <i class="material-icons md-payments"></i>
+                </span>
+                <span class="input-group-text">₦</span>
+                {{ form.amount }}
+              </div>
+              <small class="text-muted">
+                <i class="material-icons md-info" style="font-size: 14px; vertical-align: middle;"></i>
+                Available: ₦{{ main_balance|intcomma }}
+              </small>
+              {% if form.amount.errors %}
+                <div class="alert alert-danger mt-2">{{ form.amount.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Quick Amount Buttons -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Quick Amounts</label>
+            <p class="text-muted small mb-2">Click to auto-fill common amounts</p>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-outline-success quick-amount-btn" data-amount="10000">₦10,000</button>
+              <button type="button" class="btn btn-outline-success quick-amount-btn" data-amount="50000">₦50,000</button>
+              <button type="button" class="btn btn-outline-success quick-amount-btn" data-amount="100000">₦100,000</button>
+              <button type="button" class="btn btn-outline-success quick-amount-btn" data-amount="500000">₦500,000</button>
+              <button type="button" class="btn btn-outline-success quick-amount-btn" data-amount="1000000">₦1,000,000</button>
+              {% if main_balance > 0 %}
+                <button type="button" class="btn btn-outline-info quick-amount-btn" data-amount="{{ main_balance }}">
+                  <i class="material-icons md-all_inclusive" style="font-size: 14px; vertical-align: middle;"></i>
+                  All Available
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+            <i class="material-icons md-description text-success" style="font-size: 20px; vertical-align: middle;"></i>
+            Description/Purpose *
+          </label>
+          <p class="text-muted small mb-2">Explain the reason for this fund allocation</p>
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="alert alert-danger mt-2">{{ form.description.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          {% if pre_selected_branch %}
+            <a href="{% url 'accounting:manage_branches' %}" class="btn btn-outline-secondary btn-lg">
+              <i class="material-icons md-close"></i> Cancel
+            </a>
+          {% else %}
+            <a href="{% url 'accounting:fund_allocations' %}" class="btn btn-outline-secondary btn-lg">
+              <i class="material-icons md-close"></i> Cancel
+            </a>
+          {% endif %}
+          
+          <button type="submit" class="btn btn-success btn-lg">
+            <i class="material-icons md-send"></i> Allocate Funds
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card border-info">
+        <div class="card-body">
+          <h6 class="text-info">
+            <i class="material-icons md-info" style="font-size: 18px; vertical-align: middle;"></i>
+            How it Works
+          </h6>
+          <small class="text-muted">
+            Funds are transferred from the main branch to the selected sub-branch. 
+            This creates corresponding income and expenditure transactions.
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-warning">
+        <div class="card-body">
+          <h6 class="text-warning">
+            <i class="material-icons md-warning" style="font-size: 18px; vertical-align: middle;"></i>
+            Important Note
+          </h6>
+          <small class="text-muted">
+            Allocations are permanent and update branch balances immediately. 
+            Ensure the amount is correct before proceeding.
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-success">
+        <div class="card-body">
+          <h6 class="text-success">
+            <i class="material-icons md-verified" style="font-size: 18px; vertical-align: middle;"></i>
+            Automatic Tracking
+          </h6>
+          <small class="text-muted">
+            Both branches will automatically receive transaction records, 
+            and financial reports will be updated in real-time.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.branch-icon-lg {
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.branch-icon-lg i {
+  font-size: 32px;
+}
+
+.quick-amount-btn {
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.quick-amount-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card-title i {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.input-group-lg .form-control {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#id_amount {
+  text-align: right;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Quick amount buttons
+  document.querySelectorAll('.quick-amount-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const amount = this.getAttribute('data-amount');
+      document.getElementById('{{ form.amount.id_for_label }}').value = amount;
+      
+      // Visual feedback
+      this.classList.add('active');
+      setTimeout(() => {
+        this.classList.remove('active');
+      }, 300);
+    });
+  });
+
+  // Form validation
+  document.getElementById('allocationForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('{{ form.amount.id_for_label }}').value);
+    const mainBalance = parseFloat('{{ main_balance }}');
+    
+    if (amount <= 0) {
+      e.preventDefault();
+      alert('Please enter a valid amount greater than zero.');
+      return false;
+    }
+    
+    if (amount > mainBalance) {
+      e.preventDefault();
+      const confirmed = confirm(
+        `Warning: The amount (₦${amount.toLocaleString()}) exceeds the available balance (₦${mainBalance.toLocaleString()}).\n\n` +
+        `This will result in a deficit in the main branch.\n\n` +
+        `Are you sure you want to proceed?`
+      );
+      return confirmed;
+    }
+    
+    // Confirmation for large amounts
+    if (amount >= 1000000) {
+      const confirmed = confirm(
+        `You are about to allocate ₦${amount.toLocaleString()}.\n\n` +
+        `This is a significant amount. Please confirm this is correct.`
+      );
+      return confirmed;
+    }
+  });
+});
+</script>
+{% endblock content %}

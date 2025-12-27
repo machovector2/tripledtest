@@ -1,0 +1,471 @@
+{% extends 'base.html' %} {% block title %}Add {{ category_type }} Category -
+Real Estate Accounting{% endblock %} {% block content %}
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">
+                Add {{ category_type }} Category
+            </h2>
+            <p>
+                Create a new {{ category_type|lower }} category for transactions
+            </p>
+        </div>
+        <div>
+            <a class="btn btn-light" href="{% url 'accounting:manage_categories' %}">
+                <i class="material-icons md-arrow_back"></i>Back to Categories
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        {% if category_type == 'Income' %}
+                        <i
+                            class="material-icons md-trending_up text-success me-2"
+                        ></i>
+                        {% else %}
+                        <i
+                            class="material-icons md-trending_down text-danger me-2"
+                        ></i>
+                        {% endif %} {{ category_type }} Category Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label
+                                        for="{{ form.name.id_for_label }}"
+                                        class="form-label"
+                                        >Category Name *</label
+                                    >
+                                    {{ form.name }} {% if form.name.errors %}
+                                    <div class="text-danger">
+                                        {{ form.name.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Enter a clear, descriptive name for this
+                                        category
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label
+                                        for="{{ form.scope.id_for_label }}"
+                                        class="form-label"
+                                        >Category Scope *</label
+                                    >
+                                    {{ form.scope }} {% if form.scope.errors %}
+                                    <div class="text-danger">
+                                        {{ form.scope.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Choose where this category can be used
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label
+                                for="{{ form.description.id_for_label }}"
+                                class="form-label"
+                                >Description</label
+                            >
+                            {{ form.description }} {% if form.description.errors
+                            %}
+                            <div class="text-danger">
+                                {{ form.description.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Optional: Provide additional details about this
+                                category
+                            </small>
+                        </div>
+
+                        {% if (user.user_type == 'admin' or user.user_type == 'chief_accountant') and form.branch %}
+                        <div class="mb-3" id="branch-selector">
+                            <label
+                                for="{{ form.branch.id_for_label }}"
+                                class="form-label"
+                                >Assign to Specific Branch</label
+                            >
+                            {{ form.branch }} {% if form.branch.errors %}
+                            <div class="text-danger">
+                                {{ form.branch.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                {{ form.branch.help_text }}
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <hr class="my-4" />
+
+                        <!-- Common Category Suggestions -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">
+                                <i class="material-icons md-lightbulb me-2"></i
+                                >Quick Suggestions
+                            </h6>
+                            <div class="row">
+                                {% if category_type == 'Income' %}
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Property Sales"
+                                            data-description="Revenue from property sales and transactions"
+                                        >
+                                            <i
+                                                class="material-icons md-home text-success me-2"
+                                            ></i
+                                            >Property Sales
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Rental Income"
+                                            data-description="Monthly rental payments from tenants"
+                                        >
+                                            <i
+                                                class="material-icons md-key text-success me-2"
+                                            ></i
+                                            >Rental Income
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Commission"
+                                            data-description="Commission from property transactions and referrals"
+                                        >
+                                            <i
+                                                class="material-icons md-percent text-success me-2"
+                                            ></i
+                                            >Commission
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Consultation Fees"
+                                            data-description="Fees from real estate consultations and advisory services"
+                                        >
+                                            <i
+                                                class="material-icons md-support_agent text-success me-2"
+                                            ></i
+                                            >Consultation Fees
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Property Management"
+                                            data-description="Income from property management services"
+                                        >
+                                            <i
+                                                class="material-icons md-business text-success me-2"
+                                            ></i
+                                            >Property Management
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Deposit Fees"
+                                            data-description="Security deposits and administrative fees"
+                                        >
+                                            <i
+                                                class="material-icons md-account_balance text-success me-2"
+                                            ></i
+                                            >Deposit Fees
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Legal Services"
+                                            data-description="Income from legal and documentation services"
+                                        >
+                                            <i
+                                                class="material-icons md-gavel text-success me-2"
+                                            ></i
+                                            >Legal Services
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Inspection Fees"
+                                            data-description="Property inspection and evaluation fees"
+                                        >
+                                            <i
+                                                class="material-icons md-search text-success me-2"
+                                            ></i
+                                            >Inspection Fees
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Other Income"
+                                            data-description="Miscellaneous income sources"
+                                        >
+                                            <i
+                                                class="material-icons md-more_horiz text-success me-2"
+                                            ></i
+                                            >Other Income
+                                        </button>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Office Rent"
+                                            data-description="Monthly office rental payments"
+                                        >
+                                            <i
+                                                class="material-icons md-business text-danger me-2"
+                                            ></i
+                                            >Office Rent
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Marketing & Advertising"
+                                            data-description="Advertising, promotional and marketing expenses"
+                                        >
+                                            <i
+                                                class="material-icons md-campaign text-danger me-2"
+                                            ></i
+                                            >Marketing & Advertising
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Transportation"
+                                            data-description="Vehicle fuel, maintenance and travel expenses"
+                                        >
+                                            <i
+                                                class="material-icons md-directions_car text-danger me-2"
+                                            ></i
+                                            >Transportation
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Utilities"
+                                            data-description="Electricity, water, internet and phone expenses"
+                                        >
+                                            <i
+                                                class="material-icons md-electrical_services text-danger me-2"
+                                            ></i
+                                            >Utilities
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Property Maintenance"
+                                            data-description="Property maintenance, repairs and upkeep"
+                                        >
+                                            <i
+                                                class="material-icons md-build text-danger me-2"
+                                            ></i
+                                            >Property Maintenance
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Office Supplies"
+                                            data-description="Stationery, equipment and office supplies"
+                                        >
+                                            <i
+                                                class="material-icons md-inventory text-danger me-2"
+                                            ></i
+                                            >Office Supplies
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="list-group list-group-flush">
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Legal & Professional"
+                                            data-description="Legal fees, professional services and consultancy"
+                                        >
+                                            <i
+                                                class="material-icons md-gavel text-danger me-2"
+                                            ></i
+                                            >Legal & Professional
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Insurance"
+                                            data-description="Property insurance and liability coverage"
+                                        >
+                                            <i
+                                                class="material-icons md-security text-danger me-2"
+                                            ></i
+                                            >Insurance
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="list-group-item list-group-item-action category-suggestion"
+                                            data-name="Staff Expenses"
+                                            data-description="Staff salaries, benefits and training"
+                                        >
+                                            <i
+                                                class="material-icons md-people text-danger me-2"
+                                            ></i
+                                            >Staff Expenses
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <small class="form-text text-muted mt-3">
+                                <i
+                                    class="material-icons md-info text-muted me-1"
+                                    style="font-size: 16px"
+                                ></i>
+                                Click on any suggestion to auto-fill the form
+                            </small>
+                        </div>
+
+                        <div
+                            class="d-flex justify-content-between align-items-center"
+                        >
+                            <a
+                                href="{% url 'accounting:manage_categories' %}"
+                                class="btn btn-light"
+                            >
+                                <i class="material-icons md-arrow_back me-2"></i
+                                >Cancel
+                            </a>
+                            <button
+                                type="submit"
+                                class="btn {% if category_type == 'Income' %}btn-success{% else %}btn-danger{% endif %}"
+                            >
+                                <i class="material-icons md-save me-2"></i
+                                >Create {{ category_type }} Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Category suggestions functionality
+        const suggestions = document.querySelectorAll(".category-suggestion");
+        const nameField = document.getElementById(
+            "{{ form.name.id_for_label }}",
+        );
+        const descriptionField = document.getElementById(
+            "{{ form.description.id_for_label }}",
+        );
+
+        suggestions.forEach(function (suggestion) {
+            suggestion.addEventListener("click", function () {
+                nameField.value = this.dataset.name;
+                descriptionField.value = this.dataset.description;
+
+                // Visual feedback
+                suggestions.forEach((s) => s.classList.remove("active"));
+                this.classList.add("active");
+
+                // Scroll to form
+                document
+                    .querySelector("form")
+                    .scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+        });
+
+        // Add hover effects for suggestions
+        suggestions.forEach(function (suggestion) {
+            suggestion.addEventListener("mouseenter", function () {
+                this.style.backgroundColor = "#f8f9fa";
+            });
+
+            suggestion.addEventListener("mouseleave", function () {
+                if (!this.classList.contains("active")) {
+                    this.style.backgroundColor = "";
+                }
+            });
+        });
+
+        // Form validation feedback
+        const form = document.querySelector("form");
+        const nameField = document.getElementById(
+            "{{ form.name.id_for_label }}",
+        );
+
+        form.addEventListener("submit", function (e) {
+            if (!nameField.value.trim()) {
+                e.preventDefault();
+                nameField.focus();
+                nameField.classList.add("is-invalid");
+            }
+        });
+
+        nameField.addEventListener("input", function () {
+            this.classList.remove("is-invalid");
+        });
+    });
+</script>
+
+<style>
+    .category-suggestion {
+        border: none !important;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .category-suggestion:hover {
+        background-color: #f8f9fa !important;
+        transform: translateX(5px);
+    }
+
+    .category-suggestion.active {
+        background-color: {% if category_type == 'Income' %}#d1e7dd{% else %}#f8d7da{% endif %} !important;
+        border-left: 3px solid {% if category_type == 'Income' %}#198754{% else %}#dc3545{% endif %} !important;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .form-control:focus {
+        border-color: {% if category_type == 'Income' %}#198754{% else %}#dc3545{% endif %};
+        box-shadow: 0 0 0 0.2rem {% if category_type == 'Income' %}rgba(25, 135, 84, 0.25){% else %}rgba(220, 53, 69, 0.25){% endif %};
+    }
+</style>
+{% endblock content %}

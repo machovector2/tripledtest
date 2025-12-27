@@ -10,11 +10,31 @@ from django.contrib.auth.models import AbstractUser
 import os
 
 class User(AbstractUser):
+    USER_TYPE_CHOICES = [
+        ('admin', 'Admin'),
+        ('secretary', 'Secretary'),
+        ('chief_accountant', 'Chief Accountant'),  # For accounting system - full access
+        ('branch_admin', 'Branch Admin'),          # For accounting system - branch level
+    ]
+    
     date_joined = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='users/', null=True, blank=True)
-        
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='admin')
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    
     def __str__(self):
         return self.username
+    
+    def get_full_name(self):
+        """Return full name for accounting compatibility"""
+        return f"{self.first_name} {self.last_name}".strip() or self.username
+    
+    @property
+    def managed_branch(self):
+        """Get the first branch this user manages (for accounting)"""
+        if hasattr(self, 'managed_branches'):
+            return self.managed_branches.filter(is_active=True).first()
+        return None
 
     class Meta:
         app_label = 'tripled'

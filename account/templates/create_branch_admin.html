@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Branch Admin - Real Estate Accounting{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">Create Branch Administrator</h2>
+      <p>Add a new branch administrator to the system</p>
+    </div>
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'accounting:manage_users' %}">
+        <i class="material-icons md-arrow_back"></i>Back to Users
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="card-title mb-0">
+            <i class="material-icons md-person_add me-2"></i>Administrator Information
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <!-- Display messages -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <form method="post" id="adminForm">
+            {% csrf_token %}
+            
+            <!-- Display form errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+            
+            <!-- Personal Information Section -->
+            <div class="mb-4">
+              <h6 class="text-primary mb-3">
+                <i class="material-icons md-person me-1"></i>Personal Information
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                      <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                      <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Information Section -->
+            <div class="mb-4">
+              <h6 class="text-primary mb-3">
+                <i class="material-icons md-account_circle me-1"></i>Account Information
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username *</label>
+                    {{ form.username }}
+                    <small class="form-text text-muted">Will be auto-generated from name, but you can edit it</small>
+                    {% if form.username.errors %}
+                      <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                      <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                      <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Section -->
+            <div class="mb-4">
+              <h6 class="text-primary mb-3">
+                <i class="material-icons md-lock me-1"></i>Security Settings
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password *</label>
+                    {{ form.password1 }}
+                    <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                    {% if form.password1.errors %}
+                      <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
+                    {{ form.password2 }}
+                    <small class="form-text text-muted">{{ form.password2.help_text }}</small>
+                    {% if form.password2.errors %}
+                      <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+              <a href="{% url 'accounting:manage_users' %}" class="btn btn-outline-secondary">
+                <i class="material-icons md-cancel me-1"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="material-icons md-save me-1"></i>Create Administrator
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const firstNameField = document.getElementById('id_first_name');
+    const lastNameField = document.getElementById('id_last_name');
+    const usernameField = document.getElementById('id_username');
+    
+    function generateUsername() {
+        const firstName = firstNameField.value.trim().toLowerCase();
+        const lastName = lastNameField.value.trim().toLowerCase();
+        
+        if (firstName && lastName) {
+            const username = firstName + lastName;
+            usernameField.value = username;
+        }
+    }
+    
+    firstNameField.addEventListener('input', generateUsername);
+    lastNameField.addEventListener('input', generateUsername);
+});
+</script>
+{% endblock content %}

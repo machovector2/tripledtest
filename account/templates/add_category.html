@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+
+{% block title %}Add {{ category_type }} Category - Triple D Homes{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        {% if category_type == 'Income' %}
+          <i class="material-icons md-trending_up text-success me-2"></i>
+        {% else %}
+          <i class="material-icons md-trending_down text-danger me-2"></i>
+        {% endif %}
+        Add {{ category_type }} Category
+      </h2>
+      <p>Create a new {{ category_type|lower }} category for transaction management</p>
+    </div>
+    <div>
+      <a class="btn btn-light" href="{% url 'accounting:manage_categories' %}">
+        <i class="material-icons md-arrow_back"></i>Back to Categories
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header {% if category_type == 'Income' %}bg-success-light{% else %}bg-danger-light{% endif %}">
+          <h5 class="card-title mb-0">
+            <i class="material-icons {% if category_type == 'Income' %}md-trending_up text-success{% else %}md-trending_down text-danger{% endif %} me-2"></i>
+            Category Information
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <!-- Display form-level errors -->
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="material-icons md-error me-2"></i>
+              <strong>Error:</strong>
+              <ul class="mb-0">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+
+          <form method="post" id="categoryForm">
+            {% csrf_token %}
+
+            <div class="row">
+              <!-- Category Name -->
+              <div class="col-md-6 mb-4">
+                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                  <i class="material-icons md-label text-primary me-1" style="font-size: 18px; vertical-align: middle;"></i>
+                  Category Name *
+                </label>
+                  {{ form.name }}
+                  {% if form.name.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.name.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                <div class="form-text">
+                  <i class="material-icons md-info text-muted" style="font-size: 16px; vertical-align: middle;"></i>
+                  Enter a clear, descriptive name that identifies this category
+                </div>
+              </div>
+
+              <!-- Category Scope -->
+              <div class="col-md-6 mb-4">
+                <label for="{{ form.scope.id_for_label }}" class="form-label fw-bold">
+                  <i class="material-icons md-visibility text-primary me-1" style="font-size: 18px; vertical-align: middle;"></i>
+                  Category Scope *
+                </label>
+                  {{ form.scope }}
+                  {% if form.scope.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.scope.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                <div class="form-text">
+                  <i class="material-icons md-info text-muted" style="font-size: 16px; vertical-align: middle;"></i>
+                  Define where this category can be used
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+              <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                <i class="material-icons md-description text-primary me-1" style="font-size: 18px; vertical-align: middle;"></i>
+                Description (Optional)
+              </label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.description.errors %}
+                    {{ error }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              <div class="form-text">
+                <i class="material-icons md-info text-muted" style="font-size: 16px; vertical-align: middle;"></i>
+                Provide additional details to help users understand when to use this category
+              </div>
+            </div>
+
+            <!-- Branch Assignment (Chief Accountant Only) -->
+            {% if user.user_type == 'admin' and form.branch or user.user_type == 'chief_accountant' and form.branch %}
+            <div class="mb-4">
+              <label for="{{ form.branch.id_for_label }}" class="form-label fw-bold">
+                <i class="material-icons md-business text-primary me-1" style="font-size: 18px; vertical-align: middle;"></i>
+                Assign to Specific Branch (Optional)
+              </label>
+                {{ form.branch }}
+                {% if form.branch.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.branch.errors %}
+                    {{ error }}
+                  {% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="material-icons md-info text-muted" style="font-size: 16px; vertical-align: middle;"></i>
+                {{ form.branch.help_text|default:"Leave empty to make this category available globally to all branches" }}
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Information Card -->
+            <div class="card bg-light border-0 mb-4">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <i class="material-icons {% if category_type == 'Income' %}md-tips_and_updates text-success{% else %}md-tips_and_updates text-danger{% endif %} me-2"></i>
+                  Category Best Practices
+              </h6>
+                <ul class="mb-0 small">
+                  <li class="mb-2">
+                    <strong>Be Specific:</strong> Use clear, descriptive names that make it easy to identify the category's purpose
+                  </li>
+                  <li class="mb-2">
+                    <strong>Avoid Duplicates:</strong> Check if a similar category already exists before creating a new one
+                  </li>
+                  <li class="mb-2">
+                    <strong>Use Descriptions:</strong> Add helpful descriptions to guide users on when to use each category
+                  </li>
+                  <li>
+                    <strong>Plan Scope Carefully:</strong> Consider which branches need access to this category before setting the scope
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+              <a href="{% url 'accounting:manage_categories' %}" class="btn btn-light btn-lg">
+                <i class="material-icons md-close me-2"></i>Cancel
+              </a>
+              <div>
+                <button type="reset" class="btn btn-outline-secondary btn-lg me-2" onclick="return confirm('Are you sure you want to reset the form?')">
+                  <i class="material-icons md-refresh me-2"></i>Reset Form
+                </button>
+                <button type="submit" class="btn {% if category_type == 'Income' %}btn-success{% else %}btn-danger{% endif %} btn-lg" id="submitBtn">
+                  <span class="spinner-border spinner-border-sm me-2 d-none" id="submitSpinner"></span>
+                  <i class="material-icons md-save me-2" id="submitIcon"></i>
+                  Create {{ category_type }} Category
+              </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick Help Section -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body">
+          <h6 class="card-title">
+            <i class="material-icons md-help_outline {% if category_type == 'Income' %}text-success{% else %}text-danger{% endif %} me-2"></i>
+            Need Help?
+          </h6>
+          <p class="mb-2 small">
+            <strong>What is a Category?</strong> Categories help organize your {{ category_type|lower }} transactions into meaningful groups for better tracking and reporting.
+          </p>
+          <p class="mb-0 small">
+            <strong>What is Scope?</strong> The scope determines which branches can use this category:
+          </p>
+          <ul class="small mb-0">
+            <li><strong>All Branches:</strong> Can be used by any branch</li>
+            <li><strong>Main Branch Only:</strong> Restricted to the main branch</li>
+            <li><strong>Sub Branches Only:</strong> Available only to sub branches</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.bg-success-light {
+  background-color: #d4edda;
+  border-bottom: 3px solid #28a745;
+}
+
+.bg-danger-light {
+  background-color: #f8d7da;
+  border-bottom: 3px solid #dc3545;
+}
+
+.card {
+  transition: all 0.3s ease;
+}
+
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  padding: 0.6rem 0.75rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: {% if category_type == 'Income' %}#28a745{% else %}#dc3545{% endif %};
+  box-shadow: 0 0 0 0.2rem {% if category_type == 'Income' %}rgba(40, 167, 69, 0.15){% else %}rgba(220, 53, 69, 0.15){% endif %};
+}
+
+.form-label {
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.form-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.card-title {
+  color: #343a40;
+  font-weight: 600;
+}
+
+.invalid-feedback {
+  font-size: 0.875rem;
+}
+
+.alert {
+  border-left: 4px solid #dc3545;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('categoryForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const submitIcon = document.getElementById('submitIcon');
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        if (!nameField.value.trim()) {
+            e.preventDefault();
+            nameField.focus();
+            nameField.classList.add('is-invalid');
+            return false;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitSpinner.classList.remove('d-none');
+        submitIcon.classList.add('d-none');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Category...';
+    });
+
+    // Remove invalid class on input
+    nameField.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+
+    // Character counter for description
+    if (descriptionField) {
+        const maxLength = descriptionField.getAttribute('maxlength') || 500;
+        const counterDiv = document.createElement('div');
+        counterDiv.className = 'form-text text-end';
+        counterDiv.innerHTML = `<small><span id="charCount">0</span>/${maxLength} characters</small>`;
+        descriptionField.parentNode.appendChild(counterDiv);
+
+        const charCount = document.getElementById('charCount');
+        
+        descriptionField.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count > maxLength * 0.9) {
+                counterDiv.classList.add('text-warning');
+            } else {
+                counterDiv.classList.remove('text-warning');
+            }
+        });
+    }
+
+    // Auto-capitalize category name
+    nameField.addEventListener('blur', function() {
+        if (this.value) {
+            // Capitalize first letter of each word
+            this.value = this.value
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        }
+    });
+
+    // Confirmation before leaving if form has data
+    let formModified = false;
+    const formInputs = form.querySelectorAll('input, textarea, select');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            formModified = true;
+        });
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formModified && !form.submitted) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+
+    form.addEventListener('submit', function() {
+        form.submitted = true;
+    });
+});
+</script>
+{% endblock content %}

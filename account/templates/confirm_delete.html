@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Confirm Delete</h2>
+            <p>Please confirm this action</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="text-center mb-4">
+                                <i class="material-icons md-warning text-danger" style="font-size: 4rem;"></i>
+                                <h4 class="mt-3 text-danger">Delete {{ object_name }}?</h4>
+                            </div>
+
+                            {% if related_data %}
+                            <div class="alert alert-warning">
+                                <h6><i class="material-icons md-info"></i> This {{ object_type }} has related data:</h6>
+                                <ul class="mb-0">
+                                    {% for key, value in related_data.items %}
+                                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            {% if details %}
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6>Details:</h6>
+                                    <p class="mb-0">{{ details }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if warning %}
+                            <div class="alert alert-danger">
+                                <i class="material-icons md-warning"></i>
+                                {{ warning }}
+                            </div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-center gap-3">
+                                <form method="post" action="{{ delete_url }}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="material-icons md-delete"></i>
+                                        Yes, Delete
+                                    </button>
+                                </form>
+                                <a href="javascript:history.back()" class="btn btn-secondary">
+                                    <i class="material-icons md-arrow_back"></i>
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

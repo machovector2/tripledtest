@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'tripled',
+    'account',  # Accounting system
 ]
 
 MIDDLEWARE = [
@@ -155,9 +156,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication settings
-LOGIN_URL = '/user/signin/'  # Fixed to match actual URL pattern
-LOGIN_REDIRECT_URL = '/user/'
-LOGOUT_REDIRECT_URL = '/user/signin/'
+LOGIN_URL = '/admin-portal/signin/'  # Updated for new URL structure
+LOGIN_REDIRECT_URL = '/admin-portal/'
+LOGOUT_REDIRECT_URL = '/admin-portal/signin/'
 
 # Email settings
 # Load email configuration from environment variables

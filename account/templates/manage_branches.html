@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Manage Branches - Triple D Homes{% endblock %}
+
+{% block content %}
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">
+        <i class="material-icons md-business text-primary me-2"></i>
+        Manage Branches
+      </h2>
+      <p>Overview and management of all branch locations</p>
+    </div>
+    <div>
+      <a class="btn btn-primary" href="{% url 'accounting:create_branch' %}">
+        <i class="material-icons md-add"></i> Create Branch
+      </a>
+      <a class="btn btn-outline-primary" href="{% url 'accounting:assign_branch_admin' %}">
+        <i class="material-icons md-assignment_ind"></i> Assign Admins
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Row -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-primary-light">
+            <i class="material-icons text-primary md-business"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Total Branches</h6>
+            <span class="h4">{{ total_branches }}</span>
+            <span class="text-sm text-muted d-block">{{ main_branches }} main, {{ sub_branches }} sub</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-success-light">
+            <i class="material-icons text-success md-check_circle"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Active Branches</h6>
+            <span class="h4">{{ active_branches }}</span>
+            <span class="text-sm text-muted d-block">Currently operational</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle bg-info-light">
+            <i class="material-icons text-info md-account_balance"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Total Allocated</h6>
+            <span class="h4">₦{{ total_allocated|intcomma }}</span>
+            <span class="text-sm text-muted d-block">Funds distributed</span>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card card-body shadow-sm border-0 h-100">
+        <article class="icontext">
+          <span class="icon icon-sm rounded-circle {% if total_balance >= 0 %}bg-success-light{% else %}bg-danger-light{% endif %}">
+            <i class="material-icons {% if total_balance >= 0 %}text-success{% else %}text-danger{% endif %} md-account_balance_wallet"></i>
+          </span>
+          <div class="text">
+            <h6 class="mb-1">Total Balance</h6>
+            <span class="h4 {% if total_balance >= 0 %}text-success{% else %}text-danger{% endif %}">₦{{ total_balance|intcomma }}</span>
+            <span class="text-sm text-muted d-block">All branches combined</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Row -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-4 col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="material-icons md-search"></i></span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by name, location or state" onkeyup="filterBranches()">
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <select class="form-select" id="typeFilter" onchange="filterBranches()">
+            <option value="">All Types</option>
+            <option value="main">Main Branch</option>
+            <option value="sub">Sub Branch</option>
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <select class="form-select" id="statusFilter" onchange="filterBranches()">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <select class="form-select" id="sortBy" onchange="sortBranches()">
+            <option value="recent">Newest First</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="balance">Balance (High-Low)</option>
+            <option value="allocated">Allocated (High-Low)</option>
+          </select>
+        </div>
+        <div class="col-lg-1 col-md-2 text-lg-end">
+          <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+            <i class="material-icons md-refresh"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if branches %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="branchesTable">
+          <thead class="table-light">
+            <tr>
+              <th>Branch</th>
+              <th>Location</th>
+              <th>Admins</th>
+              <th>Allocated Funds</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for branch in branches %}
+            <tr class="branch-row"
+                data-name="{{ branch.name|lower }}"
+                data-location="{{ branch.location|lower }} {{ branch.state|lower }}"
+                data-type="{{ branch.branch_type }}"
+                data-status="{% if branch.is_active %}active{% else %}inactive{% endif %}"
+                data-balance="{{ branch.get_balance }}"
+                data-allocated="{{ branch.allocated_funds }}"
+                data-created="{{ branch.created_date|date:'U' }}">
+              <td>
+                <div>
+                  <div class="d-flex align-items-center">
+                    <div class="branch-icon bg-primary text-white rounded-circle me-3">
+                      <i class="material-icons md-business"></i>
+                    </div>
+                    <div>
+                      <div class="fw-semibold">{{ branch.name }}</div>
+                      <div class="text-muted small">
+                        <span class="badge {% if branch.branch_type == 'main' %}bg-primary{% else %}bg-secondary{% endif %}">
+                          {{ branch.get_branch_type_display }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <div class="fw-semibold">{{ branch.location }}</div>
+                  <div class="text-muted small">
+                    <i class="material-icons md-location_on" style="font-size: 14px; vertical-align: middle;"></i>
+                    {{ branch.state }}
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if branch.admins.all %}
+                  <div class="d-flex flex-wrap">
+                    {% for admin in branch.admins.all %}
+                      <span class="badge bg-info text-dark me-1 mb-1" title="{{ admin.email }}">
+                        <i class="material-icons md-person" style="font-size: 13px; vertical-align: middle;"></i>
+                        {{ admin.get_full_name|truncatechars:15 }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <span class="badge bg-warning text-dark">
+                    <i class="material-icons md-warning" style="font-size: 13px; vertical-align: middle;"></i>
+                    No admins
+                  </span>
+                {% endif %}
+                <div class="text-muted small mt-1">
+                  {{ branch.admin_count }} admin{{ branch.admin_count|pluralize }}
+                </div>
+              </td>
+              <td>
+                <div class="text-success fw-semibold">₦{{ branch.allocated_funds|intcomma }}</div>
+              </td>
+              <td>
+                <div class="{% if branch.get_balance >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold">
+                  ₦{{ branch.get_balance|intcomma }}
+                </div>
+                {% if branch.get_balance < 0 %}
+                  <small class="text-danger">
+                    <i class="material-icons md-warning" style="font-size: 12px; vertical-align: middle;"></i>
+                    Deficit
+                  </small>
+                {% endif %}
+              </td>
+              <td>
+                {% if branch.is_active %}
+                  <span class="badge bg-success">
+                    <i class="material-icons md-check_circle" style="font-size: 14px; vertical-align: middle;"></i>
+                    Active
+                  </span>
+                {% else %}
+                  <span class="badge bg-danger">
+                    <i class="material-icons md-block" style="font-size: 14px; vertical-align: middle;"></i>
+                    Inactive
+                  </span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="btn-group" role="group">
+                  <a class="btn btn-sm btn-outline-primary action-btn-icon" href="{% url 'accounting:transactions' %}?branch={{ branch.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="View Transactions">
+                    <i class="material-icons md-receipt_long"></i>
+                  </a>
+                  <a class="btn btn-sm btn-outline-info action-btn-icon" href="{% url 'accounting:assign_branch_admin_with_branch' branch.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Assign Admins">
+                    <i class="material-icons md-assignment_ind"></i>
+                  </a>
+                  {% if branch.branch_type != 'main' %}
+                    <a class="btn btn-sm btn-outline-success action-btn-icon" href="{% url 'accounting:allocate_funds_with_branch' branch.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Allocate Funds">
+                      <i class="material-icons md-account_balance"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-danger action-btn-icon" href="{% url 'accounting:delete_branch' branch.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Branch" onclick="return confirm('Delete {{ branch.name }}? This will remove all associated data. This action cannot be undone.')">
+                      <i class="material-icons md-delete"></i>
+                    </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="noResults" class="text-center py-5" style="display: none;">
+        <i class="material-icons md-search_off" style="font-size: 4rem; color: #ccc;"></i>
+        <h5 class="mt-3 text-muted">No branches match your filters</h5>
+        <p class="text-muted">Try adjusting your search or filter criteria.</p>
+        <button class="btn btn-outline-secondary" onclick="resetFilters()">
+          <i class="material-icons md-refresh me-2"></i>Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body text-center py-5">
+      <i class="material-icons md-business" style="font-size: 4rem; color: #ccc;"></i>
+      <h5 class="mt-3 text-muted">No branches found</h5>
+      <p class="text-muted">Create your first branch to get started.</p>
+      <a href="{% url 'accounting:create_branch' %}" class="btn btn-primary">
+        <i class="material-icons md-add me-2"></i>Create Branch
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<style>
+.bg-primary-light { background-color: #dceeff; }
+.bg-success-light { background-color: #d4edda; }
+.bg-danger-light { background-color: #f8d7da; }
+.bg-warning-light { background-color: #fff3cd; }
+.bg-info-light { background-color: #d1ecf1; }
+
+.icontext .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.branch-icon {
+  width: 45px;
+  height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.branch-icon i {
+  font-size: 22px;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.action-btn-icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.action-btn-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.action-btn-icon:active {
+  transform: translateY(0);
+}
+
+.action-btn-icon i {
+  font-size: 18px;
+}
+
+.btn-group .action-btn-icon {
+  margin: 0 2px;
+  border-radius: 6px !important;
+}
+
+.btn-group .action-btn-icon:first-child {
+  margin-left: 0;
+}
+
+.btn-group .action-btn-icon:last-child {
+  margin-right: 0;
+}
+
+.form-select, .form-control {
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+#branchesTable tbody tr {
+  transition: transform 0.2s ease;
+}
+
+#branchesTable tbody tr:hover {
+  transform: translateY(-1px);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.card-title i {
+  font-size: 20px;
+  vertical-align: middle;
+}
+</style>
+
+<script>
+function filterBranches() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const typeFilter = document.getElementById('typeFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+
+  const rows = document.querySelectorAll('#branchesTable tbody tr.branch-row');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const name = row.getAttribute('data-name');
+    const location = row.getAttribute('data-location');
+    const type = row.getAttribute('data-type');
+    const status = row.getAttribute('data-status');
+
+    const matchesSearch = !searchTerm ||
+      name.includes(searchTerm) ||
+      location.includes(searchTerm);
+
+    const matchesType = !typeFilter || type === typeFilter;
+    const matchesStatus = !statusFilter || status === statusFilter;
+
+    if (matchesSearch && matchesType && matchesStatus) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+}
+
+function sortBranches() {
+  const tableBody = document.querySelector('#branchesTable tbody');
+  if (!tableBody) {
+    return;
+  }
+  const rows = Array.from(tableBody.querySelectorAll('tr.branch-row'));
+  const sortBy = document.getElementById('sortBy').value;
+
+  rows.sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+    }
+    if (sortBy === 'balance') {
+      return parseFloat(b.getAttribute('data-balance')) - parseFloat(a.getAttribute('data-balance'));
+    }
+    if (sortBy === 'allocated') {
+      return parseFloat(b.getAttribute('data-allocated')) - parseFloat(a.getAttribute('data-allocated'));
+    }
+    // Default: recent (date created descending)
+    return parseInt(b.getAttribute('data-created')) - parseInt(a.getAttribute('data-created'));
+  });
+
+  rows.forEach(row => tableBody.appendChild(row));
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('typeFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('sortBy').value = 'recent';
+  filterBranches();
+  sortBranches();
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+  filterBranches();
+  sortBranches();
+  
+  // Initialize Bootstrap tooltips with custom settings
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl, {
+      trigger: 'hover focus',
+      delay: { show: 200, hide: 100 }
+    });
+  });
+});
+</script>
+{% endblock content %}
