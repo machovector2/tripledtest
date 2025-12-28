@@ -10,11 +10,13 @@ from django.utils import timezone
 from decimal import Decimal
 from .models import *
 from .forms import *
+from tripled.models import Commission, Realtor
+from django.core.paginator import Paginator
 
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
@@ -53,7 +55,7 @@ def login_view(request):
                 next_page = request.GET.get('next')
                 if next_page:
                     return redirect(next_page)
-                return redirect('dashboard')
+                return redirect('accounting:dashboard')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -71,7 +73,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.info(request, 'You have been logged out successfully.')
-    return redirect('login')
+    return redirect('accounting:login')
 
 
 @login_required
@@ -186,7 +188,7 @@ def dashboard(request):
 def create_branch(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can create branches.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     if request.method == 'POST':
         form = BranchForm(request.POST)
@@ -197,7 +199,7 @@ def create_branch(request):
             try:
                 branch.save()
                 messages.success(request, f'Branch "{branch.name}" created successfully!')
-                return redirect('manage_branches')
+                return redirect('accounting:manage_branches')
             except Exception as e:
                 messages.error(request, f'Error creating branch: {str(e)}')
         else:
@@ -212,7 +214,7 @@ def create_branch(request):
 def create_branch_admin(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can create branch admins.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     if request.method == 'POST':
         form = BranchAdminForm(request.POST)
@@ -220,7 +222,7 @@ def create_branch_admin(request):
         if form.is_valid():
             admin_user = form.save()
             messages.success(request, f'Branch admin "{admin_user.get_full_name()}" created successfully!')
-            return redirect('manage_users')
+            return redirect('accounting:manage_users')
     else:
         form = BranchAdminForm()
 
@@ -231,7 +233,7 @@ def create_branch_admin(request):
 def manage_users(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can manage users.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     from django.db.models import Count
 
@@ -265,7 +267,7 @@ def manage_users(request):
 def manage_branches(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can manage branches.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     from django.db.models import Count, Sum
     
@@ -310,7 +312,7 @@ def manage_branches(request):
 def assign_branch_admin(request, branch_id=None, user_id=None):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can assign branch admins.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     # Get pre-selected branch or user if provided
     pre_selected_branch = None
@@ -321,14 +323,14 @@ def assign_branch_admin(request, branch_id=None, user_id=None):
             pre_selected_branch = Branch.objects.get(id=branch_id, is_active=True)
         except Branch.DoesNotExist:
             messages.error(request, 'Branch not found.')
-            return redirect('manage_branches')
+            return redirect('accounting:manage_branches')
     
     if user_id:
         try:
             pre_selected_user = User.objects.get(id=user_id, user_type='branch_admin')
         except User.DoesNotExist:
             messages.error(request, 'User not found.')
-            return redirect('manage_users')
+            return redirect('accounting:manage_users')
 
     if request.method == 'POST':
         # Handle different cases: branch assignment or user assignment
@@ -358,7 +360,7 @@ def assign_branch_admin(request, branch_id=None, user_id=None):
             else:
                 messages.success(request, f'All branch assignments removed from user "{pre_selected_user.get_full_name()}".')
             
-            return redirect('manage_users')
+            return redirect('accounting:manage_users')
         else:
             # Branch case: standard flow
             post_data = request.POST.copy()
@@ -387,9 +389,9 @@ def assign_branch_admin(request, branch_id=None, user_id=None):
                 
                 # Redirect based on where user came from
                 if branch_id:
-                    return redirect('manage_branches')
+                    return redirect('accounting:manage_branches')
                 else:
-                    return redirect('manage_branches')
+                    return redirect('accounting:manage_branches')
             else:
                 # Display form errors
                 for field, errors in form.errors.items():
@@ -441,13 +443,13 @@ def assign_branch_admin(request, branch_id=None, user_id=None):
 def allocate_funds(request, branch_id=None):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can allocate funds.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     # Get main branch
     main_branch = Branch.objects.filter(branch_type='main').first()
     if not main_branch:
         messages.error(request, 'Main branch not found. Please create a main branch first.')
-        return redirect('manage_branches')
+        return redirect('accounting:manage_branches')
     
     # Get pre-selected branch if provided
     pre_selected_branch = None
@@ -456,7 +458,7 @@ def allocate_funds(request, branch_id=None):
             pre_selected_branch = Branch.objects.get(id=branch_id, branch_type='sub', is_active=True)
         except Branch.DoesNotExist:
             messages.error(request, 'Branch not found or is not a sub branch.')
-            return redirect('manage_branches')
+            return redirect('accounting:manage_branches')
 
     if request.method == 'POST':
         form = FundAllocationForm(request.POST, user=request.user)
@@ -520,9 +522,9 @@ def allocate_funds(request, branch_id=None):
             
             # Redirect based on where user came from
             if branch_id:
-                return redirect('manage_branches')
+                return redirect('accounting:manage_branches')
             else:
-                return redirect('fund_allocations')
+                return redirect('accounting:fund_allocations')
         else:
             # Display form validation errors
             for field, errors in form.errors.items():
@@ -553,7 +555,7 @@ def allocate_funds(request, branch_id=None):
 def fund_allocations(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can view fund allocations.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     allocations = FundAllocation.objects.select_related(
         'from_branch', 'to_branch', 'allocated_by'
@@ -572,11 +574,11 @@ def reverse_fund_allocation(request, allocation_id):
     """
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can reverse fund allocations.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
     
     if request.method != 'POST':
         messages.error(request, 'Invalid request method.')
-        return redirect('fund_allocations')
+        return redirect('accounting:fund_allocations')
     
     try:
         # Get the original allocation
@@ -587,7 +589,7 @@ def reverse_fund_allocation(request, allocation_id):
         # Check if already reversed
         if not original_allocation.is_active:
             messages.warning(request, 'This allocation has already been reversed.')
-            return redirect('fund_allocations')
+            return redirect('accounting:fund_allocations')
         
         # Get branches
         main_branch = original_allocation.from_branch
@@ -604,7 +606,7 @@ def reverse_fund_allocation(request, allocation_id):
                 f"The branch has already spent ₦{(amount - sub_branch_balance):,.2f} of the allocated funds.\n\n"
                 f"Please ensure {sub_branch.name} has sufficient balance before reversing this allocation."
             )
-            return redirect('fund_allocations')
+            return redirect('accounting:fund_allocations')
         
         # Create the reversal allocation record
         reversal_allocation = FundAllocation.objects.create(
@@ -678,7 +680,7 @@ def reverse_fund_allocation(request, allocation_id):
     except Exception as e:
         messages.error(request, f'Error reversing allocation: {str(e)}')
     
-    return redirect('fund_allocations')
+    return redirect('accounting:fund_allocations')
 
 
 @login_required
@@ -689,7 +691,7 @@ def delete_fund_allocation(request, allocation_id):
     """
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can manage fund allocations.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
     
     messages.error(request, 
         "❌ Fund Allocations Cannot Be Deleted!\n\n"
@@ -702,7 +704,7 @@ def delete_fund_allocation(request, allocation_id):
         "• Mark the original allocation as reversed\n"
         "• Preserve complete transaction history"
     )
-    return redirect('fund_allocations')
+    return redirect('accounting:fund_allocations')
 
 
 @login_required
@@ -716,7 +718,7 @@ def transactions(request):
         branch = request.user.managed_branch
         if not branch:
             messages.error(request, 'No branch assigned to your account.')
-            return redirect('dashboard')
+            return redirect('accounting:dashboard')
         transactions_list = branch.transactions.select_related(
             'created_by', 'income_category', 'expenditure_category'
         )
@@ -780,16 +782,146 @@ def transactions(request):
     return render(request, 'transactions.html', context)
 
 
+
+@login_required
+def commissions_list(request):
+    if request.user.user_type not in ['admin', 'chief_accountant']:
+        messages.error(request, 'Access denied. Only Chief Accountant can manage commissions.')
+        return redirect('accounting:dashboard')
+
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    realtor_id = request.GET.get('realtor_id')
+    payment_status = request.GET.get('payment_status')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    # Base query
+    commissions = Commission.objects.select_related('realtor').order_by('-created_at')
+
+    # Apply filters
+    if search_query:
+        commissions = commissions.filter(
+            Q(description__icontains=search_query) |
+            Q(property_reference__icontains=search_query) |
+            Q(realtor__first_name__icontains=search_query) |
+            Q(realtor__last_name__icontains=search_query)
+        )
+
+    if realtor_id:
+        commissions = commissions.filter(realtor_id=realtor_id)
+
+    if payment_status:
+        if payment_status == 'paid':
+            commissions = commissions.filter(is_paid=True)
+        elif payment_status == 'unpaid':
+            commissions = commissions.filter(is_paid=False)
+
+    if date_from:
+        commissions = commissions.filter(created_at__date__gte=date_from)
+
+    if date_to:
+        commissions = commissions.filter(created_at__date__lte=date_to)
+
+    # Calculate totals based on filtered results
+    total_commissions = commissions.aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    paid_commissions = commissions.filter(is_paid=True).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    unpaid_commissions = commissions.filter(is_paid=False).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+
+    # Pagination
+    paginator = Paginator(commissions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get realtors for filter dropdown
+    realtors = Realtor.objects.all().order_by('first_name')
+
+    context = {
+        'page_obj': page_obj,
+        'realtors': realtors,
+        'search_query': search_query,
+        'realtor_id': realtor_id if realtor_id else '',
+        'payment_status': payment_status,
+        'date_from': date_from,
+        'date_to': date_to,
+        'total_commissions': total_commissions,
+        'paid_commissions': paid_commissions,
+        'unpaid_commissions': unpaid_commissions,
+    }
+
+    return render(request, 'commissions.html', context)
+
+
+@login_required
+def pay_commission(request, commission_id):
+    if request.user.user_type not in ['admin', 'chief_accountant']:
+        messages.error(request, 'Access denied. Only Chief Accountant can pay commissions.')
+        return redirect('accounting:dashboard')
+
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method.')
+        return redirect('accounting:account_commissions_list')
+
+    commission = get_object_or_404(Commission, id=commission_id)
+
+    if commission.is_paid:
+        messages.warning(request, 'This commission has already been paid.')
+        return redirect('accounting:account_commissions_list')
+
+    # Get Main Branch
+    main_branch = Branch.objects.filter(branch_type='main').first()
+    if not main_branch:
+        messages.error(request, 'Main branch not found. Cannot process payment.')
+        return redirect('accounting:account_commissions_list')
+
+    # Check Main Branch Balance
+    main_balance = main_branch.get_balance()
+    if main_balance < commission.amount:
+        messages.error(request, 
+            f'Insufficient funds in Main Branch.\n'
+            f'Required: ₦{commission.amount:,.2f}\n'
+            f'Available: ₦{main_balance:,.2f}'
+        )
+        return redirect('accounting:account_commissions_list')
+
+    try:
+        from django.db import transaction as db_transaction
+        
+        with db_transaction.atomic():
+            # Get or create Expenditure Category for Commissions
+            exp_category, _ = ExpenditureCategory.objects.get_or_create(
+                name='Realtor Commissions',
+                defaults={
+                    'description': 'Payments for realtor commissions',
+                    'scope': 'main',
+                    'created_by': request.user
+                }
+            )
+
+            # Create Expenditure Transaction
+            Transaction.objects.create(
+                branch=main_branch,
+                transaction_type='expenditure',
+                amount=commission.amount,
+                description=f"Commission payment to {commission.realtor.full_name} (Ref: {commission.property_reference})",
+                date=timezone.now().date(),
+                expenditure_category=exp_category,
+                created_by=request.user
+            )
+
+            # Mark Commission as Paid
+            commission.mark_as_paid()
+
+        messages.success(request, f'Commission of ₦{commission.amount:,.2f} paid successfully to {commission.realtor.full_name}.')
+
+    except Exception as e:
+        messages.error(request, f'Error processing payment: {str(e)}')
+
+    return redirect('accounting:account_commissions_list')
+
+
 @login_required
 def add_transaction(request):
-    # Check if branch admin is trying to add income (not allowed)
-    if request.user.user_type == 'branch_admin':
-        if request.method == 'POST':
-            transaction_type = request.POST.get('transaction_type')
-            if transaction_type == 'income':
-                messages.error(request, 'Branch administrators can only add expenditure transactions. Income can only be added by the main administrator.')
-                return redirect('add_transaction')
-    
     if request.method == 'POST':
         form = TransactionForm(request.POST, user=request.user)
         if form.is_valid():
@@ -803,13 +935,13 @@ def add_transaction(request):
                 branch = request.user.managed_branch
                 if not branch:
                     messages.error(request, 'No branch assigned to your account.')
-                    return redirect('dashboard')
+                    return redirect('accounting:dashboard')
                 transaction.branch = branch
 
             # Note: Balance validation is already handled in the form's clean method
             transaction.save()
             messages.success(request, 'Transaction added successfully!')
-            return redirect('transactions')
+            return redirect('accounting:transactions')
         else:
             # Form is invalid - display validation errors
             for field, errors in form.errors.items():
@@ -825,7 +957,7 @@ def add_transaction(request):
 def add_income(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountantistrators can add income transactions.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
     
     if request.method == 'POST':
         form = TransactionForm(request.POST, user=request.user, transaction_type='income')
@@ -837,7 +969,7 @@ def add_income(request):
 
             transaction.save()
             messages.success(request, 'Income transaction added successfully!')
-            return redirect('transactions')
+            return redirect('accounting:transactions')
         else:
             # Form is invalid - display validation errors
             for field, errors in form.errors.items():
@@ -865,14 +997,14 @@ def add_expenditure(request):
                 branch = request.user.managed_branch
                 if not branch:
                     messages.error(request, 'No branch assigned to your account.')
-                    return redirect('dashboard')
+                    return redirect('accounting:dashboard')
                 transaction.branch = branch
 
             # Note: Balance validation is already handled in the form's clean method
             try:
                 transaction.save()
                 messages.success(request, 'Expenditure transaction added successfully!')
-                return redirect('transactions')
+                return redirect('accounting:transactions')
             except Exception as e:
                 messages.error(request, f'Error saving transaction: {str(e)}')
                 return render(request, 'add_transaction.html', {'form': form, 'transaction_type': 'expenditure'})
@@ -891,7 +1023,7 @@ def add_expenditure(request):
 def manage_categories(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can manage categories.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     from django.db.models import Count
     
@@ -929,7 +1061,7 @@ def manage_categories(request):
 def add_income_category(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can create categories.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     if request.method == 'POST':
         form = IncomeCategoryForm(request.POST, user=request.user)
@@ -944,7 +1076,7 @@ def add_income_category(request):
 
             category.save()
             messages.success(request, 'Income category added successfully!')
-            return redirect('manage_categories')
+            return redirect('accounting:manage_categories')
     else:
         form = IncomeCategoryForm(user=request.user)
 
@@ -955,7 +1087,7 @@ def add_income_category(request):
 def add_expenditure_category(request):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can create categories.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     if request.method == 'POST':
         form = ExpenditureCategoryForm(request.POST, user=request.user)
@@ -970,7 +1102,7 @@ def add_expenditure_category(request):
 
             category.save()
             messages.success(request, 'Expenditure category added successfully!')
-            return redirect('manage_categories')
+            return redirect('accounting:manage_categories')
     else:
         form = ExpenditureCategoryForm(user=request.user)
 
@@ -1049,7 +1181,7 @@ def edit_expenditure_category(request, category_id):
 def delete_income_category(request, category_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can delete categories.')
-        return redirect('manage_categories')
+        return redirect('accounting:manage_categories')
     
     category = get_object_or_404(IncomeCategory, id=category_id)
     
@@ -1080,20 +1212,20 @@ def delete_income_category(request, category_id):
                         "• Keep it for historical reference"
             
             messages.error(request, error_msg)
-            return redirect('manage_categories')
+            return redirect('accounting:manage_categories')
         
         category.delete()
         messages.success(request, f'Income category "{category_name}" deleted successfully!')
-        return redirect('manage_categories')
+        return redirect('accounting:manage_categories')
     
-    return redirect('manage_categories')
+    return redirect('accounting:manage_categories')
 
 
 @login_required
 def delete_expenditure_category(request, category_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can delete categories.')
-        return redirect('manage_categories')
+        return redirect('accounting:manage_categories')
     
     category = get_object_or_404(ExpenditureCategory, id=category_id)
     
@@ -1124,13 +1256,13 @@ def delete_expenditure_category(request, category_id):
                         "• Keep it for historical reference"
             
             messages.error(request, error_msg)
-            return redirect('manage_categories')
+            return redirect('accounting:manage_categories')
         
         category.delete()
         messages.success(request, f'Expenditure category "{category_name}" deleted successfully!')
-        return redirect('manage_categories')
+        return redirect('accounting:manage_categories')
     
-    return redirect('manage_categories')
+    return redirect('accounting:manage_categories')
 
 
 # New views for delete functionality and user management
@@ -1139,13 +1271,13 @@ def delete_expenditure_category(request, category_id):
 def delete_branch(request, branch_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can delete branches.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     branch = get_object_or_404(Branch, id=branch_id)
 
     if branch.branch_type == 'main':
         messages.error(request, 'Cannot delete the main branch.')
-        return redirect('manage_branches')
+        return redirect('accounting:manage_branches')
 
     # Check for fund allocations (both sent and received)
     allocations_made = branch.fund_allocations_made.count()
@@ -1170,7 +1302,7 @@ def delete_branch(request, branch_id):
             f"• Mark it as inactive instead of deleting it\n"
             f"• This preserves all historical financial data"
         )
-        return redirect('manage_branches')
+        return redirect('accounting:manage_branches')
 
     if request.method == 'POST':
         branch_name = branch.name
@@ -1185,7 +1317,7 @@ def delete_branch(request, branch_id):
         except Exception as e:
             messages.error(request, f'Error deleting branch: {str(e)}')
         
-        return redirect('manage_branches')
+        return redirect('accounting:manage_branches')
 
     # Check for related data for confirmation page
     transaction_count = branch.transactions.count()
@@ -1205,19 +1337,19 @@ def delete_branch(request, branch_id):
 def delete_user(request, user_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can delete users.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     user = get_object_or_404(User, id=user_id)
 
     if user.user_type == 'chief_accountant':
         messages.error(request, 'Cannot delete super admin users.')
-        return redirect('manage_users')
+        return redirect('accounting:manage_users')
 
     if request.method == 'POST':
         user_name = user.get_full_name()
         user.delete()
         messages.success(request, f'User "{user_name}" deleted successfully!')
-        return redirect('manage_users')
+        return redirect('accounting:manage_users')
 
     # Check for related data
     transaction_count = user.transaction_set.count()
@@ -1245,16 +1377,25 @@ def delete_transaction(request, transaction_id):
     elif request.user.user_type == 'branch_admin':
         if transaction.branch != request.user.managed_branch:
             messages.error(request, 'You can only delete transactions from your branch.')
-            return redirect('transactions')
+            return redirect('accounting:transactions')
     else:
         messages.error(request, 'Permission denied.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
+        
+    # Check if transaction is a commission payment
+    if transaction.expenditure_category and transaction.expenditure_category.name == 'Realtor Commissions':
+        messages.error(request, 
+            "❌ Cannot Delete Commission Payment!\n\n"
+            "This transaction is a system-generated commission payment and cannot be deleted."
+        )
+        return redirect('accounting:transactions')
+
 
     if request.method == 'POST':
         transaction_desc = f'"{transaction.description}" (₦{transaction.amount:,.2f})'
         transaction.delete()
         messages.success(request, f'Transaction {transaction_desc} deleted successfully!')
-        return redirect('transactions')
+        return redirect('accounting:transactions')
 
     return render(request, 'confirm_delete.html', {
         'object_name': f'Transaction: {transaction.description}',
@@ -1269,27 +1410,27 @@ def delete_transaction(request, transaction_id):
 def toggle_user_status(request, user_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can change user status.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     user = get_object_or_404(User, id=user_id)
 
     if user.user_type == 'chief_accountant':
         messages.error(request, 'Cannot change status of super admin users.')
-        return redirect('manage_users')
+        return redirect('accounting:manage_users')
 
     user.is_active = not user.is_active
     user.save()
 
     status = 'activated' if user.is_active else 'deactivated'
     messages.success(request, f'User "{user.get_full_name()}" {status} successfully!')
-    return redirect('manage_users')
+    return redirect('accounting:manage_users')
 
 
 @login_required
 def reset_user_password(request, user_id):
     if request.user.user_type not in ['admin', 'chief_accountant']:
         messages.error(request, 'Only Chief Accountant can reset passwords.')
-        return redirect('dashboard')
+        return redirect('accounting:dashboard')
 
     user = get_object_or_404(User, id=user_id)
 
@@ -1303,7 +1444,7 @@ def reset_user_password(request, user_id):
         user.save()
 
         messages.success(request, f'Password for "{user.get_full_name()}" reset successfully!')
-        return redirect('manage_users')
+        return redirect('accounting:manage_users')
 
     return render(request, 'reset_password.html', {'user': user})
 
@@ -1368,45 +1509,55 @@ def reports(request):
         total_amount = total_income + total_expenditure
         average_transaction_value = total_amount / total_transactions
     
-    # Daily transaction trends (last 30 days)
+    # Daily transaction trends for the SELECTED period
     daily_trends = []
-    for i in range(30):
-        date = datetime.now().date() - timedelta(days=i)
+    curr_daily_date = end_date_obj
+    while curr_daily_date >= start_date_obj:
         day_income = transactions_qs.filter(
             transaction_type='income', 
-            date=date
+            date=curr_daily_date
         ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
         day_expenditure = transactions_qs.filter(
             transaction_type='expenditure', 
-            date=date
+            date=curr_daily_date
         ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        daily_trends.append({
-            'date': date,
-            'income': day_income,
-            'expenditure': day_expenditure,
-            'net': day_income - day_expenditure
-        })
+        
+        # Only include days with activity or if it's a short range to avoid clutter
+        if day_income > 0 or day_expenditure > 0 or (end_date_obj - start_date_obj).days <= 14:
+            daily_trends.append({
+                'date': curr_daily_date,
+                'income': day_income,
+                'expenditure': day_expenditure,
+                'net': day_income - day_expenditure
+            })
+        curr_daily_date -= timedelta(days=1)
     
-    # Top categories
+    # Top categories with percentages
     income_categories = transactions_qs.filter(transaction_type='income').values(
         'income_category__name'
     ).annotate(
         total=Sum('amount'),
         count=Count('id')
-    ).order_by('-total')[:5]
+    ).order_by('-total')[:10]
+    
+    for cat in income_categories:
+        cat['percentage'] = (cat['total'] / total_income * 100) if total_income > 0 else 0
     
     expenditure_categories = transactions_qs.filter(transaction_type='expenditure').values(
         'expenditure_category__name'
     ).annotate(
         total=Sum('amount'),
         count=Count('id')
-    ).order_by('-total')[:5]
+    ).order_by('-total')[:10]
+    
+    for cat in expenditure_categories:
+        cat['percentage'] = (cat['total'] / total_expenditure * 100) if total_expenditure > 0 else 0
     
     # Branch performance (super admin only)
     branch_performance = []
     if request.user.user_type in ['admin', 'chief_accountant']:
-        branches = Branch.objects.filter(is_active=True)
-        for branch in branches:
+        branches_list = Branch.objects.filter(is_active=True)
+        for branch in branches_list:
             branch_transactions = transactions_qs.filter(branch=branch)
             branch_income = branch_transactions.filter(transaction_type='income').aggregate(
                 Sum('amount'))['amount__sum'] or Decimal('0')
@@ -1420,30 +1571,69 @@ def reports(request):
                 'transaction_count': branch_transactions.count()
             })
     
-    # Recent transactions
+    # Detailed data for different report types
+    full_transactions = None
+    if report_type == 'detailed':
+        full_transactions = transactions_qs.select_related(
+            'branch', 'created_by', 'income_category', 'expenditure_category'
+        ).order_by('-date', '-created_date')
+    
+    # Weekly Summary (for trends)
+    weekly_trends = []
+    curr_date = end_date_obj
+    while curr_date >= start_date_obj:
+        week_start = curr_date - timedelta(days=curr_date.weekday())
+        if week_start < start_date_obj:
+            week_start = start_date_obj
+        
+        week_data = transactions_qs.filter(date__range=[week_start, curr_date])
+        week_income = week_data.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+        week_expenditure = week_data.filter(transaction_type='expenditure').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+        
+        weekly_trends.append({
+            'label': f"{week_start.strftime('%b %d')} - {curr_date.strftime('%b %d')}",
+            'income': week_income,
+            'expenditure': week_expenditure,
+            'net': week_income - week_expenditure
+        })
+        curr_date = week_start - timedelta(days=1)
+
+    # Recent transactions (limited for overview)
     recent_transactions = transactions_qs.select_related(
         'branch', 'created_by', 'income_category', 'expenditure_category'
     ).order_by('-created_date')[:10]
     
     # Monthly comparison (current vs previous month)
     current_month_start = datetime.now().replace(day=1).date()
+    # We need a fresh query for previous month as transactions_qs is limited by filters
     previous_month_start = (current_month_start - timedelta(days=1)).replace(day=1)
     previous_month_end = current_month_start - timedelta(days=1)
     
-    current_month_income = transactions_qs.filter(
-        transaction_type='income',
-        date__gte=current_month_start
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-    
-    previous_month_income = Transaction.objects.filter(
+    # Calculate previous month income for comparison
+    prev_month_qs = Transaction.objects.filter(
         transaction_type='income',
         date__range=[previous_month_start, previous_month_end],
         branch__is_active=True
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    )
+    if branch_filter:
+        prev_month_qs = prev_month_qs.filter(branch_id=branch_filter)
+    
+    previous_month_income = prev_month_qs.aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    
+    # Calculate current month income separately to ensure it's not restricted by report date filter for growth metric
+    curr_month_qs = Transaction.objects.filter(
+        transaction_type='income',
+        date__gte=current_month_start,
+        branch__is_active=True
+    )
+    if branch_filter:
+        curr_month_qs = curr_month_qs.filter(branch_id=branch_filter)
+    
+    current_real_month_income = curr_month_qs.aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
     
     income_growth = 0
     if previous_month_income > 0:
-        income_growth = ((current_month_income - previous_month_income) / previous_month_income) * 100
+        income_growth = ((current_real_month_income - previous_month_income) / previous_month_income) * 100
     
     context = {
         'start_date': start_date,
@@ -1459,11 +1649,13 @@ def reports(request):
         'total_transactions': total_transactions,
         'average_transaction_value': average_transaction_value,
         'daily_trends': daily_trends,
+        'weekly_trends': weekly_trends,
         'income_categories': income_categories,
         'expenditure_categories': expenditure_categories,
         'branch_performance': branch_performance,
         'recent_transactions': recent_transactions,
-        'current_month_income': current_month_income,
+        'full_transactions': full_transactions,
+        'current_month_income': current_real_month_income,
         'previous_month_income': previous_month_income,
         'income_growth': income_growth,
     }
@@ -1506,6 +1698,18 @@ def edit_transaction(request, transaction_id):
                     "This protection ensures fund allocation integrity and maintains audit trail."
                 )
             }, status=403)
+            
+        # BLOCK editing of transactions linked to Commissions
+        if transaction.expenditure_category and transaction.expenditure_category.name == 'Realtor Commissions':
+             return JsonResponse({
+                'success': False, 
+                'message': (
+                    "❌ Cannot Edit Commission Payment!\n\n"
+                    "This transaction is a system-generated commission payment.\n\n"
+                    "Commission payments are PROTECTED and cannot be edited directly to ensure financial integrity.\n"
+                )
+            }, status=403)
+
             
     except Transaction.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Transaction not found'}, status=404)

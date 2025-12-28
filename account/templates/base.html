@@ -149,6 +149,16 @@
                     </li>
                     {% endif %}
 
+
+                    {% if user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+                    <li class="menu-item {% if request.resolver_match.url_name == 'account_commissions_list' %}active{% endif %}">
+                        <a class="menu-link" href="{% url 'accounting:account_commissions_list' %}">
+                            <i class="icon material-icons md-monetization_on"></i>
+                            <span class="text">Commissions</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'accounting:reports' %}">
                             <i class="icon material-icons md-assessment"></i>

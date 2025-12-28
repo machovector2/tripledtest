@@ -51,4 +51,8 @@ urlpatterns = [
     
     # Reports
     path('reports/', views.reports, name='reports'),
+    
+    # Commissions
+    path('commissions/', views.commissions_list, name='account_commissions_list'),
+    path('commissions/pay/<int:commission_id>/', views.pay_commission, name='account_pay_commission'),
 ]

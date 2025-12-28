@@ -67,350 +67,283 @@
   <!-- Key Metrics Cards -->
   <div class="row mb-4">
     <div class="col-lg-3 col-md-6">
-      <div class="card card-body mb-4">
+      <div class="card card-body mb-4 shadow-sm border-0 border-start border-4 border-success metrics-card">
         <article class="icontext">
           <span class="icon icon-sm rounded-circle bg-success-light">
             <i class="text-success material-icons md-trending_up"></i>
           </span>
           <div class="text">
-            <h6 class="mb-1 card-title">Total Income</h6>
-            <span class="h4 text-success">₦{{ total_income|intcomma|intcomma }}</span>
-            <span class="text-sm text-muted d-block">{{ income_count }} transactions</span>
+            <h6 class="mb-1 card-title text-muted">Total Income</h6>
+            <span class="h3 text-success">₦{{ total_income|intcomma }}</span>
+            <span class="text-sm text-muted d-block fw-bold">{{ income_count }} transactions</span>
           </div>
         </article>
       </div>
     </div>
     <div class="col-lg-3 col-md-6">
-      <div class="card card-body mb-4">
+      <div class="card card-body mb-4 shadow-sm border-0 border-start border-4 border-danger metrics-card">
         <article class="icontext">
           <span class="icon icon-sm rounded-circle bg-danger-light">
             <i class="text-danger material-icons md-trending_down"></i>
           </span>
           <div class="text">
-            <h6 class="mb-1 card-title">Total Expenditure</h6>
-            <span class="h4 text-danger">₦{{ total_expenditure|intcomma|intcomma }}</span>
-            <span class="text-sm text-muted d-block">{{ expenditure_count }} transactions</span>
+            <h6 class="mb-1 card-title text-muted">Total Expenditure</h6>
+            <span class="h3 text-danger">₦{{ total_expenditure|intcomma }}</span>
+            <span class="text-sm text-muted d-block fw-bold">{{ expenditure_count }} transactions</span>
           </div>
         </article>
       </div>
     </div>
     <div class="col-lg-3 col-md-6">
-      <div class="card card-body mb-4">
+      <div class="card card-body mb-4 shadow-sm border-0 border-start border-4 border-primary metrics-card">
         <article class="icontext">
           <span class="icon icon-sm rounded-circle {% if net_balance >= 0 %}bg-success-light{% else %}bg-danger-light{% endif %}">
             <i class="{% if net_balance >= 0 %}text-success{% else %}text-danger{% endif %} material-icons md-account_balance_wallet"></i>
           </span>
           <div class="text">
-            <h6 class="mb-1 card-title">Net Balance</h6>
-            <span class="h4 {% if net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">₦{{ net_balance|intcomma|intcomma }}</span>
-            <span class="text-sm text-muted d-block">Period result</span>
+            <h6 class="mb-1 card-title text-muted">Net Balance</h6>
+            <span class="h3 {% if net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">₦{{ net_balance|intcomma }}</span>
+            <span class="text-sm text-muted d-block fw-bold">Period result</span>
           </div>
         </article>
       </div>
     </div>
     <div class="col-lg-3 col-md-6">
-      <div class="card card-body mb-4">
+      <div class="card card-body mb-4 shadow-sm border-0 border-start border-4 border-info metrics-card">
         <article class="icontext">
           <span class="icon icon-sm rounded-circle bg-info-light">
             <i class="text-info material-icons md-receipt_long"></i>
           </span>
           <div class="text">
-            <h6 class="mb-1 card-title">Total Transactions</h6>
-            <span class="h4 text-info">{{ total_transactions|intcomma }}</span>
-            <span class="text-sm text-muted d-block">All transactions</span>
+            <h6 class="mb-1 card-title text-muted">Transaction Count</h6>
+            <span class="h3 text-info">{{ total_transactions|intcomma }}</span>
+            <span class="text-sm text-muted d-block fw-bold">Avg: ₦{{ average_transaction_value|intcomma }}</span>
           </div>
         </article>
       </div>
     </div>
   </div>
 
-  <!-- Growth Analysis -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Income Growth Analysis</h5>
-        </div>
-        <div class="card-body">
-          <div class="row text-center">
-            <div class="col-6">
-              <h6 class="text-muted">Current Month</h6>
-              <h4 class="text-success">₦{{ current_month_income|intcomma|intcomma }}</h4>
-            </div>
-            <div class="col-6">
-              <h6 class="text-muted">Previous Month</h6>
-              <h4 class="text-info">₦{{ previous_month_income|intcomma|intcomma }}</h4>
-            </div>
-          </div>
-          <hr>
-          <div class="text-center">
-            <h6 class="text-muted">Growth Rate</h6>
-            <h3 class="{% if income_growth >= 0 %}text-success{% else %}text-danger{% endif %}">
-              {% if income_growth >= 0 %}+{% endif %}{{ income_growth|floatformat:1 }}%
-            </h3>
-          </div>
-        </div>
-      </div>
+  <!-- Detailed Analysis Section (Only for detailed report) -->
+  {% if report_type == 'detailed' and full_transactions %}
+  <div class="card mb-4 border-0 shadow-sm print-section">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="card-title mb-0 d-flex align-items-center">
+            <i class="material-icons md-list_alt text-primary me-2"></i>
+            Full Transaction Audit Log
+        </h5>
     </div>
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Transaction Distribution</h5>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0" id="detailedAuditTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3 py-3">Date</th>
+                        <th>Reference</th>
+                        {% if not selected_branch %}<th>Branch</th>{% endif %}
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th class="text-end pe-3">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trans in full_transactions %}
+                    <tr>
+                        <td class="ps-3">
+                            <span class="fw-bold">{{ trans.date|date:"Y-m-d" }}</span>
+                            <br><small class="text-muted">{{ trans.created_date|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">#{{ trans.id }}</small>
+                            <br><span class="badge {% if trans.transaction_type == 'income' %}bg-success-light text-success{% else %}bg-danger-light text-danger{% endif %}">
+                                {{ trans.transaction_type|title }}
+                            </span>
+                        </td>
+                        {% if not selected_branch %}
+                        <td>{{ trans.branch.name|truncatechars:15 }}</td>
+                        {% endif %}
+                        <td>
+                            <small class="text-dark fw-bold">
+                                {{ trans.income_category.name|default:trans.expenditure_category.name|default:"Uncategorized" }}
+                            </small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ trans.description|truncatechars:100 }}</small>
+                            {% if trans.fund_allocation %}
+                            <br><span class="badge bg-info-light text-info" style="font-size: 10px;">
+                                <i class="material-icons md-sync" style="font-size: 10px; vertical-align: middle;"></i> Allocation #{{ trans.fund_allocation.id }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            <span class="{% if trans.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                {% if trans.transaction_type == 'income' %}+{% else %}-{% endif %}₦{{ trans.amount|intcomma }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <div class="card-body">
-          <div class="row text-center">
-            <div class="col-6">
-              <div class="progress mb-2" style="height: 20px;">
-                <div class="progress-bar bg-success" role="progressbar" 
-                     style="width: {% if total_transactions > 0 %}{% widthratio income_count total_transactions 100 %}{% else %}0{% endif %}%">
-                  {{ income_count }}
-                </div>
-              </div>
-              <small class="text-success">Income Transactions</small>
-            </div>
-            <div class="col-6">
-              <div class="progress mb-2" style="height: 20px;">
-                <div class="progress-bar bg-danger" role="progressbar" 
-                     style="width: {% if total_transactions > 0 %}{% widthratio expenditure_count total_transactions 100 %}{% else %}0{% endif %}%">
-                  {{ expenditure_count }}
-                </div>
-              </div>
-              <small class="text-danger">Expenditure Transactions</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Categories Analysis -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Top Income Categories</h5>
-        </div>
-        <div class="card-body">
-          {% if income_categories %}
-            {% for category in income_categories %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <strong>{{ category.income_category__name|default:"Uncategorized" }}</strong>
-                <br><small class="text-muted">{{ category.count }} transactions</small>
-              </div>
-              <div class="text-end">
-                <strong class="text-success">₦{{ category.total|intcomma|intcomma }}</strong>
-              </div>
-            </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted text-center">No income categories found</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Top Expenditure Categories</h5>
-        </div>
-        <div class="card-body">
-          {% if expenditure_categories %}
-            {% for category in expenditure_categories %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <strong>{{ category.expenditure_category__name|default:"Uncategorized" }}</strong>
-                <br><small class="text-muted">{{ category.count }} transactions</small>
-              </div>
-              <div class="text-end">
-                <strong class="text-danger">₦{{ category.total|intcomma|intcomma }}</strong>
-              </div>
-            </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted text-center">No expenditure categories found</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Branch Performance (Chief Accountant Only) -->
-  {% if user.user_type == 'admin' and branch_performance or user.user_type == 'chief_accountant' and branch_performance %}
-  <div class="card mb-4">
-    <div class="card-header">
-      <h5 class="card-title">Branch Performance Analysis</h5>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Branch</th>
-              <th class="text-end">Income</th>
-              <th class="text-end">Expenditure</th>
-              <th class="text-end">Net Balance</th>
-              <th class="text-center">Transactions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for branch_data in branch_performance %}
-            <tr>
-              <td>
-                <strong>{{ branch_data.branch.name }}</strong>
-                <br><small class="text-muted">{{ branch_data.branch.location }}</small>
-              </td>
-              <td class="text-end text-success">₦{{ branch_data.income|intcomma|intcomma }}</td>
-              <td class="text-end text-danger">₦{{ branch_data.expenditure|intcomma|intcomma }}</td>
-              <td class="text-end {% if branch_data.net >= 0 %}text-success{% else %}text-danger{% endif %}">
-                ₦{{ branch_data.net|intcomma|intcomma }}
-              </td>
-              <td class="text-center">
-                <span class="badge bg-info">{{ branch_data.transaction_count }}</span>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
   {% endif %}
 
-  <!-- Recent Transactions -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <h5 class="card-title">Recent Transactions</h5>
-    </div>
-    <div class="card-body">
-      {% if recent_transactions %}
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>Date</th>
-                {% if user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
-                <th>Branch</th>
-                {% endif %}
-                <th>Type</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th class="text-end">Amount</th>
-                <th>Created By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for transaction in recent_transactions %}
-              <tr>
-                <td>{{ transaction.date|date:"M d, Y" }}</td>
-                {% if user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
-                <td>
-                  <span class="badge bg-info">{{ transaction.branch.name }}</span>
-                </td>
-                {% endif %}
-                <td>
-                  {% if transaction.transaction_type == 'income' %}
-                    <span class="badge bg-success">Income</span>
-                  {% else %}
-                    <span class="badge bg-danger">Expenditure</span>
-                  {% endif %}
-                </td>
-                <td>{{ transaction.description|truncatechars:30 }}</td>
-                <td>
-                  {% if transaction.income_category %}
-                    {{ transaction.income_category.name }}
-                  {% elif transaction.expenditure_category %}
-                    {{ transaction.expenditure_category.name }}
-                  {% else %}
-                    <span class="text-muted">No category</span>
-                  {% endif %}
-                </td>
-                <td class="text-end">
-                  {% if transaction.transaction_type == 'income' %}
-                    <strong class="text-success">+₦{{ transaction.amount|intcomma|intcomma }}</strong>
-                  {% else %}
-                    <strong class="text-danger">-₦{{ transaction.amount|intcomma|intcomma }}</strong>
-                  {% endif %}
-                </td>
-                <td>
-                  <small class="text-muted">{{ transaction.created_by.get_full_name|default:transaction.created_by.username }}</small>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+  <div class="row mb-4">
+    <!-- Top Categories Analysis -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="card-title mb-0">Income By Category</h5>
         </div>
-      {% else %}
-        <div class="text-center py-4">
-          <i class="material-icons md-receipt_long" style="font-size: 4rem; color: #ccc;"></i>
-          <h5 class="mt-3 text-muted">No transactions found</h5>
-          <p class="text-muted">No transactions match your selected date range.</p>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- Daily Trends Chart -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <h5 class="card-title">Daily Transaction Trends (Last 30 Days)</h5>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <thead class="table-light">
-            <tr>
-              <th>Date</th>
-              <th class="text-end">Income</th>
-              <th class="text-end">Expenditure</th>
-              <th class="text-end">Net</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for trend in daily_trends|slice:":10" %}
-            <tr>
-              <td>{{ trend.date|date:"M d" }}</td>
-              <td class="text-end text-success">₦{{ trend.income|intcomma|intcomma }}</td>
-              <td class="text-end text-danger">₦{{ trend.expenditure|intcomma|intcomma }}</td>
-              <td class="text-end {% if trend.net >= 0 %}text-success{% else %}text-danger{% endif %}">
-                ₦{{ trend.net|intcomma|intcomma }}
-              </td>
-            </tr>
+        <div class="card-body">
+          {% if income_categories %}
+            {% for category in income_categories %}
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark">{{ category.income_category__name|default:"Uncategorized" }}</span>
+                <span class="text-success fw-bold">₦{{ category.total|intcomma }} ({{ category.percentage|floatformat:1 }}%)</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ category.percentage }}%"></div>
+              </div>
+              <small class="text-muted">{{ category.count }} transactions</small>
+            </div>
             {% endfor %}
-          </tbody>
-        </table>
+          {% else %}
+            <p class="text-muted text-center py-4">No income data for this period</p>
+          {% endif %}
+        </div>
       </div>
-      <div class="text-center mt-3">
-        <small class="text-muted">Showing last 10 days. Full 30-day data available in detailed reports.</small>
+    </div>
+
+    <!-- Expenditure Categories -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="card-title mb-0">Expenditure By Category</h5>
+        </div>
+        <div class="card-body">
+          {% if expenditure_categories %}
+            {% for category in expenditure_categories %}
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark">{{ category.expenditure_category__name|default:"Uncategorized" }}</span>
+                <span class="text-danger fw-bold">₦{{ category.total|intcomma }} ({{ category.percentage|floatformat:1 }}%)</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ category.percentage }}%"></div>
+              </div>
+              <small class="text-muted">{{ category.count }} transactions</small>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted text-center py-4">No expenditure data for this period</p>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Report Summary -->
-  <div class="card">
-    <div class="card-header bg-light">
-      <h5 class="card-title">Report Summary</h5>
+  <!-- Trends Analysis -->
+  <div class="row mb-4">
+    <div class="col-md-{% if branch_performance %}8{% else %}12{% endif %}">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="card-title mb-0">Weekly Financial Trends</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="bg-light">
+                <tr>
+                  <th>Range</th>
+                  <th class="text-end text-success">Income</th>
+                  <th class="text-end text-danger">Expenditure</th>
+                  <th class="text-end">Net</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for week in weekly_trends %}
+                <tr>
+                  <td><span class="fw-bold text-primary">{{ week.label }}</span></td>
+                  <td class="text-end text-success">₦{{ week.income|intcomma }}</td>
+                  <td class="text-end text-danger">₦{{ week.expenditure|intcomma }}</td>
+                  <td class="text-end {% if week.net >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                    ₦{{ week.net|intcomma }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {% if branch_performance %}
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom text-center">
+                <h5 class="card-title mb-0">Branch Contribution</h5>
+            </div>
+            <div class="card-body">
+                {% for b_data in branch_performance %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small">
+                        <span>{{ b_data.branch.name|truncatechars:20 }}</span>
+                        <span class="{% if b_data.net >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            ₦{{ b_data.net|intcomma }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="text-center">
+                    <small class="text-muted">Net totals per branch for selected period</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Summary Card -->
+  <div class="card border-0 shadow-sm mb-4 print-summary">
+    <div class="card-header bg-light-blue py-3">
+      <h5 class="card-title mb-0">Accountant's Executive Summary</h5>
     </div>
     <div class="card-body">
       <div class="row">
-        <div class="col-md-6">
-          <h6>Report Period</h6>
-          <p class="text-muted">{{ start_date|date:"F d, Y" }} to {{ end_date|date:"F d, Y" }}</p>
-          
-          <h6>Report Generated</h6>
-          <p class="text-muted">{% now "F d, Y \a\t H:i" %}</p>
+        <div class="col-md-4 text-center border-end">
+          <small class="text-muted text-uppercase fw-bold">Period Revenue</small>
+          <h2 class="text-success mb-1">₦{{ total_income|intcomma }}</h2>
+          <span class="badge bg-success-light text-success">{{ income_count }} Inflow Sources</span>
         </div>
-        <div class="col-md-6">
-          <h6>Key Insights</h6>
-          <ul class="list-unstyled">
-            <li><i class="material-icons md-check text-success me-2"></i>Total of {{ total_transactions }} transactions analyzed</li>
-            <li><i class="material-icons md-check text-success me-2"></i>Average transaction value: ₦{{ average_transaction_value|intcomma|intcomma }}</li>
-            {% if income_growth > 0 %}
-            <li><i class="material-icons md-trending_up text-success me-2"></i>Income growth of {{ income_growth|floatformat:1 }}% this month</li>
-            {% endif %}
-          </ul>
+        <div class="col-md-4 text-center border-end">
+          <small class="text-muted text-uppercase fw-bold">Period Outflow</small>
+          <h2 class="text-danger mb-1">₦{{ total_expenditure|intcomma }}</h2>
+          <span class="badge bg-danger-light text-danger">{{ expenditure_count }} Expense Points</span>
+        </div>
+        <div class="col-md-4 text-center">
+          <small class="text-muted text-uppercase fw-bold">Retained Earnings</small>
+          <h2 class="{% if net_balance >= 0 %}text-success{% else %}text-danger{% endif %} mb-1">₦{{ net_balance|intcomma }}</h2>
+          <p class="mb-0 small text-muted">Financial Result for {{ start_date }} to {{ end_date }}</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm print-footer">
+    <div class="card-body py-4 bg-light d-flex justify-content-between align-items-center">
+        <div>
+            <p class="mb-0 text-muted small">Generated By: <strong>{{ user.get_full_name|default:user.username }}</strong></p>
+            <p class="mb-0 text-muted small">System Date: {% now "Y-m-d H:i:s" %}</p>
+        </div>
+        <div class="text-end">
+            <h5 class="text-primary mb-0">TRIPLE D HOMES</h5>
+            <small class="text-muted">Financial Reporting Module 2.0</small>
+        </div>
     </div>
   </div>
 </section>
@@ -422,68 +355,131 @@
 function downloadPDF() {
   const element = document.querySelector('.content-main');
   
+  // Header to add for PDF only
+  const pdfHeader = document.createElement('div');
+  pdfHeader.className = 'pdf-header-only text-center mb-4';
+  pdfHeader.innerHTML = `
+    <h1 style="color: #2c3e50; font-family: 'Inter', sans-serif;">TRIPLE D HOMES</h1>
+    <h3 style="color: #7f8c8d;">Financial Performance Report</h3>
+    <p style="border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+      Report Period: ${document.querySelector('[name="start_date"]').value} to ${document.querySelector('[name="end_date"]').value}
+    </p>
+  `;
+  
+  element.prepend(pdfHeader);
+  
   const opt = {
-    margin:       0.5,
-    filename:     'Financial_Report_{{ start_date|date:"Y_m_d" }}_to_{{ end_date|date:"Y_m_d" }}.pdf',
+    margin:       [0.5, 0.5, 0.5, 0.5],
+    filename:     `TripleD_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
-  html2pdf().set(opt).from(element).save();
+  html2pdf().set(opt).from(element).save().then(() => {
+    element.removeChild(pdfHeader);
+  });
 }
 </script>
 
 <style>
+.bg-light-blue { background-color: #f0f7ff; }
+.bg-success-light { background-color: #e6fdf1; }
+.bg-danger-light { background-color: #ffeff1; }
+.bg-info-light { background-color: #e7f6ff; }
+.metrics-card { transition: transform 0.2s; }
+.metrics-card:hover { transform: translateY(-3px); }
+
+@media screen {
+    .pdf-header-only { display: none; }
+}
+
 @media print {
-  .btn, .no-print, .card-header .btn-group {
+  /* Hide UI elements */
+  .btn, .no-print, .card-header select, .card-header .btn-group, form, .form-label, .mb-4.card {
     display: none !important;
   }
   
+  body {
+    background: white !important;
+    padding: 0 !important;
+    color: black !important;
+  }
+
+  .content-main {
+    padding: 0 !important;
+  }
+  
+  /* Show professional header */
+  .content-main::before {
+    content: "TRIPLE D HOMES - FINANCIAL REPORT";
+    display: block;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-bottom: 3px double #333;
+    padding-bottom: 10px;
+  }
+  
   .card {
-    border: 1px solid #000 !important;
+    border: 1px solid #ddd !important;
     box-shadow: none !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 20px !important;
+    break-inside: avoid;
   }
   
   .card-header {
     background-color: #f8f9fa !important;
     color: #000 !important;
-    border-bottom: 2px solid #000 !important;
-  }
-  
-  .table thead th {
-    background-color: #343a40 !important;
-    color: white !important;
-  }
-  
-  .badge {
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-  
-  .badge.bg-success { background-color: #28a745 !important; color: white !important; }
-  .badge.bg-danger { background-color: #dc3545 !important; color: white !important; }
-  .badge.bg-info { background-color: #17a2b8 !important; color: white !important; }
-  
-  .text-success {
-    color: #28a745 !important;
-  }
-  
-  .text-danger {
-    color: #dc3545 !important;
-  }
-  
-  body {
-    font-size: 12px;
+    border-bottom: 1px solid #000 !important;
+    text-align: left !important;
   }
   
   .table {
-    font-size: 11px;
+    width: 100% !important;
+    font-size: 10px !important;
   }
   
-  .h4, .h5, .h6 {
-    font-size: 14px !important;
+  .table thead th {
+    background-color: #333 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  .badge {
+    border: 1px solid #eee !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  .progress { height: 15px !important; border: 1px solid #ddd !important; -webkit-print-color-adjust: exact !important; }
+  .progress-bar { -webkit-print-color-adjust: exact !important; }
+  
+  .text-success { color: #1a7f37 !important; }
+  .text-danger { color: #cf222e !important; }
+  
+  .metrics-card {
+    width: 48% !important;
+    display: inline-block !important;
+    margin: 1% !important;
+    border-left: 5px solid #333 !important;
+  }
+  
+  .row { display: block !important; }
+  .col-md-6, .col-lg-3 { 
+    width: 100% !important; 
+    margin-bottom: 15px !important;
+  }
+
+  /* Detailed Table specific printing */
+  #detailedAuditTable {
+    font-size: 9px !important;
+  }
+
+  .print-summary {
+    background-color: #f0f7ff !important;
+    -webkit-print-color-adjust: exact !important;
   }
 }
 </style>

@@ -546,7 +546,7 @@ function resetFilters() {
 
 // Edit Income Category
 function editIncomeCategory(categoryId) {
-  fetch(`/edit-income-category/${categoryId}/`)
+  fetch(`/accounting/edit-income-category/${categoryId}/`)
     .then(response => response.json())
     .then(data => {
       document.getElementById('edit_income_category_id').value = data.id;
@@ -573,7 +573,7 @@ function editIncomeCategory(categoryId) {
 
 // Edit Expenditure Category
 function editExpenditureCategory(categoryId) {
-  fetch(`/edit-expenditure-category/${categoryId}/`)
+  fetch(`/accounting/edit-expenditure-category/${categoryId}/`)
     .then(response => response.json())
     .then(data => {
       document.getElementById('edit_expenditure_category_id').value = data.id;
@@ -601,7 +601,7 @@ function editExpenditureCategory(categoryId) {
 // Delete Income Category
 function confirmDeleteIncomeCategory(categoryId, categoryName) {
   document.getElementById('delete_category_name').textContent = categoryName;
-  document.getElementById('deleteCategoryForm').action = `/delete-income-category/${categoryId}/`;
+  document.getElementById('deleteCategoryForm').action = `/accounting/delete-income-category/${categoryId}/`;
   const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
   modal.show();
 }
@@ -609,7 +609,7 @@ function confirmDeleteIncomeCategory(categoryId, categoryName) {
 // Delete Expenditure Category
 function confirmDeleteExpenditureCategory(categoryId, categoryName) {
   document.getElementById('delete_category_name').textContent = categoryName;
-  document.getElementById('deleteCategoryForm').action = `/delete-expenditure-category/${categoryId}/`;
+  document.getElementById('deleteCategoryForm').action = `/accounting/delete-expenditure-category/${categoryId}/`;
   const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
   modal.show();
 }
@@ -624,7 +624,7 @@ document.getElementById('editIncomeCategoryForm').addEventListener('submit', fun
   
   spinner.classList.remove('d-none');
   
-  fetch(`/edit-income-category/${categoryId}/`, {
+  fetch(`/accounting/edit-income-category/${categoryId}/`, {
     method: 'POST',
     body: formData,
     headers: {
@@ -663,7 +663,7 @@ document.getElementById('editExpenditureCategoryForm').addEventListener('submit'
   
   spinner.classList.remove('d-none');
   
-  fetch(`/edit-expenditure-category/${categoryId}/`, {
+  fetch(`/accounting/edit-expenditure-category/${categoryId}/`, {
     method: 'POST',
     body: formData,
     headers: {
