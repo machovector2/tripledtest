@@ -234,25 +234,24 @@
         <main class="main-wrap">
             <header class="main-header navbar">
                 <div class="col-search">
-                    <form class="searchform">
-                        <div class="input-group">
-                            <input
-                                class="form-control"
-                                list="search_terms"
-                                type="text"
-                                placeholder="Search term"
-                            />
-                            <button class="btn btn-light bg" type="button">
-                                <i class="material-icons md-search"></i>
-                            </button>
-                        </div>
-                        <datalist id="search_terms">
-                            <option value="Products"></option>
-                            <option value="New orders"></option>
-                            <option value="Apple iphone"></option>
-                            <option value="Ahmed Hassan"></option>
-                        </datalist>
-                    </form>
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted fw-bold">
+                            <i class="material-icons md-account_circle align-middle me-1"></i>
+                            Logged in as: 
+                            <span class="text-primary">
+                                {% if user.is_superuser %}
+                                    Chief Admin
+                                {% elif user.user_type == 'chief_accountant' %}
+                                    Chief Accountant
+                                {% elif user.user_type == 'branch_admin' %}
+                                    Branch Admin
+                                {% else %}
+                                    {{ user.get_user_type_display|default:"User" }}
+                                {% endif %}:
+                                {{ user.get_full_name|default:user.username }}
+                            </span>
+                        </span>
+                    </div>
                 </div>
                 <div class="col-nav">
                     <button

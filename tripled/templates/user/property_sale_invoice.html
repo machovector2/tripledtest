@@ -637,7 +637,14 @@
                     </td>
                     <td>{{ sale.get_property_type_display }}</td>
                     <td>{{ sale.property_item.name }}</td>
-                    <td>{{ sale.quantity }}</td>
+                    <td>
+                        {{ sale.quantity }}
+                        {% if sale.plots.all %}
+                            <br><small class="text-muted">
+                                <strong>Plots:</strong> {% for plot in sale.plots.all %}{{ plot.number }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            </small>
+                        {% endif %}
+                    </td>
                     <td class="text-end"><strong>₦{{ sale.selling_price|floatformat:2|intcomma }}</strong></td>
                 </tr>
             </tbody>

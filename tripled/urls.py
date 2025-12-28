@@ -43,6 +43,8 @@ urlpatterns = [
     path('admin-portal/properties/<int:property_id>/', views.property_detail, name='property_detail'),
     path('admin-portal/property/edit/<int:property_id>/', views.edit_property, name='edit_property'),
     path('admin-portal/property/<int:property_id>/delete/', views.delete_property, name='delete_property'),
+    path('api/plots/get/', views.ajax_get_plots, name='ajax_get_plots'),
+    path('api/plots/toggle/', views.ajax_toggle_plot_status, name='ajax_toggle_plot_status'),
     
     # Commission URLs
     path('admin-portal/commissions/', views.commissions_list, name='commissions_list'),

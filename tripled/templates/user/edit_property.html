@@ -52,6 +52,7 @@
                                             <div class="user-profile-content">
                                                 <form method="post" enctype="multipart/form-data">
                                                     {% csrf_token %}
+                                                    <input type="hidden" name="action" value="update_info">
                                                     <div class="row row-cols-sm-2 row-cols-1">
                                                         <div class="mb-3">
                                                             <label class="form-label" for="name">Property Name</label>
@@ -105,14 +106,15 @@
                                                         </div>
                                                         {% endif %} -->
                                                         
-                                                        <!-- <div class="mb-3">
-                                                            <label class="form-label" for="status">Status</label>
+                                                        <div class="mb-3">
+                                                            <label class="form-label" for="status">Property Status</label>
                                                             <select name="status" id="status" class="form-control">
                                                                 <option value="available" {% if property.status == 'available' %}selected{% endif %}>Available</option>
                                                                 <option value="sold" {% if property.status == 'sold' %}selected{% endif %}>Sold</option>
                                                                 <option value="reserved" {% if property.status == 'reserved' %}selected{% endif %}>Reserved</option>
                                                             </select>
-                                                        </div> -->
+                                                            <small class="text-muted">Set the overall status of the property.</small>
+                                                        </div>
                                                     </div>
                                                     
                                                     <div class="row mt-3">
@@ -131,6 +133,51 @@
                                                 </form>
                                             </div>
                                         </div>
+
+                                        <!-- Plot Management Section -->
+                                        <div class="row mt-4">
+                                            <div class="col-12">
+                                                <div class="card border-primary">
+                                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                        <h5 class="mb-0 text-white"><i class="ri-grid-line me-1"></i> Plot Management</h5>
+                                                        <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addPlotsModal">
+                                                            <i class="ri-add-line"></i> Add More Plots
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                                            <p class="text-muted mb-0">Click on a plot to toggle its status between <b>Available</b> and <b>Taken</b>.</p>
+                                                            <div class="d-flex gap-3">
+                                                                <span class="badge bg-success-subtle text-success px-2 py-1"><i class="ri-checkbox-circle-line"></i> Available</span>
+                                                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1"><i class="ri-close-circle-line"></i> Taken</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="plot-grid">
+                                                            {% for plot in plots %}
+                                                                <div class="plot-block {% if plot.is_taken %}taken{% else %}available{% endif %}" 
+                                                                     data-plot-id="{{ plot.id }}" 
+                                                                     data-plot-number="{{ plot.number }}"
+                                                                     {% with sale=plot.sales.first %}
+                                                                     {% if sale %}
+                                                                     data-has-sale="true"
+                                                                     data-sale-ref="{{ sale.reference_number }}"
+                                                                     data-sale-client="{{ sale.client_name }}"
+                                                                     {% endif %}
+                                                                     {% endwith %}
+                                                                     title="{{ plot.number }} - {% if plot.is_taken %}Taken{% else %}Available{% endif %}{% if plot.sales.exists %} (Sold to {{ plot.sales.first.client_name }}){% endif %}">
+                                                                    {{ plot.number }}
+                                                                </div>
+                                                            {% empty %}
+                                                                <div class="alert alert-info w-100 text-center py-4">
+                                                                    <i class="ri-information-line fs-24 d-block mb-2"></i>
+                                                                    No plots created for this property yet.
+                                                                </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -146,9 +193,116 @@
         <!-- container -->
 
     </div>
+
+    <!-- Add Plots Modal -->
+    <div class="modal fade" id="addPlotsModal" tabindex="-1" aria-labelledby="addPlotsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_plots">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title text-white" id="addPlotsModalLabel">Add More Plots</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="number_of_plots" class="form-label">How many plots do you want to add?</label>
+                            <input type="number" class="form-control" name="number_of_plots" id="number_of_plots" min="1" required placeholder="e.g. 10">
+                            <small class="text-muted">
+                                <i class="ri-information-line me-1"></i>
+                                New plots will be numbered sequentially starting after your last plot.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Plots</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plot Status Confirmation Modal -->
+    <div class="modal fade" id="plotConfirmModal" tabindex="-1" aria-labelledby="plotConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="plotConfirmModalLabel"><i class="ri-alert-line me-1"></i> Confirm Status Change</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="plotConfirmMessage">Are you sure you want to change the status of this plot?</p>
+                    <p class="text-muted small">
+                        <i class="ri-information-line me-1"></i>
+                        Changing a plot to <b>Taken</b> means it will no longer be available for new sales.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="confirmPlotToggleBtn">Yes, Change Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .plot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+        .plot-block {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid transparent;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .plot-block.available {
+            background-color: #f0fff4;
+            color: #198754;
+            border-color: #d1e7dd;
+        }
+        .plot-block.available:hover {
+            background-color: #d1e7dd;
+            border-color: #198754;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.15);
+        }
+        .plot-block.taken {
+            background-color: #f8f9fa;
+            color: #a0aec0;
+            border-color: #edf2f7;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+        .plot-block.taken:hover {
+            opacity: 1;
+            background-color: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-3px);
+        }
+        
+        /* Animation for status change */
+        .plot-updating {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+    </style>
 {% endblock body %}
 
-{% block extra_scripts %}
+{% block extra_js %}
 <script>
     // Script to handle image removal checkbox logic
     document.addEventListener('DOMContentLoaded', function() {
@@ -176,6 +330,98 @@
                 }
             });
         }
+
+        // Plot status toggle script
+        const plotBlocks = document.querySelectorAll('.plot-block');
+        const plotConfirmModal = new bootstrap.Modal(document.getElementById('plotConfirmModal'));
+        const confirmBtn = document.getElementById('confirmPlotToggleBtn');
+        let currentPlotBlock = null;
+
+        plotBlocks.forEach(block => {
+            block.addEventListener('click', function() {
+                // Permission Check
+                const isSuperUser = {{ user.is_superuser|yesno:"true,false" }};
+                
+                if (!isSuperUser) {
+                    alert('Access Denied: Only the Chief Admin can manually toggle plot status.');
+                    return;
+                }
+
+                currentPlotBlock = this;
+                const plotNumber = this.dataset.plotNumber;
+                const isCurrentlyTaken = this.classList.contains('taken');
+                const nextStatus = isCurrentlyTaken ? 'Available' : 'Taken';
+                
+                // Sale Awareness logic
+                const hasSale = this.dataset.hasSale === 'true';
+                const saleRef = this.dataset.saleRef;
+                const saleClient = this.dataset.saleClient;
+                
+                let warningMessage = `Are you sure you want to mark <b>${plotNumber}</b> as <b class="${isCurrentlyTaken ? 'text-success' : 'text-danger'}">${nextStatus}</b>?`;
+                
+                if (isCurrentlyTaken && hasSale) {
+                    warningMessage = `<div class="alert alert-danger bg-danger-subtle border-danger text-danger mb-3 p-2 rounded">
+                        <i class="ri-error-warning-line me-1"></i> 
+                        <strong>WAIT!</strong> This plot is already registered in a sale.
+                    </div>
+                    <div class="mb-3 px-2 border-start border-3 border-danger">
+                        <p class="mb-1"><strong>Sale Ref:</strong> <span class="text-primary">${saleRef}</span></p>
+                        <p class="mb-0"><strong>Client:</strong> ${saleClient}</p>
+                    </div>
+                    <p class="mb-0">Are you absolutely sure you want to make <strong>${plotNumber}</strong> <strong>Available</strong> again?</p>`;
+                }
+                
+                document.getElementById('plotConfirmMessage').innerHTML = warningMessage;
+                plotConfirmModal.show();
+            });
+        });
+
+        confirmBtn.addEventListener('click', function() {
+            if (!currentPlotBlock) return;
+            
+            const block = currentPlotBlock;
+            const plotId = block.dataset.plotId;
+            const plotNumber = block.dataset.plotNumber;
+            
+            plotConfirmModal.hide();
+            
+            // Show updating state
+            block.classList.add('plot-updating');
+            
+            const formData = new FormData();
+            formData.append('plot_id', plotId);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            fetch("{% url 'ajax_toggle_plot_status' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                block.classList.remove('plot-updating');
+                if (data.success) {
+                    if (data.is_taken) {
+                        block.classList.remove('available');
+                        block.classList.add('taken');
+                        block.title = `${plotNumber} - Taken`;
+                    } else {
+                        block.classList.remove('taken');
+                        block.classList.add('available');
+                        block.title = `${plotNumber} - Available`;
+                    }
+                } else {
+                    alert('Error updating plot status: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                block.classList.remove('plot-updating');
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
     });
 </script>
-{% endblock extra_scripts %}
+{% endblock extra_js %}

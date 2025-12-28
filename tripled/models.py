@@ -246,10 +246,17 @@ class Property(models.Model):
         ('zamfara', 'Zamfara'),
     ]
     
+    PROPERTY_STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('sold', 'Sold'),
+        ('reserved', 'Reserved'),
+    ]
+    
     name = models.CharField(max_length=255,blank=True, null=True)
     description = models.TextField()
     location = models.CharField(max_length=100, choices=STATES_CHOICES)
     address = models.TextField()
+    status = models.CharField(max_length=20, choices=PROPERTY_STATUS_CHOICES, default='available')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -266,6 +273,19 @@ class Property(models.Model):
     
     class Meta:
         verbose_name_plural = "Properties"
+
+
+class Plot(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='plots')
+    number = models.CharField(max_length=50)
+    is_taken = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.property.name} - {self.number}"
+
+    class Meta:
+        ordering = ['number']
+        unique_together = ('property', 'number')
 
 
 
@@ -305,6 +325,7 @@ class PropertySale(models.Model):
     description = models.TextField(max_length=255)
     property_type = models.CharField(max_length=10, choices=PROPERTY_TYPE_CHOICES)
     property_item = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='sales')  # Renamed from 'property'
+    plots = models.ManyToManyField('Plot', related_name='sales', blank=True)
     quantity = models.PositiveIntegerField(help_text="Number of plots or buildings")
     
     # Client information

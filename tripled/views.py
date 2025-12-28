@@ -24,7 +24,7 @@ from .models import (
     PropertySale,
     Payment,
     General,
-
+    Plot,
     SecretaryAdmin,
 )
 from django.http import JsonResponse
@@ -687,20 +687,40 @@ def register_property(request):
         description = request.POST.get("description")
         location = request.POST.get("location")
         address = request.POST.get("address")
+        number_of_plots = request.POST.get("number_of_plots")
 
         # Create new property
         with transaction.atomic():
+            status = request.POST.get("status", "available")
             property = Property.objects.create(
-                name=name, description=description, location=location, address=address
+                name=name, description=description, location=location, address=address, status=status
             )
 
             # CRITICAL: Verify ID was assigned
             if not property.pk:
                 raise ValueError("Property was created but did not receive an ID. This should never happen.")
+            
+            # Create plots if requested
+            plot_count = 0
+            if number_of_plots:
+                try:
+                    count = int(number_of_plots)
+                    # Use bulk_create for efficiency if many plots
+                    plots_to_create = [
+                        Plot(property=property, number=f"Plot {i}")
+                        for i in range(1, count + 1)
+                    ]
+                    Plot.objects.bulk_create(plots_to_create)
+                    plot_count = count
+                except (ValueError, TypeError):
+                    pass # Silently continue if plot count is invalid
 
-        messages.success(
-            request, f'Property "{name}" has been registered successfully!'
-        )
+        if plot_count > 0:
+            msg = f'Property "{name}" has been registered successfully with {plot_count} plots!'
+        else:
+            msg = f'Property "{name}" has been registered successfully!'
+            
+        messages.success(request, msg)
         return redirect("property_list")
 
     return render(request, "user/register_property.html", {"states": states})
@@ -716,15 +736,18 @@ def property_list(request):
 
 
 @login_required
-@admin_required
+@admin_or_secretary_required
 def property_detail(request, property_id):
     """View to display property details with a more comprehensive interface"""
     property = get_object_or_404(Property, id=property_id)
 
     # Get all sales for this property - use property_item instead of property
     sales = PropertySale.objects.filter(property_item=property).order_by("-created_at")
+    
+    # Get all plots for this property with their associated sales
+    plots = property.plots.all().prefetch_related('sales').order_by('id')
 
-    context = {"property": property, "sales": sales}
+    context = {"property": property, "sales": sales, "plots": plots}
 
     return render(request, "user/property_detail.html", context)
 
@@ -739,31 +762,93 @@ def edit_property(request, property_id):
     states = Property._meta.get_field("location").choices
 
     if request.method == "POST":
-        # Extract form data
-        property.name = request.POST.get("name")
-        property.description = request.POST.get("description")
-        property.location = request.POST.get("location")
-        property.address = request.POST.get("address")
+        action = request.POST.get("action", "update_info")
+        
+        if action == "update_info":
+            # Extract form data
+            property.name = request.POST.get("name")
+            property.description = request.POST.get("description")
+            property.location = request.POST.get("location")
+            property.address = request.POST.get("address")
 
-        # Handle status field if your model has it
-        if "status" in request.POST:
-            property.status = request.POST.get("status")
+            # Handle status field if your model has it
+            if "status" in request.POST:
+                property.status = request.POST.get("status")
 
-        # Handle image upload
-        if "image" in request.FILES:
-            # New image uploaded
-            property.image = request.FILES["image"]
-        elif "remove_image" in request.POST:
-            # Remove existing image
-            property.image = None
+            # Handle image upload
+            if "image" in request.FILES:
+                # New image uploaded
+                property.image = request.FILES["image"]
+            elif "remove_image" in request.POST:
+                # Remove existing image
+                property.image = None
 
-        property.save()
-        messages.success(request, "Property information updated successfully.")
-        return redirect("property_detail", property_id=property.id)
+            property.save()
+            messages.success(request, "Property information updated successfully.")
+            return redirect("edit_property", property_id=property.id)
+            
+        elif action == "add_plots":
+            try:
+                count = int(request.POST.get("number_of_plots", 0))
+                if count > 0:
+                    current_plots_count = property.plots.count()
+                    
+                    # More robust numbering: find the highest current number if it's numeric
+                    highest_num = 0
+                    for p in property.plots.all():
+                        try:
+                            num_part = p.number.replace("Plot ", "").strip()
+                            highest_num = max(highest_num, int(num_part))
+                        except (ValueError, TypeError):
+                            pass
+                    
+                    if highest_num == 0:
+                        highest_num = current_plots_count
 
+                    plots_to_create = [
+                        Plot(property=property, number=f"Plot {i}")
+                        for i in range(highest_num + 1, highest_num + count + 1)
+                    ]
+                    Plot.objects.bulk_create(plots_to_create)
+                    messages.success(request, f"{count} new plots added successfully.")
+            except (ValueError, TypeError):
+                messages.error(request, "Invalid number of plots.")
+            return redirect("edit_property", property_id=property.id)
+
+    plots = property.plots.all().prefetch_related('sales').order_by('id')
     return render(
-        request, "user/edit_property.html", {"property": property, "states": states}
+        request, "user/edit_property.html", {"property": property, "states": states, "plots": plots}
     )
+
+
+@login_required
+def ajax_get_plots(request):
+    property_id = request.GET.get('property_id')
+    if not property_id:
+        return JsonResponse({'success': False, 'error': 'No property ID provided'})
+    
+    property = get_object_or_404(Property, id=property_id)
+    plots = property.plots.all().order_by('id').values('id', 'number', 'is_taken')
+    
+    return JsonResponse({
+        'success': True,
+        'plots': list(plots)
+    })
+
+
+@login_required
+@admin_required
+def ajax_toggle_plot_status(request):
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied. Only Chief Admin can toggle plot status.'})
+        
+    if request.method == "POST":
+        plot_id = request.POST.get('plot_id')
+        plot = get_object_or_404(Plot, id=plot_id)
+        plot.is_taken = not plot.is_taken
+        plot.save()
+        return JsonResponse({'success': True, 'is_taken': plot.is_taken})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
 @login_required
@@ -1315,6 +1400,7 @@ def register_property_sale(request):  # with expiry date
             description = request.POST.get("description")
             property_type = request.POST.get("property_type")
             quantity = request.POST.get("quantity")
+            selected_plots_ids = request.POST.getlist("selected_plots")
 
             # Extract client information
             client_name = request.POST.get("client_name")
@@ -1467,14 +1553,18 @@ def register_property_sale(request):  # with expiry date
                         {"properties": properties, "realtors": realtors},
                     )
             except (ValueError, TypeError):
-                messages.error(
-                    request, "Invalid quantity value. Please enter a valid number."
-                )
-                return render(
-                    request,
-                    "user/register_property_sale.html",
-                    {"properties": properties, "realtors": realtors},
-                )
+                # If quantity is invalid but plots are selected, we'll use the plot count
+                if selected_plots_ids:
+                    quantity_int = len(selected_plots_ids)
+                else:
+                    messages.error(
+                        request, "Invalid quantity value. Please enter a valid number."
+                    )
+                    return render(
+                        request,
+                        "user/register_property_sale.html",
+                        {"properties": properties, "realtors": realtors},
+                    )
 
             # Parse and validate plot development dates (NEW VALIDATION LOGIC)
             plot_development_start_date = None
@@ -1613,6 +1703,17 @@ def register_property_sale(request):  # with expiry date
                     upline_commission_percentage=upline_commission_decimal,
                         created_by=request.user,  # Automatically track who created this sale
                     )
+
+                # Link selected plots and mark them as taken
+                if selected_plots_ids:
+                    plots = Plot.objects.filter(id__in=selected_plots_ids, property=property_obj)
+                    if plots.exists():
+                        property_sale.plots.set(plots)
+                        plots.update(is_taken=True)
+                        # Ensure quantity matches selected plots
+                        if property_sale.quantity != plots.count():
+                            property_sale.quantity = plots.count()
+                            property_sale.save()
 
                 # CRITICAL: Verify ID was assigned
                 if not property_sale.pk:

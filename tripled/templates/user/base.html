@@ -33,9 +33,8 @@
     <!-- Icons css -->
     <link href="/static/user/css/icons.min.css" rel="stylesheet" type="text/css" />
     
-    {% block style %}
-        
-    {% endblock style %}
+    {% block style %}{% endblock style %}
+    {% block extra_css %}{% endblock extra_css %}
         
     <style>
         /* Executive styling - removed background changes */
@@ -607,6 +606,8 @@
 
     <!-- App js -->
     <script src="/static/user/js/app.min.js"></script>
+    
+    {% block extra_js %}{% endblock extra_js %}
 
 </body>
 
