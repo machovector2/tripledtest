@@ -955,9 +955,17 @@ def add_transaction(request):
 
 @login_required
 def add_income(request):
-    if request.user.user_type not in ['admin', 'chief_accountant']:
-        messages.error(request, 'Only Chief Accountantistrators can add income transactions.')
+    # Allow admins, chief accountants, AND branch admins to add income
+    if request.user.user_type not in ['admin', 'chief_accountant', 'branch_admin']:
+        messages.error(request, 'You do not have permission to add income transactions.')
         return redirect('accounting:dashboard')
+    
+    # For branch admins, ensure they have an assigned branch
+    if request.user.user_type == 'branch_admin':
+        branch = request.user.managed_branch
+        if not branch:
+            messages.error(request, 'No branch assigned to your account. Please contact the administrator.')
+            return redirect('accounting:dashboard')
     
     if request.method == 'POST':
         form = TransactionForm(request.POST, user=request.user, transaction_type='income')
@@ -965,7 +973,14 @@ def add_income(request):
             transaction = form.save(commit=False)
             transaction.created_by = request.user
             transaction.transaction_type = 'income'  # Force income type
-            transaction.branch = form.cleaned_data['branch']
+            
+            # Branch assignment
+            if request.user.user_type in ['admin', 'chief_accountant']:
+                # Admin/Chief can select branch from form
+                transaction.branch = form.cleaned_data['branch']
+            else:
+                # Branch admin can only add to their assigned branch
+                transaction.branch = request.user.managed_branch
 
             transaction.save()
             messages.success(request, 'Income transaction added successfully!')

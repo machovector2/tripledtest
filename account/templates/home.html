@@ -30,6 +30,9 @@
                     <i class="material-icons md-add"></i>Add Transaction
                 </a>
             {% elif branch %}
+                <a class="btn btn-success" href="{% url 'accounting:add_income' %}">
+                    <i class="material-icons md-add"></i>Add Income
+                </a>
                 <a class="btn btn-warning" href="{% url 'accounting:add_transaction' %}">
                     <i class="material-icons md-add"></i>Add Expenditure
                 </a>
@@ -426,6 +429,9 @@
                                 <i class="material-icons md-add me-2"></i>Add Transaction
                             </a>
                         {% else %}
+                            <a href="{% url 'accounting:add_income' %}" class="btn btn-success">
+                                <i class="material-icons md-add me-2"></i>Add Income
+                            </a>
                             <a href="{% url 'accounting:add_transaction' %}" class="btn btn-warning">
                                 <i class="material-icons md-add me-2"></i>Add Expenditure
                             </a>

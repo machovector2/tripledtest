@@ -62,11 +62,11 @@
                             <a href="{% url 'accounting:transactions' %}"
                                 >All Transactions History</a
                             >
-                            {% if user.user_type == 'admin' or user.user_type == 'admin' or user.user_type == 'chief_accountant' %}
+
                             <a href="{% url 'accounting:add_income' %}"
                                 >Add Income</a
                             >
-                            {% endif %}
+
                             <a href="{% url 'accounting:add_expenditure' %}"
                                 >Add Expenditure</a
                             >

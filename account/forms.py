@@ -216,20 +216,21 @@ class TransactionForm(forms.ModelForm):
                 income_categories = IncomeCategory.objects.filter(is_active=True)
                 expenditure_categories = ExpenditureCategory.objects.filter(is_active=True)
             else:
-                # Branch admin can only add expenditure transactions
+                # Branch admin - can add income AND expenditure to their branch
                 branch = user.managed_branch
                 if branch:
-                    # Branch admins can only add expenditure transactions
-                    # Remove income option for branch admins
-                    self.fields['transaction_type'].choices = [
-                        ('expenditure', 'Expenditure'),
-                    ]
-                    
-                    expenditure_categories = ExpenditureCategory.objects.filter(
-                        Q(scope__in=['all', branch.branch_type]) | Q(branch=branch),
+                    # Branch admins can add both income and expenditure
+                    # Filter income categories by scope (sub branches + all, exclude main-only)
+                    income_categories = IncomeCategory.objects.filter(
+                        Q(scope__in=['all', 'sub']) | Q(branch=branch),
                         is_active=True
                     )
-                    income_categories = IncomeCategory.objects.none()
+                    
+                    # Filter expenditure categories by scope
+                    expenditure_categories = ExpenditureCategory.objects.filter(
+                        Q(scope__in=['all', 'sub']) | Q(branch=branch),
+                        is_active=True
+                    )
                 else:
                     income_categories = IncomeCategory.objects.none()
                     expenditure_categories = ExpenditureCategory.objects.none()
@@ -245,10 +246,8 @@ class TransactionForm(forms.ModelForm):
         if hasattr(self, '_predetermined_transaction_type'):
             cleaned_data['transaction_type'] = self._predetermined_transaction_type
         
-        if user and user.user_type == 'branch_admin':
-            transaction_type = cleaned_data.get('transaction_type')
-            if transaction_type == 'income':
-                raise forms.ValidationError("Branch administrators can only add expenditure transactions. Income can only be added by the main administrator.")
+        # Branch admins can now add both income and expenditure
+        # No restriction needed here - scope filtering handles security
         
         # Add balance validation for expenditure transactions
         # PREVENT NEGATIVE BALANCES - No expenditure should exceed available balance
