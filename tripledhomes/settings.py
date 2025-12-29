@@ -63,6 +63,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Role-based security middleware
+    'tripled.middleware.RoleDiscoveryMiddleware',
+    'tripled.middleware.PortalSecurityMiddleware',
+    'account.middleware.AccountingSecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'tripledhomes.urls'

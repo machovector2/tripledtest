@@ -1,0 +1,133 @@
+{% extends 'estate/base.html' %}
+{% load static %}
+
+{% block title %}About Us - Triple D Homes{% endblock %}
+{% block nav_about %}menu-active{% endblock %}
+
+{% block content %}
+<!-- start banner Area -->
+<section class="banner-area relative" id="home">	
+	<div class="overlay overlay-bg"></div>
+	<div class="container">				
+		<div class="row d-flex align-items-center justify-content-center">
+			<div class="about-content col-lg-12">
+				<h1 class="text-white">
+					About Us				
+				</h1>	
+				<p class="text-white link-nav"><a href="{% url 'homepage' %}">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="{% url 'about' %}"> About Us</a></p>
+			</div>	
+		</div>
+	</div>
+</section>
+<!-- End banner Area -->	
+
+<!-- Start about-video Area -->
+<section class="about-video-area section-gap">
+	<div class="container">
+		<div class="row align-items-center">
+			<div class="col-lg-6 about-video-left">
+				<h6 class="text-uppercase">Welcome to Triple D Homes</h6>
+				<h1>
+					We've made a life <br>
+					that will change you 
+				</h1>
+				<p>
+					<span>We are here to listen from you deliver exellence</span>
+				</p>
+				<p>
+					Triple D Homes is your trusted real estate partner, dedicated to helping you find your dream home. With years of experience and a commitment to excellence, we provide exceptional service to all our clients.
+				</p>
+				<a class="primary-btn mt-30" href="{% url 'contact' %}">Contact Us Now</a>
+			</div>
+			<div class="col-lg-6 about-video-right justify-content-center align-items-center d-flex relative">
+				<div class="overlay overlay-bg"></div>
+				<a class="play-btn" href="#"><img class="img-fluid mx-auto" src="{% static 'estate/img/play-btn.png' %}" alt=""></a>
+			</div>
+		</div>	
+	</div>	
+</section>
+<!-- End about-video Area -->				
+
+<!-- Start feature Area -->
+<section class="feature-area section-gap">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="col-md-12 pb-40 header-text text-center">
+				<h1 class="pb-10 text-white">Some Features that Made us Unique</h1>
+				<p class="text-white">
+					We are committed to providing the best real estate services.
+				</p>
+			</div>
+		</div>				
+		<div class="row">
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-user"></span>
+						<h4>Expert Team</h4>
+					</a>
+					<p>
+						Our professional team brings years of experience in real estate to help you make the best decisions.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-license"></span>
+						<h4>Professional Service</h4>
+					</a>
+					<p>
+						We provide comprehensive real estate services tailored to your specific needs and requirements.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-phone"></span>
+						<h4>Great Support</h4>
+					</a>
+					<p>
+						Our dedicated support team is always ready to assist you throughout your real estate journey.
+					</p>
+				</div>
+			</div>					
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-rocket"></span>
+						<h4>Fast Processing</h4>
+					</a>
+					<p>
+						We ensure quick and efficient processing of all your real estate transactions.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-diamond"></span>
+						<h4>Premium Properties</h4>
+					</a>
+					<p>
+						We offer a wide selection of premium properties in prime locations across Nigeria.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4 col-md-6">
+				<div class="single-feature">
+					<a href="#" class="title d-flex flex-row align-items-center">
+						<span class="lnr lnr-bubble"></span>
+						<h4>Trusted Brand</h4>
+					</a>
+					<p>
+						Triple D Homes is a trusted name in real estate with countless satisfied clients.
+					</p>
+				</div>
+			</div>	
+		</div>
+	</div>	
+</section>
+<!-- End feature Area -->	
+{% endblock %}

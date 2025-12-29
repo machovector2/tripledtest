@@ -9,10 +9,16 @@ from django.views.generic import RedirectView
 
 
 urlpatterns = [
-    # Root URL - placeholder for future frontend website
-    # For now, redirect to admin portal signin
-    path('', RedirectView.as_view(url='/admin-portal/signin/', permanent=False), name='home'),
+    # ======================FRONTEND WEBSITE URLS=================================
+    # Frontend website URLs
+    path('', views.homepage, name='homepage'),
+    path('home/', views.homepage, name='frontend_home_alias'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
     
+    path("properties/", views.properties, name="properties"),
+    path("gallery/", views.gallery, name="gallery"),
+    path("downloadables/", views.downloadables, name="downloadables"),
     # ======================ADMIN PORTAL URLS=================================
     # Admin/Realtor Dashboard (previously /user/)
     path('admin-portal/', views.userhome, name='user'),

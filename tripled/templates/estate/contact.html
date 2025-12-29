@@ -1,0 +1,105 @@
+{% extends 'estate/base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - Triple D Homes{% endblock %}
+{% block nav_contact %}menu-active{% endblock %}
+
+{% block content %}
+<!-- start banner Area -->
+<section class="banner-area relative" id="home">	
+	<div class="overlay overlay-bg"></div>
+	<div class="container">				
+		<div class="row d-flex align-items-center justify-content-center">
+			<div class="about-content col-lg-12">
+				<h1 class="text-white">
+					Contact Us				
+				</h1>	
+				<p class="text-white link-nav"><a href="{% url 'homepage' %}">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="{% url 'contact' %}"> Contact</a></p>
+			</div>	
+		</div>
+	</div>
+</section>
+<!-- End banner Area -->
+
+<!-- Start contact Area -->
+<section class="contact-area section-gap">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-70 col-lg-8">
+				<div class="title text-center">
+					<h1 class="mb-10">Get In Touch With Us</h1>
+					<p>We're here to help you find your dream home. Reach out to us today!</p>
+				</div>
+			</div>
+		</div>				
+		<div class="row">
+			<div class="col-lg-8">
+				<form class="contact-form" id="contactForm">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<input type="email" class="form-control" id="email" name="email" placeholder="Your Email" required>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<input type="text" class="form-control" id="subject" name="subject" placeholder="Subject">
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<textarea class="form-control" name="message" id="message" rows="5" placeholder="Your Message" required></textarea>
+							</div>
+						</div>
+						<div class="col-md-12 text-right">
+							<button type="submit" class="primary-btn text-uppercase">Send Message</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="col-lg-4">
+				<div class="contact-info">
+					<h4 class="mb-20">Our Contact Information</h4>
+					<p class="mb-20">Feel free to reach out to us through any of the following means:</p>
+					
+					<div class="single-contact-info d-flex">
+						<span class="lnr lnr-home"></span>
+						<div class="contact-details">
+							<h5>Address</h5>
+							<p>
+								Nigeria
+							</p>
+						</div>
+					</div>
+					
+					<div class="single-contact-info d-flex">
+						<span class="lnr lnr-phone-handset"></span>
+						<div class="contact-details">
+							<h5>Phone</h5>
+							<p>
+								+953 012 3654 896
+							</p>
+						</div>
+					</div>
+					
+					<div class="single-contact-info d-flex">
+						<span class="lnr lnr-envelope"></span>
+						<div class="contact-details">
+							<h5>Email</h5>
+							<p>
+								support@colorlib.com
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>	
+</section>
+<!-- End contact Area -->
+{% endblock %}

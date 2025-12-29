@@ -1,0 +1,45 @@
+{% extends 'estate/base.html' %}
+{% load static %}
+
+{% block title %}Gallery - Triple D Homes{% endblock %}
+{% block nav_gallery %}menu-active{% endblock %}
+
+{% block content %}
+<!-- start banner Area -->
+<section class="banner-area relative" id="home">	
+	<div class="overlay overlay-bg"></div>
+	<div class="container">				
+		<div class="row d-flex align-items-center justify-content-center">
+			<div class="about-content col-lg-12">
+				<h1 class="text-white">
+					Gallery				
+				</h1>	
+				<p class="text-white link-nav"><a href="{% url 'homepage' %}">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="{% url 'gallery' %}"> Gallery</a></p>
+			</div>	
+		</div>
+	</div>
+</section>
+<!-- End banner Area -->
+
+<!-- Start Gallery Area -->
+<section class="section-gap">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-70 col-lg-8">
+				<div class="title text-center">
+					<h1 class="mb-10">Photo Gallery</h1>
+					<p>View our collection of properties and projects.</p>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Gallery content will be added here -->
+		<div class="row">
+			<div class="col-lg-12 text-center">
+				<p>Gallery coming soon...</p>
+			</div>
+		</div>
+	</div>	
+</section>
+<!-- End Gallery Area -->
+{% endblock %}

@@ -39,6 +39,11 @@ def login_view(request):
                     messages.error(request, 'Your account has been deactivated. Please contact the administrator.')
                     return render(request, 'signin.html', {'form': form})
 
+                # Strict Access Control: Block Secretaries
+                if getattr(user, 'user_type', '') == 'secretary':
+                    messages.error(request, 'Access Denied. Secretaries cannot access the Accounting Portal.')
+                    return render(request, 'signin.html', {'form': form})
+
                 login(request, user)
 
                 # Handle remember me functionality

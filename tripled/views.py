@@ -341,6 +341,11 @@ def signin(request):
             user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            # Strict Access Control: Block Branch Admins
+            if getattr(user, 'user_type', '') == 'branch_admin':
+                messages.error(request, "Access Denied. Branch Admins cannot access the Realtor Portal. Please use the Accounting Portal.")
+                return render(request, "user/signin.html")
+
             login(request, user)
             messages.success(request, "Login Successful!")
 
@@ -3116,3 +3121,36 @@ def secretary_dashboard(request):
     }
 
     return render(request, "user/secretary_dashboard.html", context)
+
+
+# ====================================FRONTEND WEBSITE VIEWS================================================================================
+# ===================================                        =================================================================================
+
+def homepage(request):
+    """Frontend website homepage"""
+    return render(request, 'estate/index.html')
+
+
+def about(request):
+    """Frontend website about page"""
+    return render(request, 'estate/about.html')
+
+
+def contact(request):
+    """Frontend website contact page"""
+    return render(request, 'estate/contact.html')
+
+
+def properties(request):
+    """Frontend properties page"""
+    return render(request, 'estate/properties.html')
+
+
+def gallery(request):
+    """Frontend gallery page"""
+    return render(request, 'estate/gallery.html')
+
+
+def downloadables(request):
+    """Frontend downloadables page"""
+    return render(request, 'estate/downloadables.html')

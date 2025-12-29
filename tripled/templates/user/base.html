@@ -272,7 +272,7 @@
                     </a>
                 </li>
 
-            {% else %}
+            {% elif request.user.is_superuser or request.user.is_staff or request.is_chief_admin or request.is_accountant %}
                 <!-- Full Admin Menu -->
                 <li class="side-nav-item">
                     <a href="{% url 'user' %}" class="side-nav-link">
@@ -302,61 +302,77 @@
                     </a>
                 </li>
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'secretary_list' %}" class="side-nav-link">
                         <i class="ri-file-text-line"></i>
                         <span>Manage Secretaries</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'chief_accountant_list' %}" class="side-nav-link">
                         <i class="ri-shield-user-line"></i>
                         <span>Chief Accountants</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'frontend_extras' %}" class="side-nav-link">
                         <i class="ri-magic-fill"></i>
                         <span> Frontend Extras</span>
                     </a>
                 </li>
+                {% endif %}
                 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'commissions_list' %}" class="side-nav-link">
                         <i class="ri-hand-coin-line fs-18 align-middle me-1"></i>
                         <span> Commissions</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'bulk_email' %}" class="side-nav-link">
                         <i class="ri-mail-send-line fs-18 align-middle me-1"></i>
                         <span> Send Bulk Email to Clients</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'bulk_email_realtors' %}" class="side-nav-link">
                         <i class="ri-team-line fs-18 align-middle me-1"></i>
                         <span> Send Bulk Email to Realtors</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.user.is_superuser or request.is_chief_admin %}
                 <li class="side-nav-item">
                     <a href="{% url 'general_settings' %}" class="side-nav-link">
                         <i class="ri-settings-4-line fs-18 align-middle me-1"></i>
                         <span> General Settings</span>
                     </a>
                 </li>
+                {% endif %}
 
+                {% if request.is_chief_admin or user.user_type == 'chief_accountant' or user.user_type == 'branch_admin' %}
                 <li class="side-nav-item">
                     <a href="/accounting/" class="side-nav-link">
                         <i class="ri-money-dollar-circle-line fs-18 align-middle me-1"></i>
                         <span> Accounting</span>
                     </a>
                 </li>
+                {% endif %}
 
                 <li class="side-nav-item">
                     <a href="{% url 'signout' %}" class="side-nav-link">
