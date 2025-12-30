@@ -36,40 +36,6 @@
                                 {% if gallery_images %}
                                 <div class="row">
                                     {% for image in gallery_images %}
-                                    <!-- <div class="col-md-4 mb-4">
-                                        <div class="card">
-                                            <img class="card-img-top img-fluid" src="{{ image.image.url }}" alt="{{ image.title|default:'Gallery Image' }}" style="height: 200px; object-fit: cover;">
-                                            <div class="card-body">
-                                                <h5 class="card-title">{{ image.title|default:"Untitled" }}</h5>
-                                                <p class="card-text">{{ image.description|default:"No description"|truncatewords:20 }}</p>
-                                                <div class="d-flex justify-content-between">
-                                                    <button type="button" class="btn btn-sm btn-warning edit-gallery-btn" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#edit-gallery-modal"
-                                                        data-id="{{ image.id }}"
-                                                        data-title="{{ image.title|default:'' }}"
-                                                        data-description="{{ image.description|default:'' }}"
-                                                        data-order="{{ image.order }}"
-                                                        data-is-active="{{ image.is_active }}">
-                                                        <i class="ri-edit-2-line"></i> Edit
-                                                    </button>
-                                                    <form action="{% url 'delete_gallery_image' %}" method="post" class="d-inline">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="image_id" value="{{ image.id }}">
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this image?')">
-                                                            <i class="ri-delete-bin-line"></i> Delete
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                            <div class="card-footer text-muted">
-                                                <span class="badge bg-info">Order: {{ image.order }}</span>
-                                                <span class="badge bg-{{ image.is_active|yesno:'success,danger' }}">{{ image.is_active|yesno:'Active,Inactive' }}</span>
-                                                <small class="d-block mt-1">{{ image.created_at|date:"M d, Y" }}</small>
-                                            </div>
-                                        </div>
-                                    </div> -->
-
                                     <div class="col-md-3 mb-4">
                                         <div class="card">
                                             <img class="card-img-top img-fluid" src="{{ image.image.url }}" alt="{{ image.title|default:'Gallery Image' }}" style="height: 150px; object-fit: cover;">
@@ -87,7 +53,7 @@
                                                         data-is-active="{{ image.is_active }}">
                                                         <i class="ri-edit-2-line"></i> Edit
                                                     </button>
-                                                    <form action="{% url 'delete_gallery_image' %}" method="post" class="d-inline">
+                                                    <form action="{% url 'delete_gallery_image' image.id %}" method="post" class="d-inline">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="image_id" value="{{ image.id }}">
                                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this image?')">
