@@ -162,6 +162,35 @@
     </div>
 </div>
 
+            <!-- Prominent Plot Display -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-white"><i class="ri-map-pin-line me-1"></i> Assigned Plots</h5>
+                            <span class="badge bg-light text-primary fw-bold">{{ sale.quantity }} Plots</span>
+                        </div>
+                        <div class="card-body">
+                            {% if sale.plots.exists %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for plot in sale.plots.all %}
+                                <div class="px-3 py-2 border rounded bg-light text-center" style="min-width: 100px;">
+                                    <h5 class="mb-1 text-primary fw-bold">{{ plot.number }}</h5>
+                                    <small class="text-muted">Plot Number</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="ri-alert-line me-1"></i> No specific plots have been assigned to this sale yet. 
+                                <br><small>You can assign plots by editing the sale or the property layout.</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Financial Overview Cards -->
             <div class="row mb-4">
                 <div class="col-xl-3 col-md-6">

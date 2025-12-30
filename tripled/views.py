@@ -1822,15 +1822,8 @@ def register_property_sale(request):  # with expiry date
 
             # Create initial payment if provided
             if initial_payment_decimal > 0:
-                # Update the amount_paid field first
-                property_sale.amount_paid = initial_payment_decimal
-                property_sale.save()
-                
-                # CRITICAL: Verify property_sale still has ID after save
-                if not property_sale.pk:
-                    raise ValueError("PropertySale lost its ID after save. This should never happen.")
-
                 # Create the payment record with the validated payment_date
+                # This will automatically update the sale's amount_paid and calculate commissions in Payment.save()
                 payment = Payment.objects.create(
                     property_sale=property_sale,
                     amount=initial_payment_decimal,
@@ -1842,6 +1835,7 @@ def register_property_sale(request):  # with expiry date
                 # CRITICAL: Verify payment got an ID
                 if not payment.pk:
                     raise ValueError("Payment was created but did not receive an ID. This should never happen.")
+
 
             messages.success(
                 request,
