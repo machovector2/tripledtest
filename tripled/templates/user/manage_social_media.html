@@ -1,0 +1,89 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'user' %}">Home</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'frontend_extras' %}">Frontend Extras</a></li>
+                                <li class="breadcrumb-item active">Social Media</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Manage Social Media Links</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="text-muted font-14 mb-4">
+                                Update the social media links displayed on the website header and footer.
+                            </p>
+
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="facebook_url" class="form-label"><i class="ri-facebook-fill text-primary"></i> Facebook Page URL</label>
+                                    <input type="url" class="form-control" id="facebook_url" name="facebook_url" 
+                                           value="{{ general.facebook_url|default:'' }}" 
+                                           placeholder="https://facebook.com/yourpage">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="instagram_url" class="form-label"><i class="ri-instagram-fill text-danger"></i> Instagram Profile URL</label>
+                                    <input type="url" class="form-control" id="instagram_url" name="instagram_url" 
+                                           value="{{ general.instagram_url|default:'' }}" 
+                                           placeholder="https://instagram.com/yourprofile">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="whatsapp_number" class="form-label"><i class="ri-whatsapp-fill text-success"></i> WhatsApp Number</label>
+                                    <input type="text" class="form-control" id="whatsapp_number" name="whatsapp_number" 
+                                           value="{{ general.whatsapp_number|default:'' }}" 
+                                           placeholder="+234...">
+                                    <small class="text-muted">Include country code (e.g. +23480...)</small>
+                                </div>
+
+                                <div class="mb-0 text-end">
+                                    <a href="{% url 'frontend_extras' %}" class="btn btn-light me-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary"><i class="ri-save-line me-1"></i> Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-6">
+                    <div class="card bg-pattern">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Live Preview</h4>
+                            <p class="text-muted">Links will appear in:</p>
+                            <ul class="list-struct text-muted">
+                                <li>Website Top Header (Top Bar)</li>
+                                <li>Website Footer (Social Icons section)</li>
+                                <li>Contact Page</li>
+                            </ul>
+                            
+                            <div class="alert alert-info mt-4">
+                                <i class="ri-information-line me-1"></i>
+                                Only fields with valid values will be displayed on the website.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

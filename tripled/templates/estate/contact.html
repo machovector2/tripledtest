@@ -4,9 +4,97 @@
 {% block title %}Contact Us - Triple D Homes{% endblock %}
 {% block nav_contact %}menu-active{% endblock %}
 
+{% block extra_css %}
+<!-- SweetAlert2 for beautiful dialogs -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+    /* Contact Form Styling */
+    .contact-form-area {
+        background: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #eee;
+        padding: 12px 20px;
+        height: auto;
+        font-size: 14px;
+    }
+    
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #2c3e50;
+    }
+    
+    .primary-btn {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 5px;
+        letter-spacing: 1px;
+    }
+    
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 10px;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #2c3e50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Animation for success/error */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Hidden fields layout */
+    .visually-hidden {
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px);
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- start banner Area -->
-<section class="banner-area relative" id="home">	
+<section class="banner-area relative" id="home" style="background: url({% static 'estate/estateimg/pexels-pixabay-280221.jpg' %}); background-size: cover;">	
 	<div class="overlay overlay-bg"></div>
 	<div class="container">				
 		<div class="row d-flex align-items-center justify-content-center">
@@ -34,33 +122,53 @@
 		</div>				
 		<div class="row">
 			<div class="col-lg-8">
-				<form class="contact-form" id="contactForm">
-					<div class="row">
-						<div class="col-md-12">
-							<div class="form-group">
-								<input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
-							</div>
-						</div>
-						<div class="col-md-12">
-							<div class="form-group">
-								<input type="email" class="form-control" id="email" name="email" placeholder="Your Email" required>
-							</div>
-						</div>
-						<div class="col-md-12">
-							<div class="form-group">
-								<input type="text" class="form-control" id="subject" name="subject" placeholder="Subject">
-							</div>
-						</div>
-						<div class="col-md-12">
-							<div class="form-group">
-								<textarea class="form-control" name="message" id="message" rows="5" placeholder="Your Message" required></textarea>
-							</div>
-						</div>
-						<div class="col-md-12 text-right">
-							<button type="submit" class="primary-btn text-uppercase">Send Message</button>
-						</div>
-					</div>
-				</form>
+                <div class="contact-form-area position-relative">
+                    <!-- Loading Overlay -->
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="text-center">
+                            <div class="spinner mb-3"></div>
+                            <h5 class="text-muted">Sending Message...</h5>
+                        </div>
+                    </div>
+
+                    <form class="contact-form" id="contactForm" method="POST">
+                        {% csrf_token %}
+                        <!-- Bot Prevention Fields -->
+                        <div class="visually-hidden">
+                            <label for="website">Website</label>
+                            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                            <input type="hidden" name="form_timestamp" id="formTimestamp">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="Your Email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <textarea class="form-control" name="message" id="message" rows="5" placeholder="Your Message" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-12 text-right">
+                                <button type="submit" class="primary-btn text-uppercase" id="submitBtn">
+                                    <i class="fa fa-paper-plane mr-2"></i> Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
 			</div>
 			<div class="col-lg-4">
 				<div class="contact-info">
@@ -70,10 +178,24 @@
 					<div class="single-contact-info d-flex">
 						<span class="lnr lnr-home"></span>
 						<div class="contact-details">
-							<h5>Address</h5>
-							<p>
-								Nigeria
-							</p>
+							<h5>Lagos Head Office</h5>
+							<p>66 Shehu Hussein Arikewuyo St, Lakeview Estate Ph II, Amuwo Odofin, Lagos.</p>
+						</div>
+					</div>
+
+                    <div class="single-contact-info d-flex">
+						<span class="lnr lnr-home"></span>
+						<div class="contact-details">
+							<h5>Enugu Office</h5>
+							<p>Suit 1 Adonai Complex, No 2 Onyiuke St, Off Edimbo Rd, Ogui New Layout, Enugu.</p>
+						</div>
+					</div>
+
+                    <div class="single-contact-info d-flex">
+						<span class="lnr lnr-home"></span>
+						<div class="contact-details">
+							<h5>Awka Office</h5>
+							<p>Shop B8/B11, Block C, Millennium Plaza, Aroma, Awka, Anambra State.</p>
 						</div>
 					</div>
 					
@@ -81,9 +203,7 @@
 						<span class="lnr lnr-phone-handset"></span>
 						<div class="contact-details">
 							<h5>Phone</h5>
-							<p>
-								+953 012 3654 896
-							</p>
+							<p>+234 703 660 8088</p>
 						</div>
 					</div>
 					
@@ -91,9 +211,7 @@
 						<span class="lnr lnr-envelope"></span>
 						<div class="contact-details">
 							<h5>Email</h5>
-							<p>
-								support@colorlib.com
-							</p>
+							<p>info@tripled.com.ng</p>
 						</div>
 					</div>
 				</div>
@@ -102,4 +220,111 @@
 	</div>	
 </section>
 <!-- End contact Area -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set timestamp when page loads
+        document.getElementById('formTimestamp').value = Date.now() / 1000;
+        
+        const contactForm = document.getElementById('contactForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            
+            // Show confirmation dialog first
+            Swal.fire({
+                title: 'Ready to Send?',
+                html: `
+                    <div class="text-left">
+                        <p class="mb-2">We're about to send your message:</p>
+                        <ul class="text-left mb-3" style="list-style-type: none; padding-left: 0;">
+                            <li><strong>From:</strong> ${name}</li>
+                            <li><strong>Correct Email:</strong> ${email}</li>
+                        </ul>
+                        <small class="text-muted">Is this information correct?</small>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2c3e50',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Send Message!',
+                cancelButtonText: 'No, let me edit',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading overlay
+                    loadingOverlay.style.display = 'flex';
+                    
+                    // Send data via Fetch API
+                    fetch('{% url "contact" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide loading overlay
+                        loadingOverlay.style.display = 'none';
+                        
+                        if (data.success) {
+                            // Reset form
+                            contactForm.reset();
+                            
+                            // Reset timestamp
+                            document.getElementById('formTimestamp').value = Date.now() / 1000;
+                            
+                            // Show success message
+                            Swal.fire({
+                                title: 'Message Sent!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#2c3e50',
+                                timer: 5000,
+                                timerProgressBar: true
+                            });
+                        } else {
+                            // Show error message from server
+                            Swal.fire({
+                                title: 'Oops...',
+                                text: data.message || 'Something went wrong!',
+                                icon: 'error',
+                                confirmButtonColor: '#2c3e50'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        // Hide loading overlay
+                        loadingOverlay.style.display = 'none';
+                        
+                        // Show generic error message
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Something went wrong connecting to the server. Please check your internet connection and try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#2c3e50'
+                        });
+                    });
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

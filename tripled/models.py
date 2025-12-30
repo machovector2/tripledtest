@@ -260,6 +260,8 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Backend fields only
+    
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
@@ -273,6 +275,88 @@ class Property(models.Model):
     
     class Meta:
         verbose_name_plural = "Properties"
+
+
+class WebsiteProperty(models.Model):
+    """Properties specifically for the frontend marketing website"""
+    STATES_CHOICES = [
+        ('abia', 'Abia'),
+        ('adamawa', 'Adamawa'),
+        ('akwa_ibom', 'Akwa Ibom'),
+        ('anambra', 'Anambra'),
+        ('bauchi', 'Bauchi'),
+        ('bayelsa', 'Bayelsa'),
+        ('benue', 'Benue'),
+        ('borno', 'Borno'),
+        ('cross_river', 'Cross River'),
+        ('delta', 'Delta'),
+        ('ebonyi', 'Ebonyi'),
+        ('edo', 'Edo'),
+        ('ekiti', 'Ekiti'),
+        ('enugu', 'Enugu'),
+        ('gombe', 'Gombe'),
+        ('imo', 'Imo'),
+        ('jigawa', 'Jigawa'),
+        ('kaduna', 'Kaduna'),
+        ('kano', 'Kano'),
+        ('katsina', 'Katsina'),
+        ('kebbi', 'Kebbi'),
+        ('kogi', 'Kogi'),
+        ('kwara', 'Kwara'),
+        ('lagos', 'Lagos'),
+        ('nasarawa', 'Nasarawa'),
+        ('niger', 'Niger'),
+        ('ogun', 'Ogun'),
+        ('ondo', 'Ondo'),
+        ('osun', 'Osun'),
+        ('oyo', 'Oyo'),
+        ('plateau', 'Plateau'),
+        ('rivers', 'Rivers'),
+        ('sokoto', 'Sokoto'),
+        ('taraba', 'Taraba'),
+        ('yobe', 'Yobe'),
+        ('zamfara', 'Zamfara'),
+        ('fct', 'FCT'),
+    ]
+    
+    PROPERTY_STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('sold', 'Sold'),
+        ('reserved', 'Reserved'),
+    ]
+
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    location = models.CharField(max_length=100, choices=STATES_CHOICES)
+    
+    # Frontend specific fields
+    exact_location = models.CharField(max_length=255, help_text="Specific location or address for display")
+    nearby_landmarks = models.TextField(blank=True, null=True, help_text="Key landmarks near the property")
+    plot_size = models.CharField(max_length=100, blank=True, null=True)
+    video_url = models.URLField(blank=True, null=True, help_text="Link to YouTube/Vimeo video tour")
+    main_image = models.ImageField(upload_to='website_properties/', help_text="Main image displayed on the website")
+    
+    status = models.CharField(max_length=20, choices=PROPERTY_STATUS_CHOICES, default='available')
+    is_visible = models.BooleanField(default=True, help_text="Show this property on the public website")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name_plural = "Website Properties"
+
+
+class WebsitePropertyImage(models.Model):
+    """Gallery images for a specific website property"""
+    property = models.ForeignKey(WebsiteProperty, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='website_properties/gallery/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image for {self.property.name}"
 
 
 class Plot(models.Model):
@@ -682,11 +766,15 @@ class Payment(models.Model):
 class General(models.Model):
     
     # Company Bank Information
-    company_bank_name = models.CharField(max_length=150,blank=True, null=True)
-    company_account_name = models.CharField(max_length=150, blank=True, null=True)
-    company_account_number = models.CharField(max_length=150, blank=True, null=True)
-    # phone = models.CharField(max_length=20)
+    company_bank_name = models.CharField(max_length=255, blank=True, null=True)
+    company_account_name = models.CharField(max_length=255, blank=True, null=True)
+    company_account_number = models.CharField(max_length=20, blank=True, null=True)
     
+    # Social Media Links
+    facebook_url = models.URLField(blank=True, null=True, help_text="Full Facebook Page URL")
+    instagram_url = models.URLField(blank=True, null=True, help_text="Full Instagram Profile URL")
+    whatsapp_number = models.CharField(max_length=20, blank=True, null=True, help_text="WhatsApp Number (e.g., +234...)")
+
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
@@ -702,25 +790,68 @@ class General(models.Model):
         
 # ==============================================================================
 
+
+class Gallery(models.Model):
+    """Model for storing gallery images displayed on the frontend"""
     
-# class Gallery(models.Model):
-#     """Model for storing gallery images displayed on the frontend"""
+    title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='gallery/')
+    order = models.PositiveIntegerField(default=0, help_text="Display order in gallery")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
     
-#     title = models.CharField(max_length=255, blank=True, null=True)
-#     description = models.TextField(blank=True, null=True)
-#     image = models.ImageField(upload_to='gallery/')
-#     order = models.PositiveIntegerField(default=0, help_text="Display order in gallery")
-#     is_active = models.BooleanField(default=True)
-#     created_at = models.DateTimeField(default=timezone.now)
-#     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = 'Gallery Image'
+        verbose_name_plural = 'Gallery Images'
     
-#     class Meta:
-#         ordering = ['order', '-created_at']
-#         verbose_name = 'Gallery Image'
-#         verbose_name_plural = 'Gallery Images'
+    def __str__(self):
+        return self.title if self.title else f"Gallery Image {self.id}"
+
+
+class DownloadableForm(models.Model):
+    """Model for storing downloadable forms/documents for the frontend"""
     
-#     def __str__(self):
-#         return self.title if self.title else f"Gallery Image {self.id}"
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to='downloadable_forms/')
+    order = models.PositiveIntegerField(default=0, help_text="Display order in list")
+    is_active = models.BooleanField(default=True)
+    download_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = 'Downloadable Form'
+        verbose_name_plural = 'Downloadable Forms'
+    
+    def __str__(self):
+        return self.name
+    
+    @property
+    def file_extension(self):
+        """Return the file extension"""
+        if self.file:
+            return os.path.splitext(self.file.name)[1].lower()
+        return ''
+    
+    @property
+    def file_size(self):
+        """Return human-readable file size"""
+        if self.file:
+            try:
+                size = self.file.size
+                for unit in ['B', 'KB', 'MB', 'GB']:
+                    if size < 1024:
+                        return f"{size:.1f} {unit}"
+                    size /= 1024
+                return f"{size:.1f} TB"
+            except:
+                return "Unknown"
+        return "Unknown"
     
 
 class SecretaryAdmin(models.Model):

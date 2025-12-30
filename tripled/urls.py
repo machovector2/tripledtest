@@ -17,6 +17,7 @@ urlpatterns = [
     path('contact/', views.contact, name='contact'),
     
     path("properties/", views.properties, name="properties"),
+    path("properties/<int:id>/", views.frontend_property_detail, name="frontend_property_detail"),
     path("gallery/", views.gallery, name="gallery"),
     path("downloadables/", views.downloadables, name="downloadables"),
     # ======================ADMIN PORTAL URLS=================================
@@ -73,8 +74,29 @@ urlpatterns = [
     path('bulk-email-realtors/', views.bulk_email_realtors, name='bulk_email_realtors'),
     path('send-bulk-email-realtors/', views.send_bulk_email_realtors, name='send_bulk_email_realtors'),
 
-    # Frontend Extras URLs
+    # Frontend Extras Management
     path('admin-portal/frontend-extras/', views.frontend_extras, name='frontend_extras'),
+    path('admin-portal/frontend-extras/social-media/', views.manage_social_media, name='manage_social_media'),
+    path('admin-portal/frontend-extras/properties/', views.manage_website_properties, name='manage_website_properties'),
+    path('admin-portal/frontend-extras/properties/create/', views.create_property_listing, name='create_property_listing'),
+    path('admin-portal/frontend-extras/properties/edit/<int:id>/', views.edit_property_listing, name='edit_property_listing'),
+    path('admin-portal/frontend-extras/properties/delete/<int:id>/', views.delete_property_listing, name='delete_property_listing'),
+    path('admin-portal/frontend-extras/properties/delete-image/<int:image_id>/', views.delete_property_image, name='delete_property_image'),
+    
+    # Gallery Management URLs
+    path('admin-portal/gallery-management/', views.gallery_management, name='gallery_management'),
+    path('admin-portal/gallery-management/upload/', views.add_gallery_image, name='upload_gallery_image'),
+    path('admin-portal/gallery-management/edit/', views.edit_gallery_image, name='edit_gallery_image'),
+    path('admin-portal/gallery-management/delete/<int:image_id>/', views.delete_gallery_image, name='delete_gallery_image'),
+    
+    # Form Management URLs
+    path('admin-portal/form-management/', views.form_management, name='form_management'),
+    path('admin-portal/form-management/upload/', views.add_form, name='upload_form'),
+    path('admin-portal/form-management/edit/', views.edit_form, name='edit_form'),
+    path('admin-portal/form-management/delete/<int:form_id>/', views.delete_form, name='delete_form'),
+    
+    # Public form download
+    path('download-form/<int:form_id>/', views.download_form, name='download_form'),
     
     # General settings
     path('admin-portal/settings/general/', views.general_settings, name='general_settings'),
@@ -93,6 +115,9 @@ urlpatterns = [
          views.realtor_status_api, 
          name='realtor_status_api'),
     
+    # Public Realtors Check
+    path('realtors/check/', views.realtors_check, name='realtors_check'),
+
     # Public Realtor Registration (Estate)
     path('realtor/register/', views.realtor_register, name='realtor_register'),
     path('realtor/register/<str:referral_code>/', views.realtor_register, name='realtor_register_with_referral'),

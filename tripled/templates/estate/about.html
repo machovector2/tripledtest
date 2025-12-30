@@ -6,7 +6,7 @@
 
 {% block content %}
 <!-- start banner Area -->
-<section class="banner-area relative" id="home">	
+<section class="banner-area relative" id="home" style="background: url({% static 'estate/estateimg/herotype2.jpg' %}); background-size: cover;">	
 	<div class="overlay overlay-bg"></div>
 	<div class="container">				
 		<div class="row d-flex align-items-center justify-content-center">
@@ -28,22 +28,118 @@
 			<div class="col-lg-6 about-video-left">
 				<h6 class="text-uppercase">Welcome to Triple D Homes</h6>
 				<h1>
-					We've made a life <br>
-					that will change you 
+					Crafting Dreams, <br>
+					Building Legacies
 				</h1>
 				<p>
-					<span>We are here to listen from you deliver exellence</span>
+					<span>Your reliable partner in real estate and property development.</span>
 				</p>
 				<p>
-					Triple D Homes is your trusted real estate partner, dedicated to helping you find your dream home. With years of experience and a commitment to excellence, we provide exceptional service to all our clients.
+					Triple D Global Homes is a premier real estate development and management company, dedicated to transforming the landscape of property ownership and investment. With a reputation for excellence, integrity, and innovation, we specialize in creating world-class residential and mixed-use development estates that blend modern architecture with functionality and sustainability.
 				</p>
-				<a class="primary-btn mt-30" href="{% url 'contact' %}">Contact Us Now</a>
+                <div class="row mt-30">
+                    <div class="col-md-12">
+                        <h4 class="mb-10">Vision Statement</h4>
+                        <p>To be the cornerstone of real estate excellence, setting the benchmark for innovation, sustainability, and trust that create a global legacy of prosperity and beauty for generations to come.</p>
+                    </div>
+                </div>
+                <div class="row mt-20">
+                    <div class="col-md-12">
+                        <h4 class="mb-10">Mission Statement</h4>
+                        <p>Our mission is to deliver exceptional value to our clients by offering tailored real estate solutions that meet their needs, whether for investment, living, or business purposes. We are guided by a commitment to quality and community development.</p>
+                    </div>
+                </div>
 			</div>
-			<div class="col-lg-6 about-video-right justify-content-center align-items-center d-flex relative">
-				<div class="overlay overlay-bg"></div>
-				<a class="play-btn" href="#"><img class="img-fluid mx-auto" src="{% static 'estate/img/play-btn.png' %}" alt=""></a>
+			<div class="col-lg-6 about-video-right justify-content-center align-items-center d-flex relative" style="background: none; height: auto;">
+				<img class="img-fluid mx-auto" src="{% static 'estate/estateimg/real.jpeg' %}" alt="Triple D Homes" style="border-radius: 10px; max-height: 500px; width: auto;">
 			</div>
-		</div>	
+		</div>
+        <div class="row mt-50">
+             <div class="col-lg-12 text-center">
+                <h3 class="mb-30">Our Core Values</h3>
+             </div>
+             <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                 <div class="single-service">
+                    <h5 class="mt-10">Service</h5>
+                 </div>
+             </div>
+             <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                 <div class="single-service">
+                    <h5 class="mt-10">Excellence</h5>
+                 </div>
+             </div>
+              <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                 <div class="single-service">
+                    <h5 class="mt-10">Integrity</h5>
+                 </div>
+             </div>
+              <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                 <div class="single-service">
+                    <h5 class="mt-10">Responsibility</h5>
+                 </div>
+             </div>
+             <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                 <div class="single-service">
+                    <h5 class="mt-10">Accountability</h5>
+                 </div>
+             </div>
+        </div>
+
+        <div class="row mt-50 justify-content-center">
+             <div class="col-lg-12 text-center">
+                <h3 class="mb-30">Our Offices</h3>
+             </div>
+             <div class="col-lg-4 col-md-6 text-center mb-30">
+                 <div class="single-service">
+                    <span class="lnr lnr-map-marker"></span>
+                    <h5 class="mt-10">Head Office</h5>
+                    <p>23 Liberty Estate Phase 2, By Library Bustop, Independence Layout, Enugu.</p>
+                 </div>
+             </div>
+             <div class="col-lg-4 col-md-6 text-center mb-30">
+                 <div class="single-service">
+                    <span class="lnr lnr-map-marker"></span>
+                    <h5 class="mt-10">Lagos Office</h5>
+                    <p>3 Nwachukwu Drive, Besides Meal and Event, Opposite Atunike Plaza, Okota Road, Lagos.</p>
+                 </div>
+             </div>
+             <div class="col-lg-4 col-md-6 text-center mb-30">
+                 <div class="single-service">
+                    <span class="lnr lnr-map-marker"></span>
+                    <h5 class="mt-10">Asaba Office</h5>
+                    <p>Suite 26, De-Park Plaza, 135 Ibusa Road, Off Coker Bustop, Asaba, Delta State.</p>
+                 </div>
+             </div>
+             <div class="col-lg-4 col-md-6 text-center mb-30">
+                 <div class="single-service">
+                    <span class="lnr lnr-map-marker"></span>
+                    <h5 class="mt-10">Awka Office</h5>
+                    <p>Hall Mart Plaza, By Udoka Bustop, By Kwata Bridge, Awka, Anambra State.</p>
+                 </div>
+             </div>
+             <div class="col-lg-4 col-md-6 text-center mb-30">
+                 <div class="single-service">
+                    <span class="lnr lnr-map-marker"></span>
+                    <h5 class="mt-10">Owerri Office</h5>
+                    <p>Plot CR/27 House Area V, By Holy Rosary Bustop, New Owerri, Port Harcourt Expressway, Owerri, Imo State.</p>
+                 </div>
+             </div>
+        </div>
+	</div>	
+</section>
+
+<!-- Realtor System Section -->
+<section class="callto-action-area section-gap relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-12 text-center">
+                <h1 class="text-white mb-10">Empowering You to Earn More</h1>
+                <p class="text-white mb-30" style="max-width: 800px; margin: 0 auto; font-size: 1.1em; line-height: 1.6;">
+                    At Triple D Homes, we believe in shared success. Our unique multi-level referral system rewards you not just for your own sales, but for building a team. Introduce new realtors to the company, and earn a percentage commission on every sale they make—creating a passive income stream for you while you support their growth.
+                </p>
+                <a class="primary-btn" href="{% url 'realtor_register' %}" style="background: #fff; color: #764ba2; font-weight: bold;">Join as a Realtor</a>
+			</div>
+		</div>
 	</div>	
 </section>
 <!-- End about-video Area -->				
@@ -53,9 +149,9 @@
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="col-md-12 pb-40 header-text text-center">
-				<h1 class="pb-10 text-white">Some Features that Made us Unique</h1>
+				<h1 class="pb-10 text-white">Some Features that Make us Unique</h1>
 				<p class="text-white">
-					We are committed to providing the best real estate services.
+					We ensure maximum value and comfort in all our properties.
 				</p>
 			</div>
 		</div>				
@@ -63,66 +159,66 @@
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-user"></span>
-						<h4>Expert Team</h4>
+						<span class="lnr lnr-tag"></span>
+						<h4>Best Prices</h4>
 					</a>
 					<p>
-						Our professional team brings years of experience in real estate to help you make the best decisions.
+						We offer the best deals in the market—ensuring that you get maximum value for your investment.
 					</p>
 				</div>
 			</div>
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-license"></span>
-						<h4>Professional Service</h4>
+						<span class="lnr lnr-sun"></span>
+						<h4>Ventilation & Space</h4>
 					</a>
 					<p>
-						We provide comprehensive real estate services tailored to your specific needs and requirements.
+						Enjoy airy, well-ventilated spaces that provide natural light and fresh air, promoting a healthy lifestyle.
 					</p>
 				</div>
 			</div>
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-phone"></span>
-						<h4>Great Support</h4>
+						<span class="lnr lnr-drop"></span>
+						<h4>Water Supply</h4>
 					</a>
 					<p>
-						Our dedicated support team is always ready to assist you throughout your real estate journey.
+						We understand the importance of clean water. Our properties are located in areas with 24/7 water availability.
 					</p>
 				</div>
 			</div>					
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-rocket"></span>
-						<h4>Fast Processing</h4>
+						<span class="lnr lnr-layers"></span>
+						<h4>Good Drainage</h4>
 					</a>
 					<p>
-						We ensure quick and efficient processing of all your real estate transactions.
+						Our properties feature well-planned drainage systems designed to prevent flooding and ensure a clean environment.
 					</p>
 				</div>
 			</div>
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-diamond"></span>
-						<h4>Premium Properties</h4>
+						<span class="lnr lnr-lock"></span>
+						<h4>Perimeter Fencing</h4>
 					</a>
 					<p>
-						We offer a wide selection of premium properties in prime locations across Nigeria.
+						Security and privacy are key! Our properties come with high-quality perimeter fencing for enhanced security.
 					</p>
 				</div>
 			</div>
 			<div class="col-lg-4 col-md-6">
 				<div class="single-feature">
 					<a href="#" class="title d-flex flex-row align-items-center">
-						<span class="lnr lnr-bubble"></span>
-						<h4>Trusted Brand</h4>
+						<span class="lnr lnr-highlight"></span>
+						<h4>Power Supply</h4>
 					</a>
 					<p>
-						Triple D Homes is a trusted name in real estate with countless satisfied clients.
+						Our properties come with access to stable electricity and backup power solutions where necessary.
 					</p>
 				</div>
 			</div>	

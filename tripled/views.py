@@ -26,10 +26,18 @@ from .models import (
     General,
     Plot,
     SecretaryAdmin,
+    Gallery,
+    DownloadableForm,
+    WebsiteProperty,
+    WebsitePropertyImage,
 )
 from django.http import JsonResponse
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
+
+# ...
+
+
 
 from django.db.models import Sum  # Add this import
 
@@ -95,42 +103,126 @@ def realtors_check(request):
     """
     View for realtors to search for their profile using a query string.
     Supports search by referral code, first name, full name, phone or email.
+    Phone search normalizes different formats (+234, 234, 0, etc.)
     """
+    import re
+    
     search_performed = False
     realtor = None
     commissions = None
     direct_referrals = None
+    secondary_referrals = None
 
     # Read search_query from the template input (name="search_query")
     search_query = request.GET.get('search_query', '').strip()
 
     if search_query:
         search_performed = True
+        
+        # Normalize phone number for search
+        def normalize_phone(phone):
+            """Normalize phone number to different formats for matching"""
+            if not phone:
+                return []
+            # Remove all non-digit characters except +
+            cleaned = re.sub(r'[^\d+]', '', phone)
+            variants = []
+            
+            # If starts with +234, create variants
+            if cleaned.startswith('+234'):
+                base = cleaned[4:]  # Remove +234
+                variants.extend([
+                    cleaned,           # +234...
+                    '234' + base,      # 234...
+                    '0' + base,        # 0...
+                    base               # just the number
+                ])
+            # If starts with 234 (no +)
+            elif cleaned.startswith('234') and len(cleaned) > 10:
+                base = cleaned[3:]  # Remove 234
+                variants.extend([
+                    cleaned,           # 234...
+                    '+' + cleaned,     # +234...
+                    '0' + base,        # 0...
+                    base               # just the number
+                ])
+            # If starts with 0
+            elif cleaned.startswith('0'):
+                base = cleaned[1:]  # Remove 0
+                variants.extend([
+                    cleaned,           # 0...
+                    '+234' + base,     # +234...
+                    '234' + base,      # 234...
+                    base               # just the number
+                ])
+            else:
+                # Just the raw number
+                variants.extend([
+                    cleaned,
+                    '0' + cleaned,
+                    '+234' + cleaned,
+                    '234' + cleaned
+                ])
+            
+            return list(set(variants))  # Remove duplicates
+        
+        # Check if search query looks like an 8-digit referral code
+        is_referral_code = bool(re.match(r'^\d{8}$', search_query.strip()))
+        
+        # Check if search query looks like a phone number (but not a referral code)
+        is_phone_search = bool(re.match(r'^[\d\s\-+()]+$', search_query)) and not is_referral_code
+        
+        # First, try exact referral code match for 8-digit numeric strings
+        if is_referral_code:
+            matches = Realtor.objects.filter(referral_code__iexact=search_query.strip()).order_by('-created_at')
+        elif is_phone_search:
+            # Generate phone variants and search
+            phone_variants = normalize_phone(search_query)
+            phone_query = Q()
+            for variant in phone_variants:
+                phone_query |= Q(phone__icontains=variant)
+            
+            matches = Realtor.objects.filter(phone_query).order_by('-created_at')
+        else:
+            # Standard search: referral code, name, email
+            matches = Realtor.objects.filter(
+                Q(referral_code__iexact=search_query) |  # Exact match for referral code
+                Q(first_name__icontains=search_query) |  # Case-insensitive partial matches for names
+                Q(last_name__icontains=search_query) |
+                Q(email__icontains=search_query)         # Partial match for email
+            ).order_by('-created_at')
 
-        # Search directly against the individual fields
-        matches = Realtor.objects.filter(
-            Q(referral_code__iexact=search_query) |  # Exact match for referral code
-            Q(first_name__icontains=search_query) |  # Case-insensitive partial matches for names
-            Q(last_name__icontains=search_query) |
-            Q(phone__icontains=search_query) |       # Partial match for phone
-            Q(email__icontains=search_query)         # Partial match for email
-        ).order_by('-created_at')
-
-        # If no matches found, try splitting the search query for full name search
-        if not matches.exists() and ' ' in search_query:
-            name_parts = search_query.split()
-            name_queries = Q()
-            for part in name_parts:
-                name_queries |= Q(first_name__icontains=part) | Q(last_name__icontains=part)
-            matches = Realtor.objects.filter(name_queries).order_by('-created_at')
+            # If no matches found, try splitting the search query for full name search
+            if not matches.exists() and ' ' in search_query:
+                name_parts = search_query.split()
+                # Try to match first_name and last_name combination
+                if len(name_parts) >= 2:
+                    first_part = name_parts[0]
+                    last_part = ' '.join(name_parts[1:])
+                    matches = Realtor.objects.filter(
+                        Q(first_name__icontains=first_part, last_name__icontains=last_part) |
+                        Q(first_name__icontains=last_part, last_name__icontains=first_part)
+                    ).order_by('-created_at')
+                
+                # If still no match, try any part matching
+                if not matches.exists():
+                    name_queries = Q()
+                    for part in name_parts:
+                        name_queries |= Q(first_name__icontains=part) | Q(last_name__icontains=part)
+                    matches = Realtor.objects.filter(name_queries).order_by('-created_at')
 
         if matches.exists():
             # Pick the most recent match if multiple
             realtor = matches.first()
 
-            # Get commissions and direct referrals for the found realtor
+            # Get commissions for the found realtor
             commissions = Commission.objects.filter(realtor=realtor).order_by('-created_at')
+            
+            # Get direct referrals (realtors who used this realtor's referral code)
             direct_referrals = Realtor.objects.filter(sponsor=realtor).order_by('-created_at')
+            
+            # Get second-level referrals (realtors referred by this realtor's direct referrals)
+            secondary_referrals = Realtor.objects.filter(sponsor__sponsor=realtor).order_by('-created_at')
         else:
             messages.error(request, f"No realtor found matching: {search_query}")
 
@@ -139,6 +231,7 @@ def realtors_check(request):
         'search_performed': search_performed,
         'commissions': commissions,
         'direct_referrals': direct_referrals,
+        'secondary_referrals': secondary_referrals,
         'search_query': search_query,
     }
 
@@ -1988,6 +2081,160 @@ def frontend_extras(request):
     """Main view for Frontend Extras dashboard"""
     return render(request, "user/frontend_extras.html")
 
+
+@login_required
+@admin_required
+def manage_social_media(request):
+    """View to manage social media links"""
+    # Ensure a General object exists
+    general, created = General.objects.get_or_create(id=1)
+    
+    if request.method == "POST":
+        general.facebook_url = request.POST.get("facebook_url")
+        general.instagram_url = request.POST.get("instagram_url")
+        general.whatsapp_number = request.POST.get("whatsapp_number")
+        general.save()
+        messages.success(request, "Social media links updated successfully.")
+        return redirect("frontend_extras")
+        
+    return render(request, "user/manage_social_media.html", {"general": general})
+
+
+@login_required
+@admin_required
+def manage_website_properties(request):
+    """List all properties for website management"""
+    properties = WebsiteProperty.objects.all().order_by('-created_at')
+    return render(request, "user/manage_properties.html", {"properties": properties})
+
+
+@login_required
+@admin_required
+def create_property_listing(request):
+    """Create a new property listing for the website"""
+    # Get all states from WebsiteProperty model choices for the dropdown
+    states = WebsiteProperty._meta.get_field("location").choices
+    
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                # Create the property
+                property = WebsiteProperty(
+                    name=request.POST.get("name"),
+                    description=request.POST.get("description"),
+                    location=request.POST.get("location"),
+                    
+                    # Frontend fields
+                    exact_location=request.POST.get("exact_location"),
+                    nearby_landmarks=request.POST.get("nearby_landmarks"),
+                    plot_size=request.POST.get("plot_size"),
+                    video_url=request.POST.get("video_url"),
+                    is_visible=request.POST.get("is_visible") == "on",
+                )
+                
+                # Default status if not provided (though model has default)
+                if "status" in request.POST:
+                    property.status = request.POST.get("status")
+                
+                # Handle main image
+                if "main_image" in request.FILES:
+                    property.main_image = request.FILES["main_image"]
+                
+                property.save()
+                
+                # Handle gallery images (multiple)
+                images = request.FILES.getlist('gallery_images')
+                for image in images:
+                    WebsitePropertyImage.objects.create(property=property, image=image)
+                
+                messages.success(request, f"Property '{property.name}' created successfully.")
+                return redirect("manage_website_properties")
+                
+        except Exception as e:
+            messages.error(request, f"Error creating property: {str(e)}")
+            # logger.error(f"Error creating property: {str(e)}")
+    
+    return render(request, "user/edit_property.html", {"states": states, "is_create": True})
+
+
+@login_required
+@admin_required
+def edit_property_listing(request, id):
+    """Edit an existing property listing"""
+    property = get_object_or_404(WebsiteProperty, id=id)
+    states = WebsiteProperty._meta.get_field("location").choices
+    
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                # Update basic fields
+                property.name = request.POST.get("name")
+                property.description = request.POST.get("description")
+                property.location = request.POST.get("location")
+                
+                # Update frontend fields
+                property.exact_location = request.POST.get("exact_location")
+                property.nearby_landmarks = request.POST.get("nearby_landmarks")
+                property.plot_size = request.POST.get("plot_size")
+                property.video_url = request.POST.get("video_url")
+                property.is_visible = request.POST.get("is_visible") == "on"
+                
+                if "status" in request.POST:
+                    property.status = request.POST.get("status")
+                
+                # Handle main image update
+                if "main_image" in request.FILES:
+                    property.main_image = request.FILES["main_image"]
+                
+                property.save()
+                
+                # Handle gallery images (add new ones)
+                images = request.FILES.getlist('gallery_images')
+                for image in images:
+                    WebsitePropertyImage.objects.create(property=property, image=image)
+                
+                messages.success(request, "Property updated successfully.")
+                return redirect("manage_website_properties")
+                
+        except Exception as e:
+            messages.error(request, f"Error updating property: {str(e)}")
+            # logger.error(f"Error updating property {id}: {str(e)}")
+            
+    # For GET request or error
+    return render(request, "user/edit_property.html", {
+        "property": property, 
+        "states": states, 
+        "is_create": False
+    })
+
+
+@login_required
+@admin_required
+def delete_property_listing(request, id):
+    """Delete a property listing"""
+    property = get_object_or_404(WebsiteProperty, id=id)
+    
+    if request.method == "POST":
+        try:
+             name = property.name
+             property.delete()
+             messages.success(request, f"Property '{name}' deleted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error deleting property: {str(e)}")
+            
+    return redirect("manage_website_properties")
+
+
+@login_required
+@admin_required
+def delete_property_image(request, image_id):
+    """Delete a specific gallery image"""
+    image = get_object_or_404(WebsitePropertyImage, id=image_id)
+    property_id = image.property.id
+    image.delete()
+    messages.success(request, "Image deleted successfully.")
+    return redirect("edit_property_listing", id=property_id)
+
     
 
 
@@ -3137,20 +3384,357 @@ def about(request):
 
 
 def contact(request):
-    """Frontend website contact page"""
+    """Frontend website contact page with email functionality"""
+    if request.method == 'POST':
+        import time
+        
+        # Check for honeypot field (bot prevention)
+        honeypot = request.POST.get('website', '')
+        if honeypot:
+            # Bot detected - return success to confuse bots
+            return JsonResponse({'success': True, 'message': 'Message sent successfully!'})
+        
+        # Check timestamp field for form timing (too fast = likely bot)
+        form_timestamp = request.POST.get('form_timestamp', '')
+        if form_timestamp:
+            try:
+                submission_time = float(form_timestamp)
+                current_time = time.time()
+                # If form was submitted in less than 3 seconds, likely a bot
+                if current_time - submission_time < 3:
+                    return JsonResponse({'success': True, 'message': 'Message sent successfully!'})
+            except (ValueError, TypeError):
+                pass
+        
+        # Get form data
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', '').strip() or 'Contact Form Submission'
+        message = request.POST.get('message', '').strip()
+        
+        # Validate required fields
+        if not name or not email or not message:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Please fill in all required fields.'
+            }, status=400)
+        
+        # Basic email validation
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return JsonResponse({
+                'success': False, 
+                'message': 'Please enter a valid email address.'
+            }, status=400)
+        
+        # Prepare email content
+        full_subject = f"[Triple D Homes Contact] {subject}"
+        email_message = f"""
+New Contact Form Submission from Triple D Big Dream Homes Website
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SENDER DETAILS:
+• Name: {name}
+• Email: {email}
+• Subject: {subject}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MESSAGE:
+
+{message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This message was sent via the contact form on the Triple D Big Dream Homes website.
+Submitted on: {timezone.now().strftime('%B %d, %Y at %I:%M %p')}
+
+To reply, simply respond to this email or contact {email} directly.
+        """.strip()
+        
+        from django.core.mail import EmailMessage
+        
+        try:
+            # Send email to the company using EmailMessage to support reply_to
+            email_msg = EmailMessage(
+                subject=full_subject,
+                body=email_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.DEFAULT_FROM_EMAIL],
+                reply_to=[email],  # Set reply-to as the sender's email
+            )
+            email_msg.send(fail_silently=False)
+            
+            # Also send a confirmation email to the sender (this can stay as send_mail as it doesn't need reply_to)
+            confirmation_subject = "Thank you for contacting Triple D Big Dream Homes"
+            confirmation_message = f"""
+Dear {name},
+
+Thank you for reaching out to Triple D Big Dream Homes!
+
+We have received your message and one of our team members will get back to you as soon as possible, typically within 24-48 hours.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOUR MESSAGE SUMMARY:
+• Subject: {subject}
+• Message: {message[:200]}{'...' if len(message) > 200 else ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In the meantime, feel free to:
+• Browse our properties at our website
+• Call us at +234 703 660 8088
+• Visit one of our offices:
+  - Lagos: 66 Shehu Hussein Arikewuyo St, Lakeview Estate Ph II, Amuwo Odofin
+  - Enugu: Suit 1 Adonai Complex, No 2 Onyiuke St, Off Edimbo Rd, Ogui New Layout
+  - Awka: Shop B8/B11, Block C, Millennium Plaza, Aroma
+
+Best regards,
+The Triple D Big Dream Homes Team
+            """.strip()
+            
+            try:
+                send_mail(
+                    subject=confirmation_subject,
+                    message=confirmation_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=True,  # Don't fail if confirmation email fails
+                )
+            except Exception:
+                pass  # Ignore confirmation email errors
+            
+            logger.info(f"Contact form submitted successfully from {name} ({email})")
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Thank you! Your message has been sent successfully. We will get back to you soon.'
+            })
+            
+        except Exception as e:
+            logger.error(f"Failed to send contact form email: {str(e)}")
+            return JsonResponse({
+                'success': False, 
+                'message': 'Sorry, there was an error sending your message. Please try again later or contact us directly.'
+            }, status=500)
+    
+    # GET request - just render the form
     return render(request, 'estate/contact.html')
 
 
 def properties(request):
     """Frontend properties page"""
-    return render(request, 'estate/properties.html')
+    properties = WebsiteProperty.objects.filter(is_visible=True).order_by('-created_at')
+    return render(request, 'estate/properties.html', {'properties': properties})
+
+
+def frontend_property_detail(request, id):
+    """Frontend property detail page"""
+    property = get_object_or_404(WebsiteProperty, id=id, is_visible=True)
+    return render(request, 'estate/property_detail.html', {'property': property})
 
 
 def gallery(request):
-    """Frontend gallery page"""
-    return render(request, 'estate/gallery.html')
+    """Frontend gallery page with active gallery images"""
+    gallery_images = Gallery.objects.filter(is_active=True).order_by('order', '-created_at')
+    return render(request, 'estate/gallery.html', {'gallery_images': gallery_images})
 
 
 def downloadables(request):
-    """Frontend downloadables page"""
-    return render(request, 'estate/downloadables.html')
+    """Frontend downloadables page with active forms"""
+    forms = DownloadableForm.objects.filter(is_active=True).order_by('order', '-created_at')
+    return render(request, 'estate/downloadables.html', {'forms': forms})
+
+
+# ========================GALLERY MANAGEMENT VIEWS=================================
+
+@login_required
+@admin_required
+def gallery_management(request):
+    """Admin page for managing gallery images"""
+    gallery_images = Gallery.objects.all().order_by('order', '-created_at')
+    return render(request, 'user/gallery_management.html', {'gallery_images': gallery_images})
+
+
+@login_required
+@admin_required
+def add_gallery_image(request):
+    """Add a new gallery image"""
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        image = request.FILES.get('image')
+        order = request.POST.get('order', 0)
+        is_active = request.POST.get('is_active') == 'on'
+        
+        if not image:
+            messages.error(request, 'Image is required.')
+            return redirect('gallery_management')
+        
+        try:
+            Gallery.objects.create(
+                title=title if title else None,
+                description=description if description else None,
+                image=image,
+                order=int(order) if order else 0,
+                is_active=is_active
+            )
+            messages.success(request, 'Gallery image added successfully!')
+        except Exception as e:
+            messages.error(request, f'Error adding image: {str(e)}')
+    
+    return redirect('gallery_management')
+
+
+@login_required
+@admin_required
+def edit_gallery_image(request):
+    """Edit an existing gallery image"""
+    if request.method == 'POST':
+        image_id = request.POST.get('image_id')
+        gallery_image = get_object_or_404(Gallery, id=image_id)
+        
+        gallery_image.title = request.POST.get('title', '').strip() or None
+        gallery_image.description = request.POST.get('description', '').strip() or None
+        gallery_image.order = int(request.POST.get('order', 0))
+        gallery_image.is_active = request.POST.get('is_active') == 'on'
+        
+        # Update image if new one provided
+        if 'image' in request.FILES:
+            gallery_image.image = request.FILES['image']
+        
+        try:
+            gallery_image.save()
+            messages.success(request, 'Gallery image updated successfully!')
+        except Exception as e:
+            messages.error(request, f'Error updating image: {str(e)}')
+    
+    return redirect('gallery_management')
+
+
+@login_required
+@admin_required
+def delete_gallery_image(request):
+    """Delete a gallery image"""
+    if request.method == 'POST':
+        image_id = request.POST.get('image_id')
+        gallery_image = get_object_or_404(Gallery, id=image_id)
+        
+        try:
+            gallery_image.delete()
+            messages.success(request, 'Gallery image deleted successfully!')
+        except Exception as e:
+            messages.error(request, f'Error deleting image: {str(e)}')
+    
+    return redirect('gallery_management')
+
+
+# ========================FORM MANAGEMENT VIEWS=================================
+
+@login_required
+@admin_required
+def form_management(request):
+    """Admin page for managing downloadable forms"""
+    forms = DownloadableForm.objects.all().order_by('order', '-created_at')
+    return render(request, 'user/form_management.html', {'forms': forms})
+
+
+@login_required
+@admin_required
+def add_form(request):
+    """Add a new downloadable form"""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        file = request.FILES.get('file')
+        order = request.POST.get('order', 0)
+        is_active = request.POST.get('is_active') == 'on'
+        
+        if not name:
+            messages.error(request, 'Form name is required.')
+            return redirect('form_management')
+        
+        if not file:
+            messages.error(request, 'File is required.')
+            return redirect('form_management')
+        
+        try:
+            DownloadableForm.objects.create(
+                name=name,
+                description=description if description else None,
+                file=file,
+                order=int(order) if order else 0,
+                is_active=is_active
+            )
+            messages.success(request, 'Form added successfully!')
+        except Exception as e:
+            messages.error(request, f'Error adding form: {str(e)}')
+    
+    return redirect('form_management')
+
+
+@login_required
+@admin_required
+def edit_form(request):
+    """Edit an existing downloadable form"""
+    if request.method == 'POST':
+        form_id = request.POST.get('form_id')
+        form_obj = get_object_or_404(DownloadableForm, id=form_id)
+        
+        name = request.POST.get('name', '').strip()
+        if not name:
+            messages.error(request, 'Form name is required.')
+            return redirect('form_management')
+        
+        form_obj.name = name
+        form_obj.description = request.POST.get('description', '').strip() or None
+        form_obj.order = int(request.POST.get('order', 0))
+        form_obj.is_active = request.POST.get('is_active') == 'on'
+        
+        # Update file if new one provided
+        if 'file' in request.FILES:
+            form_obj.file = request.FILES['file']
+        
+        try:
+            form_obj.save()
+            messages.success(request, 'Form updated successfully!')
+        except Exception as e:
+            messages.error(request, f'Error updating form: {str(e)}')
+    
+    return redirect('form_management')
+
+
+@login_required
+@admin_required
+def delete_form(request):
+    """Delete a downloadable form"""
+    if request.method == 'POST':
+        form_id = request.POST.get('form_id')
+        form_obj = get_object_or_404(DownloadableForm, id=form_id)
+        
+        try:
+            form_obj.delete()
+            messages.success(request, 'Form deleted successfully!')
+        except Exception as e:
+            messages.error(request, f'Error deleting form: {str(e)}')
+    
+    return redirect('form_management')
+
+
+def download_form(request, form_id):
+    """Track download and serve the form file"""
+    form_obj = get_object_or_404(DownloadableForm, id=form_id, is_active=True)
+    
+    # Increment download count
+    form_obj.download_count += 1
+    form_obj.save(update_fields=['download_count'])
+    
+    # Serve the file
+    try:
+        return FileResponse(form_obj.file.open('rb'), as_attachment=True, filename=os.path.basename(form_obj.file.name))
+    except Exception as e:
+        raise Http404("File not found")
+

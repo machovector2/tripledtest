@@ -5,7 +5,7 @@
 	<!-- Mobile Specific Meta -->
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<!-- Favicon-->
-	<link rel="shortcut icon" href="{% static 'estate/img/fav.png' %}">
+	<link rel="shortcut icon" href="{% static 'user/images/tripledlogo.jpeg' %}">
 	<!-- Author Meta -->
 	<meta name="author" content="Triple D Homes">
 	<!-- Meta Description -->
@@ -37,16 +37,19 @@
 		  			<div class="container">
 			  		  <div class="row">
 			  		  	<div class="col-lg-6 col-sm-6 col-4 header-top-left no-padding">
-			  		  		<a href="tel:+953 012 3654 896">+953 012 3654 896</a>
-			  		  		<a href="mailto:support@colorlib.com">support@colorlib.com</a>					  
+			  		  		<a href="tel:+2347036608088">+234 703 660 8088</a>
+			  		  		<a href="mailto:info@tripled.com.ng">info@tripled.com.ng</a>					  
 			  		  	</div>
 			  		  	<div class="col-lg-6 col-sm-6 col-8 header-top-right no-padding">
-			  		  		<ul>
-								<li><a href="#"><i class="fa fa-facebook"></i></a></li>
-								<li><a href="#"><i class="fa fa-twitter"></i></a></li>
-								<li><a href="#"><i class="fa fa-dribbble"></i></a></li>
-								<li><a href="#"><i class="fa fa-behance"></i></a></li>
-			  		  		</ul>			
+								{% if general_settings.facebook_url %}
+								<li><a href="{{ general_settings.facebook_url }}" target="_blank"><i class="fa fa-facebook"></i></a></li>
+								{% endif %}
+								{% if general_settings.instagram_url %}
+								<li><a href="{{ general_settings.instagram_url }}" target="_blank"><i class="fa fa-instagram"></i></a></li>
+								{% endif %}
+								{% if general_settings.whatsapp_number %}
+								<li><a href="https://wa.me/{{ general_settings.whatsapp_number }}" target="_blank"><i class="fa fa-whatsapp"></i></a></li>
+								{% endif %}			
 			  		  	</div>
 			  		  </div>			  					  
 		  			</div>
@@ -54,33 +57,33 @@
 			    <div class="container main-menu">
 			    	<div class="row align-items-center justify-content-between d-flex">
 				      <div id="logo">
-				        <a href="{% url 'homepage' %}"><img src="{% static 'user/images/tripledlogo.jpeg' %}" alt="Triple D Homes" title="Triple D Homes" style="max-height: 60px;" /></a>
+				        <a href="{% url 'homepage' %}"><img src="{% static 'user/images/tripledlogo.jpeg' %}" alt="Triple D Homes" title="Triple D Homes" style="max-height: 60px; width: 110px;" /></a>
 				      </div>
 				      <nav id="nav-menu-container">
 				        <ul class="nav-menu">
 				          <li class="{% block nav_home %}{% endblock %}"><a href="{% url 'homepage' %}">Home</a></li>
-				          <li class="{% block nav_about %}{% endblock %}"><a href="{% url 'about' %}">About</a></li>
-				          <li class="{% block nav_services %}{% endblock %}"><a href="#">Services</a></li>
-				          <li class="{% block nav_projects %}{% endblock %}"><a href="#">Projects</a></li>
-				          <li class="menu-has-children"><a href="">Blog</a>
-				            <ul>
-				              <li><a href="#">Blog Home</a></li>
-				              <li><a href="#">Blog Single</a></li>
-				            </ul>
-				          </li>	
-				          <li class="menu-has-children"><a href="">Pages</a>
-				            <ul>
-			              		<li><a href="#">Project Details</a></li>		
-				                <li><a href="#">Elements</a></li>
-						          <li class="menu-has-children"><a href="">Level 2 </a>
-						            <ul>
-						              <li><a href="#">Item One</a></li>
-						              <li><a href="#">Item Two</a></li>
-						            </ul>
-						          </li>					                		
-				            </ul>
-				          </li>					          					          		          
-				          <li class="{% block nav_contact %}{% endblock %}"><a href="{% url 'contact' %}">Contact</a></li>
+				          <li class="{% block nav_about %}{% endblock %}"><a href="{% url 'about' %}">About Us</a></li>
+				          <li class="{% block nav_properties %}{% endblock %}"><a href="{% url 'properties' %}">Properties</a></li>
+				          <li class="{% block nav_downloadables %}{% endblock %}"><a href="{% url 'downloadables' %}">Downloadables</a></li>
+				          <li class="{% block nav_realtors_check %}{% endblock %}"><a href="{% url 'realtors_check' %}">Realtors Check</a></li>
+				          <li class="{% block nav_gallery %}{% endblock %}"><a href="{% url 'gallery' %}">Gallery</a></li>
+				          <li class="{% block nav_contact %}{% endblock %}"><a href="{% url 'contact' %}">Contact Us</a></li>
+                          <li><a href="{% url 'realtor_register' %}" class="primary-btn text-white" style="line-height: 24px; padding: 0 20px;">Register as Realtor</a></li>
+                          
+                          <!-- Mobile Only Social Links -->
+                          <li class="d-lg-none mt-3">
+                              <div style="display: flex; gap: 20px; padding-left: 15px;">
+                                  {% if general_settings.facebook_url %}
+                                  <a href="{{ general_settings.facebook_url }}" target="_blank" style="display: inline-block;"><i class="fa fa-facebook" style="font-size: 1.2rem;"></i></a>
+                                  {% endif %}
+                                  {% if general_settings.instagram_url %}
+                                  <a href="{{ general_settings.instagram_url }}" target="_blank" style="display: inline-block;"><i class="fa fa-instagram" style="font-size: 1.2rem;"></i></a>
+                                  {% endif %}
+                                  {% if general_settings.whatsapp_number %}
+                                  <a href="https://wa.me/{{ general_settings.whatsapp_number }}" target="_blank" style="display: inline-block;"><i class="fa fa-whatsapp" style="font-size: 1.2rem;"></i></a>
+                                  {% endif %}
+                              </div>
+                          </li>
 				        </ul>
 				      </nav><!-- #nav-menu-container -->		    		
 			    	</div>
@@ -94,46 +97,54 @@
 		<footer class="footer-area section-gap">
 			<div class="container">
 				<div class="row">
-					<div class="col-lg-5 col-md-6 col-sm-6">
+					<div class="col-lg-3 col-md-6 col-sm-6">
 						<div class="single-footer-widget">
-							<h6>About Us</h6>
+							<h6>About Triple D Homes</h6>
 							<p>
-								If you own an Iphone, you've probably already worked out how much fun it is to use it app to watch movies-it has that.
+								From luxury homes to affordable landed assets that meet your expectations. We provide you with the best assistance when it comes to choosing your properties, every step of the way.
 							</p>
-							<p class="footer-text"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> and distributed by <a href="https://themewagon.com/" target="_blank">ThemeWagon</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>							
+							<p class="footer-text">
+								&copy;<script>document.write(new Date().getFullYear());</script> Triple D Global Homes. All rights reserved.
+							</p>							
 						</div>
 					</div>
-					<div class="col-lg-5  col-md-6 col-sm-6">
+					<div class="col-lg-3 col-md-6 col-sm-6">
 						<div class="single-footer-widget">
-							<h6>Newsletter</h6>
-							<p>Stay update with our latest</p>
-							<div class="" id="mc_embed_signup">
-								<form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
-									<input class="form-control" name="EMAIL" placeholder="Email Address" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email Address'" required="" type="email">
-		                            	<button class="click-btn btn btn-default"><i class="lnr lnr-arrow-right" aria-hidden="true"></i></button>
-		                            	<div style="position: absolute; left: -5000px;">
-											<input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-										</div>
-									<div class="info"></div>
-								</form>
-							</div>
+							<h6>Lagos Head Office</h6>
+							<p>66 Shehu Hussein Arikewuyo Street, Lakeview Estate Phase II, Amuwo Odofin, Lagos.</p>
 						</div>
-					</div>						
-					<div class="col-lg-2 col-md-6 col-sm-6 social-widget">
+					</div>	
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="single-footer-widget">
+							<h6>Enugu Office</h6>
+							<p>Suit 1 Adonai Complex, No 2 Onyiuke Street, Off Edimbo Road, Ogui New Layout, Enugu.</p>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="single-footer-widget">
+							<h6>Awka Office</h6>
+							<p>Shop B8/B11, Block C, Millennium Plaza, Opp. ABS, Behind UBA, Aroma, Enugu-Onitsha Express Road, Awka.</p>
+						</div>
+					</div>	
+				</div>
+                <div class="row mt-30">
+					<div class="col-lg-12">
 						<div class="single-footer-widget">
 							<h6>Follow Us</h6>
-							<p>Let us be social</p>
 							<div class="footer-social d-flex align-items-center">
-								<a href="#"><i class="fa fa-facebook"></i></a>
-								<a href="#"><i class="fa fa-twitter"></i></a>
-								<a href="#"><i class="fa fa-dribbble"></i></a>
-								<a href="#"><i class="fa fa-behance"></i></a>
+								{% if general_settings.facebook_url %}
+								<a href="{{ general_settings.facebook_url }}" target="_blank"><i class="fa fa-facebook"></i></a>
+								{% endif %}
+								{% if general_settings.instagram_url %}
+								<a href="{{ general_settings.instagram_url }}" target="_blank"><i class="fa fa-instagram"></i></a>
+								{% endif %}
+								{% if general_settings.whatsapp_number %}
+								<a href="https://wa.me/{{ general_settings.whatsapp_number }}" target="_blank"><i class="fa fa-whatsapp"></i></a>
+								{% endif %}
 							</div>
 						</div>
-					</div>							
-				</div>
+					</div>
+                </div>
 			</div>
 		</footer>	
 		<!-- End footer Area -->	

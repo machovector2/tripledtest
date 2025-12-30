@@ -1,0 +1,214 @@
+{% extends 'estate/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ property.name }} - Triple D Homes{% endblock %}
+{% block nav_properties %}menu-active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-hero {
+        height: 60vh;
+        min-height: 400px;
+        position: relative;
+        background-size: cover;
+        background-position: center;
+    }
+    .property-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+    }
+    .feature-item {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+        border: 1px solid #eee;
+    }
+    .feature-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    .gallery-img {
+        cursor: pointer;
+        transition: opacity 0.3s;
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 5px;
+    }
+    .gallery-img:hover {
+        opacity: 0.8;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="property-hero relative d-flex align-items-center justify-content-center" style="background-image: url('{% if property.main_image %}{{ property.main_image.url }}{% else %}{% static 'estate/estateimg/header-bg.jpg' %}{% endif %}');">
+    <div class="container text-center relative" style="z-index: 2;">
+        <h1 class="text-white display-4">{{ property.name }}</h1>
+        <p class="text-white mt-2 h4"><i class="lnr lnr-map-marker"></i> {{ property.exact_location|default:property.get_location_display }}</p>
+    </div>
+</section>
+
+<!-- Property Details -->
+<section class="section-gap">
+    <div class="container">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="mb-40">
+                    <h3 class="mb-20">Property Description</h3>
+                    <p class="text-justify" style="white-space: pre-line; line-height: 1.8;">{{ property.description }}</p>
+                </div>
+
+                {% if property.nearby_landmarks %}
+                <div class="mb-40">
+                    <h3 class="mb-20">Nearby Landmarks</h3>
+                    <div class="alert alert-light border">
+                        <i class="lnr lnr-map text-primary mr-2"></i> {{ property.nearby_landmarks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Static Features (Standard for all properties) -->
+                <div class="mb-40">
+                    <h3 class="mb-20">Property Features & Benefits</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-license text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>C of O / Authentic Title</h5>
+                                    <small>Secure Documentation</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-layers text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>Installmental Payment</h5>
+                                    <small>Flexible Plans Available</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-highlight text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>Good Road Network</h5>
+                                    <small>Accessible Location</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-lock text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>Maximum Security</h5>
+                                    <small>Safe Environment</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-drop text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>Water Supply</h5>
+                                    <small>Constant Availability</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item d-flex align-items-center">
+                                <span class="lnr lnr-power-switch text-primary h3 mr-3"></span>
+                                <div>
+                                    <h5>Electricity</h5>
+                                    <small>Reliable Power Connection</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Section -->
+                {% if property.images.all %}
+                <div class="mb-40">
+                    <h3 class="mb-20">Property Gallery</h3>
+                    <div class="row gallery-container">
+                        {% for img in property.images.all %}
+                        <div class="col-md-4 col-sm-6 mb-30">
+                            <a href="{{ img.image.url }}" class="img-pop-up">
+                                <img src="{{ img.image.url }}" alt="Gallery Image" class="gallery-img">
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if property.video_url %}
+                <div class="mb-40">
+                    <h3 class="mb-20">Video Tour</h3>
+                    <div class="embed-responsive embed-responsive-16by9">
+                         <iframe class="embed-responsive-item" src="{{ property.video_url }}" allowfullscreen></iframe>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sidebar-widgets" style="background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 5px;">
+                    <h4 class="mb-20">Key Details</h4>
+                    <ul class="list-group list-group-flush mb-30">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Status
+                            {% if property.status == 'available' %}
+                            <span class="badge badge-success badge-pill">Available</span>
+                            {% elif property.status == 'reserved' %}
+                            <span class="badge badge-warning badge-pill text-white">Reserved</span>
+                            {% else %}
+                            <span class="badge badge-danger badge-pill">Sold Out</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Plot Size
+                            <span class="text-muted">{{ property.plot_size|default:"Contact for details" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Location
+                            <span class="text-muted">{{ property.get_location_display }}</span>
+                        </li>
+                    </ul>
+
+                    <h4 class="mb-20">Interested?</h4>
+                    <p class="text-muted mb-20">Contact us today to book an inspection or make inquiries.</p>
+                    <a href="{% url 'contact' %}?subject=Inquiry about {{ property.name }}" class="primary-btn text-uppercase w-100 text-center mb-2">Book Inspection</a>
+                    <a href="tel:+2347036608088" class="btn btn-outline-dark w-100"><i class="fa fa-phone"></i> Call Us Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.img-pop-up').magnificPopup({
+            type: 'image',
+            gallery: {
+                enabled: true
+            }
+        });
+    });
+</script>
+{% endblock %}

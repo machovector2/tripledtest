@@ -1,427 +1,182 @@
-{% extends "user/base.html" %}
-{% block title %}
-  Edit Property
-{% endblock title %}
+{% extends 'user/base.html' %}
+{% load static %}
+
 {% block body %}
-    <!-- settings -->
     <div class="content-page">
         <div class="content">
-
             <!-- Start Content-->
             <div class="container-fluid">
-
                 <!-- start page title -->
                 <div class="row">
                     <div class="col-sm-12">
-                        <div class="profile-bg-picture"
-                            style="background-image:url('/static/user/images/bg-profile.jpg')">
-                            <span class="picture-bg-overlay"></span>
-                            <!-- overlay -->
-                        </div>
-                        
-                    </div>
-                </div>
-                <!-- end row -->
-
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card p-0">
-                            <div class="card-body p-0">
-                                <div class="profile-content">
-
-                                    <ul class="nav nav-underline nav-justified gap-0">
-                                       
-                                        <li class="nav-item"><a class="nav-link active" 
-                                               aria-controls="home" aria-selected="true"
-                                                >EDIT PROPERTY</a></li>
-                                        
-                                    </ul>
-                                    
-                                    {% if messages %}
-                                        {% for message in messages %}
-                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                                {{ message }}
-                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                            </div>
-                                        {% endfor %}
-                                    {% endif %}
-
-                                    <div class="m-0 p-4">
-                                        <!-- settings -->
-                                        <div id="edit-property" class="tab-pane active">
-                                            <div class="user-profile-content">
-                                                <form method="post" enctype="multipart/form-data">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="action" value="update_info">
-                                                    <div class="row row-cols-sm-2 row-cols-1">
-                                                        <div class="mb-3">
-                                                            <label class="form-label" for="name">Property Name</label>
-                                                            <input type="text" placeholder="Enter property name" name="name" id="name"
-                                                                class="form-control" value="{{ property.name }}" required>
-                                                        </div>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label" for="location">State/Location</label>
-                                                            <select name="location" id="location" class="form-control" required>
-                                                                {% for state_code, state_name in states %}
-                                                                    <option value="{{ state_code }}" {% if property.location == state_code %}selected{% endif %}>
-                                                                        {{ state_name }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                        
-                                                        <div class="mb-3 col-12">
-                                                            <label class="form-label" for="address">Address</label>
-                                                            <input type="text" placeholder="Enter property address" name="address" id="address"
-                                                                class="form-control" value="{{ property.address }}" required>
-                                                        </div>
-                                                        
-                                                        <div class="mb-3 col-12">
-                                                            <label class="form-label" for="description">Description</label>
-                                                            <textarea name="description" id="description" rows="5" 
-                                                                class="form-control" placeholder="Enter property description" required>{{ property.description }}</textarea>
-                                                        </div>
-                                                        
-                                                        <!-- {% if property.image %}
-                                                        <div class="mb-3">
-                                                            <label class="form-label" for="image">Property Image</label>
-                                                            <input type="file" name="image" id="image" 
-                                                                class="form-control">
-                                                            <div class="mt-2">
-                                                                <img src="{{ property.image.url }}" alt="Current Property Image" class="img-thumbnail" style="height: 100px;">
-                                                                <div class="form-check mt-1">
-                                                                    <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image">
-                                                                    <label class="form-check-label" for="remove_image">
-                                                                        Remove current image
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        {% else %}
-                                                        <div class="mb-3">
-                                                            <label class="form-label" for="image">Property Image</label>
-                                                            <input type="file" name="image" id="image" 
-                                                                class="form-control">
-                                                        </div>
-                                                        {% endif %} -->
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label" for="status">Property Status</label>
-                                                            <select name="status" id="status" class="form-control">
-                                                                <option value="available" {% if property.status == 'available' %}selected{% endif %}>Available</option>
-                                                                <option value="sold" {% if property.status == 'sold' %}selected{% endif %}>Sold</option>
-                                                                <option value="reserved" {% if property.status == 'reserved' %}selected{% endif %}>Reserved</option>
-                                                            </select>
-                                                            <small class="text-muted">Set the overall status of the property.</small>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="row mt-3">
-                                                        <div class="col-md-12 d-flex gap-2">
-                                                            <button class="btn btn-primary" type="submit">
-                                                                <i class="ri-save-line me-1 fs-16 lh-1"></i> Update Property
-                                                            </button>
-                                                            <a href="{% url 'property_detail' property_id=property.id %}" class="btn btn-secondary">
-                                                                <i class="ri-eye-line me-1 fs-16 lh-1"></i> View Details
-                                                            </a>
-                                                            <a href="{% url 'property_list' %}" class="btn btn-light">
-                                                                <i class="ri-arrow-left-line me-1 fs-16 lh-1"></i> Back to List
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-
-                                        <!-- Plot Management Section -->
-                                        <div class="row mt-4">
-                                            <div class="col-12">
-                                                <div class="card border-primary">
-                                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                                        <h5 class="mb-0 text-white"><i class="ri-grid-line me-1"></i> Plot Management</h5>
-                                                        <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addPlotsModal">
-                                                            <i class="ri-add-line"></i> Add More Plots
-                                                        </button>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                                            <p class="text-muted mb-0">Click on a plot to toggle its status between <b>Available</b> and <b>Taken</b>.</p>
-                                                            <div class="d-flex gap-3">
-                                                                <span class="badge bg-success-subtle text-success px-2 py-1"><i class="ri-checkbox-circle-line"></i> Available</span>
-                                                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1"><i class="ri-close-circle-line"></i> Taken</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="plot-grid">
-                                                            {% for plot in plots %}
-                                                                <div class="plot-block {% if plot.is_taken %}taken{% else %}available{% endif %}" 
-                                                                     data-plot-id="{{ plot.id }}" 
-                                                                     data-plot-number="{{ plot.number }}"
-                                                                     {% with sale=plot.sales.first %}
-                                                                     {% if sale %}
-                                                                     data-has-sale="true"
-                                                                     data-sale-ref="{{ sale.reference_number }}"
-                                                                     data-sale-client="{{ sale.client_name }}"
-                                                                     {% endif %}
-                                                                     {% endwith %}
-                                                                     title="{{ plot.number }} - {% if plot.is_taken %}Taken{% else %}Available{% endif %}{% if plot.sales.exists %} (Sold to {{ plot.sales.first.client_name }}){% endif %}">
-                                                                    {{ plot.number }}
-                                                                </div>
-                                                            {% empty %}
-                                                                <div class="alert alert-info w-100 text-center py-4">
-                                                                    <i class="ri-information-line fs-24 d-block mb-2"></i>
-                                                                    No plots created for this property yet.
-                                                                </div>
-                                                            {% endfor %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'user' %}">Home</a></li>
+                                    <li class="breadcrumb-item"><a href="{% url 'frontend_extras' %}">Frontend Extras</a></li>
+                                    <li class="breadcrumb-item"><a href="{% url 'manage_website_properties' %}">Properties</a></li>
+                                    <li class="breadcrumb-item active">{% if is_create %}Add New{% else %}Edit{% endif %} Property</li>
+                                </ol>
                             </div>
+                            <h4 class="page-title">{% if is_create %}Add New{% else %}Edit{% endif %} Property</h4>
                         </div>
                     </div>
                 </div>
                 <!-- end page title -->
 
-            </div>
-            <!-- end row -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-file-info-line me-1"></i> Basic Info</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Property Title <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="name" name="name" value="{{ property.name|default:'' }}" required placeholder="e.g. Victorian Family Home">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="location" class="form-label">State Location <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="location" name="location" required>
+                                                    <option value="">Select State</option>
+                                                    {% for code, name in states %}
+                                                    <option value="{{ code }}" {% if property.location == code %}selected{% endif %}>{{ name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
 
-        </div>
-        <!-- container -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="description" name="description" rows="4" required>{{ property.description|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3 text-uppercase bg-light p-2 mt-2"><i class="ri-map-pin-line me-1"></i> Location & Details</h5>
+                                    
+                                    <div class="row bg-light bg-opacity-10 p-2 border rounded mb-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="exact_location" class="form-label">Exact Location <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="exact_location" name="exact_location" value="{{ property.exact_location|default:'' }}" required placeholder="e.g. 123 Pine Street, Lekki Phase 1">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="plot_size" class="form-label">Plot Size</label>
+                                                <input type="text" class="form-control" id="plot_size" name="plot_size" value="{{ property.plot_size|default:'' }}" placeholder="e.g. 500sqm">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="nearby_landmarks" class="form-label">Nearby Landmarks</label>
+                                                <textarea class="form-control" id="nearby_landmarks" name="nearby_landmarks" rows="2" placeholder="e.g. Near Shoprite, 5 mins from Airport">{{ property.nearby_landmarks|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden required address field for legacy compatibility -->
+                                        <input type="hidden" name="address" value="{{ property.address|default:'See exact location' }}">
+                                    </div>
 
-    </div>
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-image-add-line me-1"></i> Images & Media</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="main_image" class="form-label">Main Image (Required)</label>
+                                                <input type="file" class="form-control" id="main_image" name="main_image" accept="image/*" {% if not property.main_image %}required{% endif %}>
+                                                {% if property.main_image %}
+                                                <div class="mt-2">
+                                                    <img src="{{ property.main_image.url }}" alt="Current Image" class="img-thumbnail" height="100" style="max-height: 100px;">
+                                                    <small class="d-block text-muted">Current Main Image</small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="gallery_images" class="form-label">Additional Gallery Images</label>
+                                                <input type="file" class="form-control" id="gallery_images" name="gallery_images" accept="image/*" multiple>
+                                                <div class="form-text">You can select multiple images at once.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="video_url" class="form-label">Video Tour URL (Optional)</label>
+                                                <input type="url" class="form-control" id="video_url" name="video_url" value="{{ property.video_url|default:'' }}" placeholder="https://youtube.com/...">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Existing Gallery Images -->
+                                    {% if property and property.images.all %}
+                                    <div class="row mt-2 mb-3">
+                                        <div class="col-12">
+                                            <h6>Current Gallery Images:</h6>
+                                            <div class="row">
+                                                {% for img in property.images.all %}
+                                                <div class="col-md-2 col-4 mb-2">
+                                                    <div class="card mb-0 shadow-none border">
+                                                        <div class="p-1">
+                                                            <img src="{{ img.image.url }}" class="img-fluid rounded" style="height: 80px; width: 100%; object-fit: cover;">
+                                                            <div class="text-center mt-1">
+                                                                <a href="{% url 'delete_property_image' img.id %}" class="text-danger btn-sm" onclick="return confirm('Delete this image?')"><i class="ri-delete-bin-line"></i> Delete</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
 
-    <!-- Add Plots Modal -->
-    <div class="modal fade" id="addPlotsModal" tabindex="-1" aria-labelledby="addPlotsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="add_plots">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title text-white" id="addPlotsModalLabel">Add More Plots</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="number_of_plots" class="form-label">How many plots do you want to add?</label>
-                            <input type="number" class="form-control" name="number_of_plots" id="number_of_plots" min="1" required placeholder="e.g. 10">
-                            <small class="text-muted">
-                                <i class="ri-information-line me-1"></i>
-                                New plots will be numbered sequentially starting after your last plot.
-                            </small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Plots</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-settings-line me-1"></i> Settings</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="status" class="form-label">Status</label>
+                                                <select class="form-select" id="status" name="status">
+                                                    <option value="available" {% if property.status == 'available' %}selected{% endif %}>Available</option>
+                                                    <option value="reserved" {% if property.status == 'reserved' %}selected{% endif %}>Reserved</option>
+                                                    <option value="sold" {% if property.status == 'sold' %}selected{% endif %}>Sold</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 mt-4">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="is_visible" name="is_visible" {% if property.is_visible %}checked{% endif %}>
+                                                    <label class="form-check-label" for="is_visible">Visible on Public Website</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-    <!-- Plot Status Confirmation Modal -->
-    <div class="modal fade" id="plotConfirmModal" tabindex="-1" aria-labelledby="plotConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title" id="plotConfirmModalLabel"><i class="ri-alert-line me-1"></i> Confirm Status Change</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <div class="text-end mt-3">
+                                        <a href="{% url 'manage_website_properties' %}" class="btn btn-light me-1">Cancel</a>
+                                        <button type="submit" class="btn btn-success waves-effect waves-light">
+                                            <i class="ri-save-line me-1"></i> Save Property
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div> <!-- end card -->
+                    </div><!-- end col-->
                 </div>
-                <div class="modal-body">
-                    <p id="plotConfirmMessage">Are you sure you want to change the status of this plot?</p>
-                    <p class="text-muted small">
-                        <i class="ri-information-line me-1"></i>
-                        Changing a plot to <b>Taken</b> means it will no longer be available for new sales.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning" id="confirmPlotToggleBtn">Yes, Change Status</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- end row-->
 
-    <style>
-        .plot-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 12px;
-        }
-        .plot-block {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease-in-out;
-            text-align: center;
-            padding: 10px;
-            border: 2px solid transparent;
-            user-select: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .plot-block.available {
-            background-color: #f0fff4;
-            color: #198754;
-            border-color: #d1e7dd;
-        }
-        .plot-block.available:hover {
-            background-color: #d1e7dd;
-            border-color: #198754;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.15);
-        }
-        .plot-block.taken {
-            background-color: #f8f9fa;
-            color: #a0aec0;
-            border-color: #edf2f7;
-            text-decoration: line-through;
-            opacity: 0.8;
-        }
-        .plot-block.taken:hover {
-            opacity: 1;
-            background-color: #edf2f7;
-            border-color: #cbd5e0;
-            transform: translateY(-3px);
-        }
-        
-        /* Animation for status change */
-        .plot-updating {
-            opacity: 0.5;
-            pointer-events: none;
-            transform: scale(0.95);
-        }
-    </style>
+            </div> <!-- container -->
+        </div> <!-- content -->
+    </div>
 {% endblock body %}
-
-{% block extra_js %}
-<script>
-    // Script to handle image removal checkbox logic
-    document.addEventListener('DOMContentLoaded', function() {
-        const imageInput = document.getElementById('image');
-        const removeImageCheck = document.getElementById('remove_image');
-        
-        if (imageInput && removeImageCheck) {
-            // Disable removal checkbox if a new file is selected
-            imageInput.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    removeImageCheck.checked = false;
-                    removeImageCheck.disabled = true;
-                } else {
-                    removeImageCheck.disabled = false;
-                }
-            });
-            
-            // Disable file input if removal is checked
-            removeImageCheck.addEventListener('change', function() {
-                if (this.checked) {
-                    imageInput.value = '';
-                    imageInput.disabled = true;
-                } else {
-                    imageInput.disabled = false;
-                }
-            });
-        }
-
-        // Plot status toggle script
-        const plotBlocks = document.querySelectorAll('.plot-block');
-        const plotConfirmModal = new bootstrap.Modal(document.getElementById('plotConfirmModal'));
-        const confirmBtn = document.getElementById('confirmPlotToggleBtn');
-        let currentPlotBlock = null;
-
-        plotBlocks.forEach(block => {
-            block.addEventListener('click', function() {
-                // Permission Check
-                const isSuperUser = {{ user.is_superuser|yesno:"true,false" }};
-                
-                if (!isSuperUser) {
-                    alert('Access Denied: Only the Chief Admin can manually toggle plot status.');
-                    return;
-                }
-
-                currentPlotBlock = this;
-                const plotNumber = this.dataset.plotNumber;
-                const isCurrentlyTaken = this.classList.contains('taken');
-                const nextStatus = isCurrentlyTaken ? 'Available' : 'Taken';
-                
-                // Sale Awareness logic
-                const hasSale = this.dataset.hasSale === 'true';
-                const saleRef = this.dataset.saleRef;
-                const saleClient = this.dataset.saleClient;
-                
-                let warningMessage = `Are you sure you want to mark <b>${plotNumber}</b> as <b class="${isCurrentlyTaken ? 'text-success' : 'text-danger'}">${nextStatus}</b>?`;
-                
-                if (isCurrentlyTaken && hasSale) {
-                    warningMessage = `<div class="alert alert-danger bg-danger-subtle border-danger text-danger mb-3 p-2 rounded">
-                        <i class="ri-error-warning-line me-1"></i> 
-                        <strong>WAIT!</strong> This plot is already registered in a sale.
-                    </div>
-                    <div class="mb-3 px-2 border-start border-3 border-danger">
-                        <p class="mb-1"><strong>Sale Ref:</strong> <span class="text-primary">${saleRef}</span></p>
-                        <p class="mb-0"><strong>Client:</strong> ${saleClient}</p>
-                    </div>
-                    <p class="mb-0">Are you absolutely sure you want to make <strong>${plotNumber}</strong> <strong>Available</strong> again?</p>`;
-                }
-                
-                document.getElementById('plotConfirmMessage').innerHTML = warningMessage;
-                plotConfirmModal.show();
-            });
-        });
-
-        confirmBtn.addEventListener('click', function() {
-            if (!currentPlotBlock) return;
-            
-            const block = currentPlotBlock;
-            const plotId = block.dataset.plotId;
-            const plotNumber = block.dataset.plotNumber;
-            
-            plotConfirmModal.hide();
-            
-            // Show updating state
-            block.classList.add('plot-updating');
-            
-            const formData = new FormData();
-            formData.append('plot_id', plotId);
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            
-            fetch("{% url 'ajax_toggle_plot_status' %}", {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                block.classList.remove('plot-updating');
-                if (data.success) {
-                    if (data.is_taken) {
-                        block.classList.remove('available');
-                        block.classList.add('taken');
-                        block.title = `${plotNumber} - Taken`;
-                    } else {
-                        block.classList.remove('taken');
-                        block.classList.add('available');
-                        block.title = `${plotNumber} - Available`;
-                    }
-                } else {
-                    alert('Error updating plot status: ' + (data.error || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                block.classList.remove('plot-updating');
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
-        });
-    });
-</script>
-{% endblock extra_js %}

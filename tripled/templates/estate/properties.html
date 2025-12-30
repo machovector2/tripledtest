@@ -6,7 +6,7 @@
 
 {% block content %}
 <!-- start banner Area -->
-<section class="banner-area relative" id="home">	
+<section class="banner-area relative" id="home" style="background: url({% static 'estate/estateimg/pexels-heyho-6315807.jpg' %}); background-size: cover;">	
 	<div class="overlay overlay-bg"></div>
 	<div class="container">				
 		<div class="row d-flex align-items-center justify-content-center">
@@ -35,9 +35,46 @@
 		
 		<!-- Properties content will be added here -->
 		<div class="row">
+            {% if properties %}
+                {% for property in properties %}
+                <div class="col-lg-12 mb-30">
+                    <div class="single-property" style="box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: white; border-radius: 5px; overflow: hidden;">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <div class="property-img h-100">
+                                    {% if property.main_image %}
+                                    <img class="img-fluid h-100 w-100" src="{{ property.main_image.url }}" alt="{{ property.name }}" style="object-fit: cover; min-height: 250px;">
+                                    {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 250px;">
+                                        <span class="text-muted"><span class="lnr lnr-picture"></span> No Image</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="property-desc p-4 d-flex flex-column justify-content-center h-100">
+                                    <h4 class="mb-2">{{ property.name }}</h4>
+                                    <p class="text-muted mb-3"><span class="lnr lnr-map-marker"></span> {{ property.exact_location|default:property.get_location_display }}</p>
+                                    <p class="mb-4">
+                                        {{ property.description|truncatewords:40 }}
+                                    </p>
+                                    <div class="text-right">
+                                        <a href="{% url 'frontend_property_detail' property.id %}" class="text-uppercase primary-btn small-btn">See More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
 			<div class="col-lg-12 text-center">
-				<p>Properties listing coming soon...</p>
+				<div class="alert alert-info">
+                    <h4>No properties currently available.</h4>
+                    <p>Please check back later or contact us for inquiries.</p>
+                </div>
 			</div>
+            {% endif %}
 		</div>
 	</div>	
 </section>
