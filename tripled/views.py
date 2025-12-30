@@ -2154,7 +2154,7 @@ def create_property_listing(request):
             messages.error(request, f"Error creating property: {str(e)}")
             # logger.error(f"Error creating property: {str(e)}")
     
-    return render(request, "user/edit_property.html", {"states": states, "is_create": True})
+    return render(request, "user/edit_frontend_property.html", {"states": states, "is_create": True})
 
 
 @login_required
@@ -2201,7 +2201,7 @@ def edit_property_listing(request, id):
             # logger.error(f"Error updating property {id}: {str(e)}")
             
     # For GET request or error
-    return render(request, "user/edit_property.html", {
+    return render(request, "user/edit_frontend_property.html", {
         "property": property, 
         "states": states, 
         "is_create": False

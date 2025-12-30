@@ -1,0 +1,182 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block body %}
+    <div class="content-page">
+        <div class="content">
+            <!-- Start Content-->
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'user' %}">Home</a></li>
+                                    <li class="breadcrumb-item"><a href="{% url 'frontend_extras' %}">Frontend Extras</a></li>
+                                    <li class="breadcrumb-item"><a href="{% url 'manage_website_properties' %}">Properties</a></li>
+                                    <li class="breadcrumb-item active">{% if is_create %}Add New{% else %}Edit{% endif %} Property</li>
+                                </ol>
+                            </div>
+                            <h4 class="page-title">{% if is_create %}Add New{% else %}Edit{% endif %} Property</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-file-info-line me-1"></i> Basic Info</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Property Title <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="name" name="name" value="{{ property.name|default:'' }}" required placeholder="e.g. Victorian Family Home">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="location" class="form-label">State Location <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="location" name="location" required>
+                                                    <option value="">Select State</option>
+                                                    {% for code, name in states %}
+                                                    <option value="{{ code }}" {% if property.location == code %}selected{% endif %}>{{ name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="description" name="description" rows="4" required>{{ property.description|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3 text-uppercase bg-light p-2 mt-2"><i class="ri-map-pin-line me-1"></i> Location & Details</h5>
+                                    
+                                    <div class="row bg-light bg-opacity-10 p-2 border rounded mb-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="exact_location" class="form-label">Exact Location <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="exact_location" name="exact_location" value="{{ property.exact_location|default:'' }}" required placeholder="e.g. 123 Pine Street, Lekki Phase 1">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="plot_size" class="form-label">Plot Size</label>
+                                                <input type="text" class="form-control" id="plot_size" name="plot_size" value="{{ property.plot_size|default:'' }}" placeholder="e.g. 500sqm">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="nearby_landmarks" class="form-label">Nearby Landmarks</label>
+                                                <textarea class="form-control" id="nearby_landmarks" name="nearby_landmarks" rows="2" placeholder="e.g. Near Shoprite, 5 mins from Airport">{{ property.nearby_landmarks|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden required address field for legacy compatibility -->
+                                        <input type="hidden" name="address" value="{{ property.address|default:'See exact location' }}">
+                                    </div>
+
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-image-add-line me-1"></i> Images & Media</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="main_image" class="form-label">Main Image (Required)</label>
+                                                <input type="file" class="form-control" id="main_image" name="main_image" accept="image/*" {% if not property.main_image %}required{% endif %}>
+                                                {% if property.main_image %}
+                                                <div class="mt-2">
+                                                    <img src="{{ property.main_image.url }}" alt="Current Image" class="img-thumbnail" height="100" style="max-height: 100px;">
+                                                    <small class="d-block text-muted">Current Main Image</small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="gallery_images" class="form-label">Additional Gallery Images</label>
+                                                <input type="file" class="form-control" id="gallery_images" name="gallery_images" accept="image/*" multiple>
+                                                <div class="form-text">You can select multiple images at once.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="video_url" class="form-label">Video Tour URL (Optional)</label>
+                                                <input type="url" class="form-control" id="video_url" name="video_url" value="{{ property.video_url|default:'' }}" placeholder="https://youtube.com/...">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Existing Gallery Images -->
+                                    {% if property and property.images.all %}
+                                    <div class="row mt-2 mb-3">
+                                        <div class="col-12">
+                                            <h6>Current Gallery Images:</h6>
+                                            <div class="row">
+                                                {% for img in property.images.all %}
+                                                <div class="col-md-2 col-4 mb-2">
+                                                    <div class="card mb-0 shadow-none border">
+                                                        <div class="p-1">
+                                                            <img src="{{ img.image.url }}" class="img-fluid rounded" style="height: 80px; width: 100%; object-fit: cover;">
+                                                            <div class="text-center mt-1">
+                                                                <a href="{% url 'delete_property_image' img.id %}" class="text-danger btn-sm" onclick="return confirm('Delete this image?')"><i class="ri-delete-bin-line"></i> Delete</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <h5 class="mb-3 text-uppercase bg-light p-2"><i class="ri-settings-line me-1"></i> Settings</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="status" class="form-label">Status</label>
+                                                <select class="form-select" id="status" name="status">
+                                                    <option value="available" {% if property.status == 'available' %}selected{% endif %}>Available</option>
+                                                    <option value="reserved" {% if property.status == 'reserved' %}selected{% endif %}>Reserved</option>
+                                                    <option value="sold" {% if property.status == 'sold' %}selected{% endif %}>Sold</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 mt-4">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="is_visible" name="is_visible" {% if property.is_visible %}checked{% endif %}>
+                                                    <label class="form-check-label" for="is_visible">Visible on Public Website</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <a href="{% url 'manage_website_properties' %}" class="btn btn-light me-1">Cancel</a>
+                                        <button type="submit" class="btn btn-success waves-effect waves-light">
+                                            <i class="ri-save-line me-1"></i> Save Property
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div> <!-- end card -->
+                    </div><!-- end col-->
+                </div>
+                <!-- end row-->
+
+            </div> <!-- container -->
+        </div> <!-- content -->
+    </div>
+{% endblock body %}
